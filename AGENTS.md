@@ -36,8 +36,11 @@
 
 ## Git
 - Commits follow Conventional Commits: `<type>(<optional scope>): <description>`. Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-- Subject line: imperative mood, lowercase, no trailing period, at most 72 characters. Keep it in Spanish, consistent with the project's domain vocabulary.
-- Add a body (after a blank line) only to explain the why. Mark breaking changes with `!` after the type/scope or a `BREAKING CHANGE:` footer.
+- Subject line: imperative mood, lowercase, no trailing period, in Spanish. Aim for 50 characters; 72 is the hard limit.
+- Scope names the module or feature area (`core`, `sqlite`, `desktop`, `salidas`, `pdf`); omit it when the change spans several.
+- Terse: the subject alone says what changed, and a one-line commit is the default. Add a body only when the why is not obvious from the diff: at most 3 lines wrapped at 72, stating motive, never a list of files or changes.
+- Mark breaking changes with `!` after the type/scope or a `BREAKING CHANGE:` footer.
+- Examples: `feat(salidas): mostrar participantes en la tabla`, `fix(pdf): corregir error al exportar la ficha`, `refactor(sqlite): extraer esquema a BaseDatosSqlite`.
 - One commit per logical change; do not mix unrelated changes.
 - Never add co-authorship or attribution to Claude or Anthropic in commits (no `Co-Authored-By: Claude ...` trailer or similar).
 - Branch names follow `<type>/<short-description-in-kebab-case>`, using the same types as commits (e.g. `feat/separacion-nucleo`, `fix/error-exportar-pdf`). Use only lowercase letters, digits, and hyphens.
