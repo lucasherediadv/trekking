@@ -24,6 +24,10 @@ _Avoid_: Ruta (para referirse solo a la secuencia de puntos)
 Instancia fechada de una ruta, con participantes, equipamiento y checkpoints operativos propios.
 _Avoid_: Recorrido
 
+**Salida vencida**:
+Salida planificada cuya fecha ya pasó y que espera ser marcada como realizada o cancelada. Es una condición calculada, no un estado propio.
+_Avoid_: Salida atrasada, Salida pendiente de cierre
+
 **Copia operativa**:
 Datos de ruta, checkpoints, participantes o equipamiento conservados en una salida y aislados de cambios posteriores en sus catálogos de origen. La edición de la salida reemplaza su copia vigente; no constituye un historial de versiones.
 _Avoid_: Datos vivos, versión histórica
@@ -43,6 +47,10 @@ _Avoid_: Cliente de salida
 **Inventario**:
 Catálogo de elementos con cantidad total, estado y vigencia para asignaciones.
 _Avoid_: Equipamiento (como nombre del módulo)
+
+**Estado del elemento**:
+Condición física de un elemento de inventario: disponible, en reparación, en inspección, fuera de servicio o extraviado. En reparación, fuera de servicio y extraviado impiden asignarlo a una salida; estar asignado no es un estado, se deduce de la Reserva de stock.
+_Avoid_: Asignado (como estado)
 
 **Equipamiento de salida**:
 Elemento de inventario asignado a una salida en una cantidad determinada.
