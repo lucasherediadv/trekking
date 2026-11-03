@@ -31,6 +31,15 @@
 - Add UI screens by pairing a controller in `controller/` with FXML under `src/main/resources/com/example/fxml/`; wire navigation through existing `NavigationShell` patterns.
 - Put shared calculations/query workflows in `service/`; reuse helpers in `util/` for validation, alerts, and navigation.
 
+## Git
+- Commits follow Conventional Commits: `<type>(<optional scope>): <description>`. Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Subject line: imperative mood, lowercase, no trailing period, at most 72 characters. Keep it in Spanish, consistent with the project's domain vocabulary.
+- Add a body (after a blank line) only to explain the why. Mark breaking changes with `!` after the type/scope or a `BREAKING CHANGE:` footer.
+- One commit per logical change; do not mix unrelated changes.
+- Never add co-authorship or attribution to Claude or Anthropic in commits (no `Co-Authored-By: Claude ...` trailer or similar).
+- Branch names follow `<type>/<short-description-in-kebab-case>`, using the same types as commits (e.g. `feat/separacion-nucleo`, `fix/error-exportar-pdf`). Use only lowercase letters, digits, and hyphens.
+- Do not work directly on `main`; create a branch first.
+
 ## Files and Directories to Avoid
 Do not read or modify these paths unless explicitly required:
 - `/target/`
