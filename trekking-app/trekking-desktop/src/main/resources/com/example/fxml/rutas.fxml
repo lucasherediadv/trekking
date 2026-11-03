@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+
+<ScrollPane id="rutas" fitToWidth="true"
+        hbarPolicy="NEVER"
+        vbarPolicy="AS_NEEDED"
+        styleClass="pantalla-scroll"
+        xmlns="http://javafx.com/javafx/17"
+        xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="com.example.desktop.controller.RutaController"
+        stylesheets="@styles.css">
+
+        <content>
+
+                <VBox alignment="TOP_CENTER"
+                        spacing="10.0"
+                        prefWidth="980.0"
+                        prefHeight="800.0">
+
+                        <padding>
+                                <Insets top="20.0"
+                                        right="20.0"
+                                        bottom="20.0"
+                                        left="20.0" />
+                        </padding>
+
+                        <HBox spacing="16.0" alignment="CENTER_LEFT" styleClass="top-bar">
+                                <VBox spacing="3.0">
+                                        <Label text="Listado de Rutas" styleClass="brand-title" />
+                                        <Label text="Administración de rutas" styleClass="brand-subtitle" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                        </HBox>
+
+                        <HBox styleClass="list-filter-bar">
+
+                                <StackPane styleClass="search-container" HBox.hgrow="ALWAYS">
+                                        <TextField fx:id="buscarField"
+                                                promptText="Buscar por nombre"
+                                                prefWidth="200.0"
+                                                styleClass="list-search-field"/>
+                                </StackPane>
+
+                                <ComboBox fx:id="filtroTerrenoCombo"
+                                        prefWidth="180.0"
+                                        promptText="Terreno"
+                                        styleClass="list-filter-control" />
+
+                                <ComboBox fx:id="filtroDificultadTecnicaCombo"
+                                        prefWidth="215.0"
+                                        promptText="Dificultad técnica"
+                                        styleClass="list-filter-control" />
+
+                                <ComboBox fx:id="filtroDificultadFisicaCombo"
+                                        prefWidth="205.0"
+                                        promptText="Dificultad física"
+                                        styleClass="list-filter-control" />
+
+                                <ComboBox fx:id="filtroEstadoCombo"
+                                        prefWidth="150.0"
+                                        promptText="Estado"
+                                        styleClass="list-filter-control" />
+
+                                        <Button text="+ Nueva ruta"
+                                        onAction="#nuevaRuta"
+                                        styleClass="action-add" />
+
+                        </HBox>
+
+                        <TableView fx:id="tablaRutas"
+                                prefHeight="430.0"
+                                prefWidth="940.0">
+
+                                <columns>
+
+                                        <TableColumn fx:id="colNombre"
+                                                prefWidth="150.0"
+                                                text="Nombre" />
+
+                                        <TableColumn fx:id="colAltitudMaxima"
+                                                prefWidth="120.0"
+                                                text="Altitud máxima" />
+
+                                        <TableColumn fx:id="colTipoTerreno"
+                                                prefWidth="130.0"
+                                                text="Tipo de terreno" />
+
+                                        <TableColumn fx:id="colDificultadTecnica"
+                                                prefWidth="130.0"
+                                                text="Dificultad técnica" />
+
+                                        <TableColumn fx:id="colDificultadFisica"
+                                                prefWidth="130.0"
+                                                text="Dificultad física" />
+                                        <TableColumn fx:id="colEstadoItinerario" text="Itinerario" prefWidth="90.0" />
+                                        <TableColumn fx:id="colAcciones" text="" prefWidth="180.0" />
+
+                                </columns>
+
+                        </TableView>
+
+
+                </VBox>
+        </content>
+
+</ScrollPane>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane id="cliente-alta" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.desktop.controller.AgregarClienteController" stylesheets="@styles.css" styleClass="pantalla-scroll">
+  <content><VBox alignment="TOP_LEFT" styleClass="form-page"><VBox styleClass="form-content">
+    <Label text="Nuevo cliente" styleClass="dialog-header-title"/>
+    <Label text="Completa los datos personales, de contacto y documentación del Cliente." styleClass="dialog-header-subtitle" wrapText="true"/>
+    <VBox styleClass="form-card">
+      <Label text="Datos personales" styleClass="form-section-title"/>
+      <GridPane fx:id="datosPersonalesGrid" hgap="16" vgap="16" styleClass="form-grid">
+        <columnConstraints><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/></columnConstraints>
+        <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.rowIndex="0"><Label text="DNI *" styleClass="form-label"/><TextField fx:id="dniField" promptText="7 u 8 números"/><Label text="Entre 7 y 8 números, sin puntos." styleClass="field-help" wrapText="true"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="0"><Label text="Fecha de nacimiento *" styleClass="form-label"/><DatePicker fx:id="fechaNacimientoPicker" maxWidth="Infinity"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.rowIndex="1"><Label text="Nombre *" styleClass="form-label"/><TextField fx:id="nombreField"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="1"><Label text="Apellido *" styleClass="form-label"/><TextField fx:id="apellidoField"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.rowIndex="2"><Label text="Email" styleClass="form-label"/><TextField fx:id="emailField"/><Label text="Opcional. Si lo completa, ingrese un correo válido (máximo 100 caracteres)." styleClass="field-help" wrapText="true"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="2"><Label text="Teléfono *" styleClass="form-label"/><TextField fx:id="telefonoField"/></VBox>
+        <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"><Label text="Sexo *" styleClass="form-label"/><ComboBox fx:id="sexoComboBox" maxWidth="Infinity"/></VBox>
+      </GridPane>
+      <VBox styleClass="form-section"><Label text="Contacto de emergencia" styleClass="form-section-title"/><Label text="Opcional. Si completa un dato, deberá completar nombre, teléfono y relación." styleClass="field-help" wrapText="true"/>
+        <GridPane fx:id="contactoGrid" hgap="16" vgap="16" styleClass="form-grid"><columnConstraints><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/></columnConstraints>
+          <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0"><Label text="Nombre del contacto" styleClass="form-label"/><TextField fx:id="contactoNombreField"/></VBox>
+          <VBox styleClass="form-field" GridPane.columnIndex="0" GridPane.rowIndex="1"><Label text="Teléfono" styleClass="form-label"/><TextField fx:id="contactoTelefonoField"/></VBox>
+          <VBox styleClass="form-field" GridPane.columnIndex="1" GridPane.rowIndex="1"><Label text="Relación" styleClass="form-label"/><TextField fx:id="contactoRelacionField"/></VBox>
+        </GridPane>
+      </VBox>
+      <VBox styleClass="form-section"><Label text="Documentación y autorización" styleClass="form-section-title"/>
+        <VBox styleClass="form-field"><Label text="Ficha médica (PDF, máximo 2 MB)" styleClass="form-label"/><HBox spacing="8" alignment="CENTER_LEFT"><Button text="Cargar ficha" onAction="#seleccionarFichaMedica" styleClass="secondary-button"/><Label fx:id="fichaMedicaLabel" text="Sin archivo seleccionado" wrapText="true"/></HBox></VBox>
+        <VBox styleClass="form-field"><Label text="Autorización de menores" styleClass="form-label"/><CheckBox fx:id="autorizacionMenoresCheckBox" onAction="#cambiarAutorizacionMenores" text="Autorización correspondiente"/><Label text="Para menores de 18 años, marque la autorización y complete los datos del tutor." styleClass="field-help" wrapText="true"/></VBox>
+        <VBox fx:id="tutorNombreGroup" styleClass="form-field"><Label fx:id="tutorNombreLabel" text="Nombre del tutor" styleClass="form-label"/><TextField fx:id="tutorNombreField"/></VBox>
+        <VBox fx:id="tutorApellidoGroup" styleClass="form-field"><Label fx:id="tutorApellidoLabel" text="Apellido del tutor" styleClass="form-label"/><TextField fx:id="tutorApellidoField"/></VBox>
+        <VBox fx:id="tutorDniGroup" styleClass="form-field"><Label fx:id="tutorDniLabel" text="DNI del tutor" styleClass="form-label"/><TextField fx:id="tutorDniField"/></VBox>
+        <VBox fx:id="tutorTelefonoGroup" styleClass="form-field"><Label fx:id="tutorTelefonoLabel" text="Teléfono del tutor" styleClass="form-label"/><TextField fx:id="tutorTelefonoField"/></VBox>
+      </VBox>
+      <HBox spacing="8" styleClass="crud-actions"><Button fx:id="guardarButton" text="Crear cliente" onAction="#guardarCliente" styleClass="primary-button"/><Button text="Cancelar" onAction="#irListaClientes" styleClass="secondary-button"/></HBox>
+      <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+    </VBox>
+  </VBox></VBox></content>
+</ScrollPane>

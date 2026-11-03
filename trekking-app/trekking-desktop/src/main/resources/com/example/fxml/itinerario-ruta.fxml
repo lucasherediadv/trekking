@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fx:id="root" id="itinerario-ruta" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="pantalla-scroll" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.desktop.controller.ItinerarioRutaController" stylesheets="@styles.css">
+  <content>
+    <VBox spacing="18" styleClass="itinerary-page">
+      <padding><Insets top="24" right="28" bottom="28" left="28"/></padding>
+      <HBox spacing="16" alignment="CENTER_LEFT" styleClass="itinerary-header">
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+          <Label fx:id="titulo" styleClass="brand-title itinerary-title" wrapText="true" />
+          <Label fx:id="resumen" styleClass="brand-subtitle" wrapText="true" />
+        </VBox>
+      </HBox>
+
+      <VBox spacing="5" styleClass="itinerary-list-header">
+        <FlowPane hgap="10" vgap="6" alignment="CENTER_LEFT">
+          <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Checkpoints" styleClass="form-section-title" />
+            <Label fx:id="cantidad" styleClass="itinerary-count" />
+          </HBox>
+          <Button fx:id="agregarButton" text="Agregar checkpoint" onAction="#agregar" styleClass="action-add itinerary-add-button" />
+        </FlowPane>
+        <Label fx:id="estado" styleClass="field-help" wrapText="true" />
+      </VBox>
+
+      <VBox styleClass="itinerary-list-card">
+        <ListView fx:id="lista" styleClass="itinerary-list" VBox.vgrow="ALWAYS" />
+      </VBox>
+
+      <HBox alignment="CENTER_RIGHT" styleClass="itinerary-footer">
+        <Button text="Guardar itinerario" onAction="#guardar" styleClass="primary-button" />
+      </HBox>
+    </VBox>
+  </content>
+</ScrollPane>

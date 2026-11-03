@@ -77,15 +77,15 @@ TRIPS = [
 def java_classpath() -> str:
     ns = {"m": "http://maven.apache.org/POM/4.0.0"}
     pom = ET.parse(APP / "pom.xml").getroot()
-    sqlite_version = next(d.findtext("m:version", namespaces=ns) for d in pom.findall("m:dependencies/m:dependency", ns)
-                         if d.findtext("m:artifactId", namespaces=ns) == "sqlite-jdbc")
+    sqlite_version = pom.findtext("m:properties/m:sqlite-jdbc.version", namespaces=ns)
     m2 = Path.home() / ".m2/repository"
     sqlite_jar = m2 / f"org/xerial/sqlite-jdbc/{sqlite_version}/sqlite-jdbc-{sqlite_version}.jar"
     slf4j_jar = m2 / "org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar"
     if not sqlite_jar.is_file():
         raise FileNotFoundError(f"No se encontró el driver SQLite de Maven: {sqlite_jar}")
     jars = [str(sqlite_jar)] + ([str(slf4j_jar)] if slf4j_jar.is_file() else [])
-    return ":".join([str(APP / "target/classes"), *jars])
+    modules = [str(APP / module / "target/classes") for module in ("trekking-desktop", "trekking-sqlite", "trekking-core")]
+    return ":".join([*modules, *jars])
 
 
 def initialize_schema(db: Path | None = None, *, cwd: Path = ROOT, compile_app: bool = True) -> None:
@@ -95,7 +95,7 @@ def initialize_schema(db: Path | None = None, *, cwd: Path = ROOT, compile_app: 
     command = ["java"]
     if db is not None:
         command.append(f"-Dtrekking.db={db}")
-    command.extend(["-cp", java_classpath(), "com.example.database.ConexionDB"])
+    command.extend(["-cp", java_classpath(), "com.example.desktop.database.ConexionDB"])
     subprocess.run(command, cwd=cwd, check=True)
 
 
