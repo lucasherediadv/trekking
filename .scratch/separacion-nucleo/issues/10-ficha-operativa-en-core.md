@@ -4,9 +4,15 @@
 
 **Blocked by:** 07
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Core no conoce el destino ni el sistema de archivos al generar la Ficha operativa.
-- [ ] Desktop conserva el nombre de archivo propuesto y el guardado atómico.
-- [ ] Tests de casos de uso con reloj fijo: se genera un PDF no vacío para una Salida con datos y para una Salida sin Checkpoints, equipamiento ni participantes, y una Salida inexistente produce un error de entidad no encontrada.
+- [x] Core no conoce el destino ni el sistema de archivos al generar la Ficha operativa.
+- [x] Desktop conserva el nombre de archivo propuesto y el guardado atómico.
+- [x] Tests de casos de uso con reloj fijo: se genera un PDF no vacío para una Salida con datos y para una Salida sin Checkpoints, equipamiento ni participantes, y una Salida inexistente produce un error de entidad no encontrada.
 - [ ] Validación manual: exportar fichas de Salidas con pocos y muchos datos y compararlas con las generadas antes del cambio.
+
+## Comments
+
+- Implementado en bb22888: `CasosDeUsoFichaOperativa` y `GeneradorFichaOperativa` en core (PDFBox y fuentes pasaron a core); desktop conserva `nombreArchivo` y el guardado atómico en `FichaOperativaPDFService`.
+- Pendiente humano: validación manual (exportar fichas de Salidas con pocos y muchos datos y compararlas con las anteriores). Por eso el ticket no se marca completo en ese punto.
+- `AGENTS.md` aún cita `service/FichaOperativaPDFService.java` como la salida PDF y la carpeta de fuentes en desktop: actualizar en el ticket 12.
