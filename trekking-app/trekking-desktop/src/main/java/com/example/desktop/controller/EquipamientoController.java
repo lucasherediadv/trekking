@@ -1,7 +1,8 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.EquipamientoDAO;
-import com.example.desktop.model.Equipamiento;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.inventario.ElementoInventario;
+import com.example.desktop.Servicios;
 import com.example.desktop.util.NavigationShell;
 import com.example.desktop.util.TableEmptyState;
 import com.example.desktop.util.TableHeight;
@@ -9,6 +10,8 @@ import com.example.desktop.util.ComboBoxDisplayLabel;
 import com.example.desktop.util.AlertUtils;
 import com.example.desktop.util.SearchFieldIcon;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,7 +22,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.collections.transformation.FilteredList;
 
@@ -29,22 +31,22 @@ import java.util.Optional;
 public class EquipamientoController {
 
     @FXML
-    private TableView<Equipamiento> tablaEquipamiento;
+    private TableView<ElementoInventario> tablaEquipamiento;
 
     @FXML
-    private TableColumn<Equipamiento, String> colNombre;
+    private TableColumn<ElementoInventario, String> colNombre;
 
     @FXML
-    private TableColumn<Equipamiento, String> colCategoria;
+    private TableColumn<ElementoInventario, String> colCategoria;
 
     @FXML
-    private TableColumn<Equipamiento, Integer> colCantidad;
+    private TableColumn<ElementoInventario, Integer> colCantidad;
 
     @FXML
-    private TableColumn<Equipamiento, Integer> colReservada;
+    private TableColumn<ElementoInventario, Integer> colReservada;
 
     @FXML
-    private TableColumn<Equipamiento, Integer> colDisponible;
+    private TableColumn<ElementoInventario, Integer> colDisponible;
 
     @FXML
     private TextField txtBuscar;
@@ -53,11 +55,11 @@ public class EquipamientoController {
     private ComboBox<String> estadoFiltroCombo;
 
     @FXML
-    private TableColumn<Equipamiento, String> colEstado;
-    @FXML private TableColumn<Equipamiento, Equipamiento> colAcciones;
+    private TableColumn<ElementoInventario, String> colEstado;
+    @FXML private TableColumn<ElementoInventario, ElementoInventario> colAcciones;
 
-    private ObservableList<Equipamiento> equipamientoOriginal;
-    private FilteredList<Equipamiento> equipamientoFiltrado;
+    private ObservableList<ElementoInventario> equipamientoOriginal;
+    private FilteredList<ElementoInventario> equipamientoFiltrado;
 
     @FXML
     public void initialize() {
@@ -69,25 +71,24 @@ public class EquipamientoController {
         tablaEquipamiento.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         colNombre.setCellValueFactory(
-                new PropertyValueFactory<>("nombre"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().nombre()));
 
         colCategoria.setCellValueFactory(
-                new PropertyValueFactory<>("categoria"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().categoria()));
 
         colCantidad.setCellValueFactory(
-                new PropertyValueFactory<>("cantidad"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().cantidad()));
 
         colReservada.setCellValueFactory(
-                new PropertyValueFactory<>("cantidadReservada"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().cantidadReservada()));
 
         colDisponible.setCellValueFactory(
-                new PropertyValueFactory<>("cantidadDisponible"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().cantidadDisponible()));
 
         colEstado.setCellValueFactory(
-                new PropertyValueFactory<>("estado"));
+                data -> new ReadOnlyObjectWrapper<>(data.getValue().estado().etiqueta()));
         colEstado.setCellFactory(column -> com.example.desktop.util.EstadoCell.create(estado -> switch (estado) {
             case "Disponible" -> com.example.desktop.util.EstadoCell.Tono.EXITO;
-            case "Asignado" -> com.example.desktop.util.EstadoCell.Tono.INFORMACION;
             case "En Inspección", "En Reparación" -> com.example.desktop.util.EstadoCell.Tono.ADVERTENCIA;
             case "Fuera de Servicio", "Extraviado" -> com.example.desktop.util.EstadoCell.Tono.PELIGRO;
             default -> null;
@@ -95,7 +96,7 @@ public class EquipamientoController {
         colAcciones.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue()));
 
         colAcciones.setCellFactory(column -> new javafx.scene.control.TableCell<>() {
-            @Override protected void updateItem(Equipamiento item, boolean empty) {
+            @Override protected void updateItem(ElementoInventario item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { com.example.desktop.util.RowActionCell.clear(this); return; }
                 javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(3);
@@ -127,9 +128,15 @@ public class EquipamientoController {
 
     private void cargarEquipamiento() {
 
-        equipamientoOriginal = "Inactivo".equals(estadoFiltroCombo.getValue())
-                ? EquipamientoDAO.obtenerDadosDeBaja()
-                : EquipamientoDAO.obtenerTodos();
+        try {
+            equipamientoOriginal = FXCollections.observableArrayList(
+                    "Inactivo".equals(estadoFiltroCombo.getValue())
+                            ? Servicios.inventario().listarDadosDeBaja()
+                            : Servicios.inventario().listarActivos());
+        } catch (RuntimeException e) {
+            equipamientoOriginal = FXCollections.observableArrayList();
+            mostrarAlerta(Alert.AlertType.ERROR, "Inventario", "No se pudo cargar el Inventario: " + e.getMessage());
+        }
         equipamientoFiltrado = new FilteredList<>(equipamientoOriginal, item -> true);
         tablaEquipamiento.setItems(equipamientoFiltrado);
         aplicarFiltro();
@@ -139,9 +146,9 @@ public class EquipamientoController {
         if (equipamientoFiltrado == null) return;
         String consulta = txtBuscar.getText() == null ? "" : txtBuscar.getText().trim().toLowerCase();
         equipamientoFiltrado.setPredicate(item -> consulta.isEmpty()
-                || item.getNombre().toLowerCase().contains(consulta)
-                || item.getCategoria().toLowerCase().contains(consulta)
-                || item.getEstado().toLowerCase().contains(consulta));
+                || item.nombre().toLowerCase().contains(consulta)
+                || item.categoria().toLowerCase().contains(consulta)
+                || item.estado().etiqueta().toLowerCase().contains(consulta));
         boolean hayEquipamiento = equipamientoOriginal != null && !equipamientoOriginal.isEmpty();
         boolean filtroActivo = !consulta.isEmpty();
         TableEmptyState.update(tablaEquipamiento, hayEquipamiento, filtroActivo,
@@ -164,7 +171,7 @@ public class EquipamientoController {
     @FXML
     private void editarEquipamiento() {
 
-        Equipamiento seleccionado =
+        ElementoInventario seleccionado =
                 tablaEquipamiento.getSelectionModel().getSelectedItem();
 
         if (seleccionado == null) {
@@ -181,7 +188,7 @@ public class EquipamientoController {
     @FXML
     private void eliminarEquipamiento() {
 
-        Equipamiento seleccionado =
+        ElementoInventario seleccionado =
                 tablaEquipamiento.getSelectionModel().getSelectedItem();
 
         if (seleccionado == null) {
@@ -195,7 +202,7 @@ public class EquipamientoController {
         Alert confirmacion = new Alert(
                 Alert.AlertType.CONFIRMATION);
 
-        int reservada = EquipamientoDAO.obtenerCantidadReservada(seleccionado.getId());
+        int reservada = seleccionado.cantidadReservada();
         confirmacion.setTitle("Dar de baja elemento de inventario");
         confirmacion.setHeaderText(null);
         confirmacion.setContentText(reservada > 0
@@ -209,36 +216,53 @@ public class EquipamientoController {
         if (resultado.isPresent()
                 && resultado.get() == ButtonType.OK) {
 
-            EquipamientoDAO.eliminar(seleccionado.getId());
-            cargarEquipamiento();
+            if (!darDeBaja(seleccionado)) return;
 
             mostrarAlerta(
                     Alert.AlertType.INFORMATION,
-                    "Equipamiento",
+                    "Inventario",
                     "Elemento dado de baja correctamente.");
         }
     }
 
-    private void confirmarBaja(Equipamiento seleccionado) {
-        int reservada = EquipamientoDAO.obtenerCantidadReservada(seleccionado.getId());
+    private void confirmarBaja(ElementoInventario seleccionado) {
+        int reservada = seleccionado.cantidadReservada();
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Dar de baja elemento de inventario");
         confirmacion.setHeaderText(null);
-        confirmacion.setContentText("¿Dar de baja «" + seleccionado.getNombre() + "»? Se excluirá del uso activo."
+        confirmacion.setContentText("¿Dar de baja «" + seleccionado.nombre() + "»? Se excluirá del uso activo."
                 + (reservada > 0 ? " Las " + reservada + " unidades reservadas por Salidas planificadas se conservan." : ""));
         if (AlertUtils.showAndWait(confirmacion, tablaEquipamiento).orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            EquipamientoDAO.eliminar(seleccionado.getId()); cargarEquipamiento();
+            darDeBaja(seleccionado);
         }
     }
 
-    private void confirmarReactivacion(Equipamiento seleccionado) {
+    private boolean darDeBaja(ElementoInventario elemento) {
+        try {
+            Servicios.inventario().darDeBaja(elemento.id());
+            return true;
+        } catch (ExcepcionNegocio | IllegalStateException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Dar de baja elemento", e.getMessage());
+            return false;
+        } finally {
+            cargarEquipamiento();
+        }
+    }
+
+    private void confirmarReactivacion(ElementoInventario seleccionado) {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION,
-                "¿Reactivar «" + seleccionado.getNombre() + "»? Volverá al uso activo.",
+                "¿Reactivar «" + seleccionado.nombre() + "»? Volverá al uso activo.",
                 ButtonType.CANCEL, ButtonType.OK);
         confirmacion.setTitle("Reactivar elemento");
         confirmacion.setHeaderText(null);
         if (AlertUtils.showAndWait(confirmacion, tablaEquipamiento).orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            EquipamientoDAO.reactivar(seleccionado.getId());
+            try {
+                Servicios.inventario().reactivar(seleccionado.id());
+            } catch (ExcepcionNegocio | IllegalStateException e) {
+                mostrarAlerta(Alert.AlertType.ERROR, "Reactivar elemento", e.getMessage());
+                cargarEquipamiento();
+                return;
+            }
             cargarEquipamiento();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Inventario",
                     "Elemento reactivado correctamente.");
@@ -272,7 +296,7 @@ public class EquipamientoController {
         }
     }
 
-    private void abrirFormulario(Equipamiento equipamiento) {
+    private void abrirFormulario(ElementoInventario equipamiento) {
 
         try {
 

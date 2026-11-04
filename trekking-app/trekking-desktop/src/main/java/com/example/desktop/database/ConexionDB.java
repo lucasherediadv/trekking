@@ -40,6 +40,11 @@ public final class ConexionDB {
         System.out.println("Esquema de trekking listo.");
     }
 
+    /** Base compartida por los repositorios de sqlite. */
+    public static BaseDatosSqlite base() {
+        return BASE;
+    }
+
     public static Connection conectar() throws SQLException {
         return BASE.conectar();
     }

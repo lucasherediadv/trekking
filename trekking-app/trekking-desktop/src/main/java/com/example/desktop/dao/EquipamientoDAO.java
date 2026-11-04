@@ -11,145 +11,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.stream.Collectors;
 
+import com.example.core.inventario.EstadoElemento;
+
+/** Lecturas de inventario que todavía usa el área de Salidas; Inventario ya usa los casos de uso de core. */
 public class EquipamientoDAO {
 
-    public static void insertar(Equipamiento equipamiento) {
-
-        String sql = """
-                INSERT INTO equipamiento
-                (nombre, categoria, cantidad, estado, activo)
-                VALUES (?, ?, ?, ?, ?)
-                """;
-
-        try (
-                Connection conexion = ConexionDB.conectar();
-                PreparedStatement statement = conexion.prepareStatement(sql)) {
-
-            statement.setString(1, equipamiento.getNombre());
-            statement.setString(2, equipamiento.getCategoria());
-            statement.setInt(3, equipamiento.getCantidad());
-            statement.setString(4, equipamiento.getEstado());
-            statement.setInt(5, 1);
-
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new IllegalStateException("No se pudo guardar el elemento de inventario.", e);
-        }
-    }
-
-    public static void actualizar(Equipamiento equipamiento) {
-
-        String sql = """
-                UPDATE equipamiento
-                SET nombre = ?,
-                    categoria = ?,
-                    cantidad = ?,
-                    estado = ?
-                WHERE id = ? AND ? >= (
-                    SELECT COALESCE(SUM(se.cantidad), 0)
-                    FROM salida_equipamiento se
-                    JOIN salidas s ON s.id = se.salida_id
-                    WHERE se.equipamiento_id = equipamiento.id
-                      AND s.estado = 'planificada'
-                )
-                """;
-
-        try (
-                Connection conexion = ConexionDB.conectar();
-                PreparedStatement statement = conexion.prepareStatement(sql)) {
-
-            int reservada = obtenerCantidadReservada(conexion, equipamiento.getId());
-            if (equipamiento.getCantidad() < reservada) {
-                throw new IllegalArgumentException(
-                        "La cantidad total no puede ser menor que la cantidad reservada ("
-                                + reservada + ").");
-            }
-
-            statement.setString(1, equipamiento.getNombre());
-            statement.setString(2, equipamiento.getCategoria());
-            statement.setInt(3, equipamiento.getCantidad());
-            statement.setString(4, equipamiento.getEstado());
-            statement.setInt(5, equipamiento.getId());
-            statement.setInt(6, equipamiento.getCantidad());
-
-            if (statement.executeUpdate() == 0) {
-                throw new IllegalArgumentException(
-                        "No se pudo actualizar: la cantidad total no puede ser menor que lo reservado.");
-            }
-
-        } catch (SQLException e) {
-            throw new IllegalStateException("No se pudo actualizar el elemento de inventario.", e);
-        }
-    }
-
-    public static void eliminar(int id) {
-
-        String sql = """
-                UPDATE equipamiento
-                SET activo = 0
-                WHERE id = ?
-                """;
-
-        try (
-                Connection conexion = ConexionDB.conectar();
-                PreparedStatement statement = conexion.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            System.out.println(
-                    "Error al eliminar equipamiento: "
-                            + e.getMessage());
-        }
-    }
-
-    public static int obtenerCantidadReservada(int id) {
-        try (Connection conexion = ConexionDB.conectar()) {
-            return obtenerCantidadReservada(conexion, id);
-        } catch (SQLException e) {
-            throw new IllegalStateException("No se pudo consultar la reserva del elemento.", e);
-        }
-    }
-
-    private static int obtenerCantidadReservada(Connection conexion, int id)
-            throws SQLException {
-        String sql = """
-                SELECT COALESCE(SUM(se.cantidad), 0)
-                FROM salida_equipamiento se
-                JOIN salidas s ON s.id = se.salida_id
-                WHERE se.equipamiento_id = ? AND s.estado = 'planificada'
-                """;
-        try (PreparedStatement statement = conexion.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next() ? resultSet.getInt(1) : 0;
-            }
-        }
-    }
-
-    public static void reactivar(int id) {
-
-        String sql = """
-                UPDATE equipamiento
-                SET activo = 1
-                WHERE id = ?
-                """;
-
-        try (
-                Connection conexion = ConexionDB.conectar();
-                PreparedStatement statement = conexion.prepareStatement(sql)) {
-
-            statement.setInt(1, id);
-            statement.executeUpdate();
-
-        } catch (SQLException e) {
-            System.out.println(
-                    "Error al reactivar equipamiento: "
-                            + e.getMessage());
-        }
+    /** Estados que impiden asignar, listados para SQL; la regla vive en core. */
+    public static String estadosNoAsignablesSql() {
+        return EstadoElemento.noAsignables().stream()
+                .map(e -> "'" + e.etiqueta() + "'")
+                .collect(Collectors.joining(", "));
     }
 
     public static ObservableList<Equipamiento> obtenerTodos() {

@@ -1,7 +1,14 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.EquipamientoDAO;
-import com.example.desktop.model.Equipamiento;
+import com.example.core.excepcion.ErrorCampo;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.excepcion.ValidacionException;
+import com.example.core.inventario.CasosDeUsoInventario;
+import com.example.core.inventario.DatosElemento;
+import com.example.core.inventario.ElementoInventario;
+import com.example.core.inventario.EstadoElemento;
+import com.example.core.inventario.ValidadorElemento;
+import com.example.desktop.Servicios;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.ResponsiveFormLayout;
 import com.example.desktop.util.ToastNotifications;
@@ -39,49 +46,35 @@ public class EquipamientoFormController {
     @FXML
     private GridPane formGrid;
 
-    private Equipamiento equipamientoEditando;
+    private ElementoInventario equipamientoEditando;
 
     @FXML
     public void initialize() {
         javafx.application.Platform.runLater(txtNombre::requestFocus);
         ResponsiveFormLayout.adapt(formGrid);
 
-        cmbCategoria.getItems().addAll(
-                "Campamento",
-                "Navegación",
-                "Comunicación",
-                "Seguridad",
-                "Escalada",
-                "Vestimenta",
-                "Hidratación",
-                "Primeros Auxilios",
-                "Herramientas",
-                "Transporte"
-        );
+        cmbCategoria.getItems().addAll(ValidadorElemento.CATEGORIAS);
+        for (EstadoElemento estado : EstadoElemento.values()) {
+            cmbEstado.getItems().add(estado.etiqueta());
+        }
 
-        cmbEstado.getItems().addAll(
-                "Disponible",
-                "Asignado",
-                "En Reparación",
-                "En Inspección",
-                "Fuera de Servicio",
-                "Extraviado"
-        );
+        // Los mensajes vienen del validador de core; la pantalla solo los muestra junto a cada campo.
+        FormValidation.watch(txtNombre, txtNombre.textProperty(), () -> errorDe("nombre"));
+        FormValidation.watch(cmbCategoria, cmbCategoria.valueProperty(), () -> errorDe("categoria"));
+        FormValidation.watch(txtCantidad, txtCantidad.textProperty(), () -> errorDe("cantidad"));
+        FormValidation.watch(cmbEstado, cmbEstado.valueProperty(), () -> errorDe("estado"));
+    }
 
-        FormValidation.watch(txtNombre, txtNombre.textProperty(),
-                () -> textoSeguro(txtNombre.getText()).trim().isEmpty()
-                        ? "El nombre es obligatorio."
-                        : null);
-        FormValidation.watch(cmbCategoria, cmbCategoria.valueProperty(),
-                () -> cmbCategoria.getValue() == null
-                        ? "Seleccione una categoría."
-                        : null);
-        FormValidation.watch(txtCantidad, txtCantidad.textProperty(),
-                this::validarCantidad);
-        FormValidation.watch(cmbEstado, cmbEstado.valueProperty(),
-                () -> cmbEstado.getValue() == null
-                        ? "Seleccione un estado."
-                        : null);
+    private EstadoElemento estadoSeleccionado() {
+        return EstadoElemento.desdeEtiqueta(cmbEstado.getValue()).orElse(null);
+    }
+
+    private String errorDe(String campo) {
+        return ValidadorElemento.validar(textoSeguro(txtNombre.getText()), cmbCategoria.getValue(),
+                        txtCantidad.getText(), estadoSeleccionado()).stream()
+                .filter(e -> e.campo().equals(campo))
+                .map(ErrorCampo::mensaje)
+                .findFirst().orElse(null);
     }
 
     @FXML
@@ -99,35 +92,21 @@ public class EquipamientoFormController {
             return;
         }
 
-        String nombre = textoSeguro(txtNombre.getText()).trim();
-        String categoria = cmbCategoria.getValue();
-        String cantidadTexto = txtCantidad.getText().trim();
-        String estado = cmbEstado.getValue();
+        DatosElemento datos = new DatosElemento(textoSeguro(txtNombre.getText()).trim(), cmbCategoria.getValue(),
+                Integer.parseInt(txtCantidad.getText().trim()), estadoSeleccionado());
 
-        if (nombre.isEmpty()
-                || categoria == null
-                || cantidadTexto.isEmpty()
-                || estado == null) {
-
-            mostrarAlerta(
-                    Alert.AlertType.ERROR,
-                    "Datos incompletos",
-                    "Todos los campos son obligatorios.");
-
-            return;
-        }
-
-        int cantidad = Integer.parseInt(cantidadTexto);
-
+        CasosDeUsoInventario inventario = Servicios.inventario();
         try {
             if (equipamientoEditando == null) {
-                EquipamientoDAO.insertar(new Equipamiento(
-                        0, nombre, categoria, cantidad, estado));
+                inventario.alta(datos);
             } else {
-                EquipamientoDAO.actualizar(new Equipamiento(
-                        equipamientoEditando.getId(), nombre, categoria, cantidad, estado));
+                inventario.editar(equipamientoEditando.id(), datos);
             }
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (ValidacionException e) {
+            marcarErrores(e);
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo guardar", e.getMessage());
+            return;
+        } catch (ExcepcionNegocio | IllegalStateException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "No se pudo guardar", e.getMessage());
             return;
         }
@@ -139,7 +118,19 @@ public class EquipamientoFormController {
                 ToastNotifications.Kind.SUCCESS);
     }
 
-    public void cargarEquipamiento(Equipamiento equipamiento) {
+    private void marcarErrores(ValidacionException e) {
+        for (ErrorCampo error : e.errores()) {
+            switch (error.campo()) {
+                case "nombre" -> FormValidation.showError(txtNombre, error.mensaje());
+                case "categoria" -> FormValidation.showError(cmbCategoria, error.mensaje());
+                case "cantidad" -> FormValidation.showError(txtCantidad, error.mensaje());
+                case "estado" -> FormValidation.showError(cmbEstado, error.mensaje());
+                default -> { }
+            }
+        }
+    }
+
+    public void cargarEquipamiento(ElementoInventario equipamiento) {
 
         equipamientoEditando = equipamiento;
 
@@ -155,16 +146,16 @@ public class EquipamientoFormController {
             return;
         }
 
-        txtNombre.setText(equipamiento.getNombre());
+        txtNombre.setText(equipamiento.nombre());
 
         cmbCategoria.setValue(
-                equipamiento.getCategoria());
+                equipamiento.categoria());
 
         txtCantidad.setText(
-                String.valueOf(equipamiento.getCantidad()));
+                String.valueOf(equipamiento.cantidad()));
 
         cmbEstado.setValue(
-                equipamiento.getEstado());
+                equipamiento.estado().etiqueta());
     }
 
     @FXML
@@ -209,21 +200,6 @@ public class EquipamientoFormController {
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
         AlertUtils.showAndWait(alerta, txtNombre);
-    }
-
-    private String validarCantidad() {
-        String cantidad = textoSeguro(txtCantidad.getText()).trim();
-        if (cantidad.isEmpty()) {
-            return "La cantidad es obligatoria.";
-        }
-        try {
-            if (Integer.parseInt(cantidad) < 0) {
-                return "La cantidad total debe ser mayor o igual a cero.";
-            }
-            return null;
-        } catch (NumberFormatException e) {
-            return "La cantidad debe ser un número entero mayor o igual a cero.";
-        }
     }
 
     private String textoSeguro(String valor) {

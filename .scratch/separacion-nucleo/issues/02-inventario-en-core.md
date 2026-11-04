@@ -6,12 +6,12 @@
 
 **Status:** ready-for-agent
 
-- [ ] La pantalla de Inventario no accede a la persistencia: solo usa casos de uso de core.
-- [ ] Los casos de uso no exponen colecciones observables, errores de SQL ni booleanos de éxito; los errores llegan como excepciones de negocio.
-- [ ] El formulario muestra errores por campo mientras se escribe, usando el validador de core, y el caso de uso vuelve a validar al guardar.
-- [ ] El selector de estado ya no ofrece "Asignado"; al iniciar, los elementos con ese estado quedan en "Disponible".
-- [ ] La regla de estados no asignables está definida una sola vez en core, y las consultas de sqlite la reciben como parámetro.
-- [ ] En inspección sigue siendo asignable.
-- [ ] Tests de casos de uso (con repositorio falso): alta válida, alta inválida con errores por campo, edición, baja y reactivación, y estados asignables y no asignables.
-- [ ] Test de integración en sqlite: repositorio de inventario con cantidad reservada, y migración de "Asignado" a "Disponible".
+- [x] La pantalla de Inventario no accede a la persistencia: solo usa casos de uso de core.
+- [x] Los casos de uso no exponen colecciones observables, errores de SQL ni booleanos de éxito; los errores llegan como excepciones de negocio.
+- [x] El formulario muestra errores por campo mientras se escribe, usando el validador de core, y el caso de uso vuelve a validar al guardar.
+- [x] El selector de estado ya no ofrece "Asignado"; al iniciar, los elementos con ese estado quedan en "Disponible".
+- [x] La regla de estados no asignables está definida una sola vez en core, y las consultas de sqlite la reciben como parámetro.
+- [x] En inspección sigue siendo asignable.
+- [x] Tests de casos de uso (con repositorio falso): alta válida, alta inválida con errores por campo, edición, baja y reactivación, y estados asignables y no asignables.
+- [x] Test de integración en sqlite: repositorio de inventario con cantidad reservada, y migración de "Asignado" a "Disponible".
 - [ ] Validación manual de Inventario: alta, edición, baja, reactivación, listado y filtros.

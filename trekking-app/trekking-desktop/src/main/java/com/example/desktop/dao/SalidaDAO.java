@@ -301,8 +301,8 @@ public class SalidaDAO {
                         e.cantidad - COALESCE((SELECT SUM(se.cantidad) FROM salida_equipamiento se
                             JOIN salidas sa ON sa.id = se.salida_id
                             WHERE se.equipamiento_id = e.id AND sa.estado = 'planificada'), 0) <= 2
-                        OR e.estado IN ('En Reparación', 'Fuera de Servicio', 'Extraviado'))
-                    """);
+                        OR e.estado IN (%s))
+                    """.formatted(EquipamientoDAO.estadosNoAsignablesSql()));
             return Map.of("proximas", proximas, "rutas", rutas, "clientes", clientes, "criticos", criticos);
         } catch (SQLException e) {
             throw new IllegalStateException("No se pudieron calcular los indicadores.", e);

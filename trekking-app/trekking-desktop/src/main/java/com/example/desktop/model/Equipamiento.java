@@ -1,13 +1,16 @@
 package com.example.desktop.model;
 
+import java.util.Arrays;
 import java.util.List;
+
+import com.example.core.inventario.EstadoElemento;
+import com.example.core.inventario.ValidadorElemento;
 
 public class Equipamiento {
 
-    public static final List<String> CATEGORIAS = List.of("Campamento", "Navegación", "Comunicación", "Seguridad",
-            "Escalada", "Vestimenta", "Hidratación", "Primeros Auxilios", "Herramientas", "Transporte");
-    public static final List<String> ESTADOS = List.of("Disponible", "Asignado", "En Reparación",
-            "En Inspección", "Fuera de Servicio", "Extraviado");
+    public static final List<String> CATEGORIAS = ValidadorElemento.CATEGORIAS;
+    public static final List<String> ESTADOS = Arrays.stream(EstadoElemento.values())
+            .map(EstadoElemento::etiqueta).toList();
 
     public static boolean categoriaValida(String categoria) {
         return categoria != null && CATEGORIAS.contains(categoria);

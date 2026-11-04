@@ -92,8 +92,8 @@ public class DashboardService {
                 FROM equipamiento
                 WHERE activo = 1
                   AND (cantidad <= ?
-                       OR estado IN ('Fuera de Servicio', 'Extraviado', 'En Reparación'))
-                """;
+                       OR estado IN (%s))
+                """.formatted(com.example.desktop.dao.EquipamientoDAO.estadosNoAsignablesSql());
         try (Connection conexion = ConexionDB.conectar();
                 PreparedStatement statement = conexion.prepareStatement(sql)) {
             statement.setInt(1, UMBRAL_STOCK_BAJO);

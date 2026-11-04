@@ -166,6 +166,8 @@ public class BaseDatosSqlite {
             statement.execute(sqlSalidaCheckpoints);
             statement.execute(sqlSalidaEquipamiento);
             statement.execute(sqlSalidaParticipantes);
+            // "Asignado" dejó de ser un estado: la asignación se deduce de la Reserva de stock.
+            statement.executeUpdate("UPDATE equipamiento SET estado = 'Disponible' WHERE estado = 'Asignado'");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS idx_salidas_fecha_estado ON salidas(fecha, estado)");
             statement.executeUpdate("CREATE INDEX IF NOT EXISTS idx_salida_equipamiento_elemento ON salida_equipamiento(equipamiento_id)");
             statement.executeUpdate(""" 
