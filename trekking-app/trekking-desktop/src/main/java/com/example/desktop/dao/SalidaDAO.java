@@ -2,7 +2,6 @@ package com.example.desktop.dao;
 
 import com.example.desktop.database.ConexionDB;
 import com.example.desktop.model.Ruta;
-import com.example.desktop.model.Salida;
 import com.example.core.itinerario.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
@@ -21,7 +20,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 public class SalidaDAO {
-    public record ResumenOperativo(String participantes, String equipamiento) {}
+    /** Datos de la Salida que la edición necesita leer dentro de su transacción. */
+    private record SalidaActual(int rutaId, boolean planificada, String rutaNombre, double rutaAltitudMaxima,
+            String rutaTipoTerreno, String rutaDificultadTecnica, String rutaDificultadFisica) {}
 
     private final RutaDAO rutaDAO = new RutaDAO();
 
@@ -79,7 +80,7 @@ public class SalidaDAO {
             c.setAutoCommit(false);
             try {
                 if (equipamiento != null) bloquearInventario(c, equipamiento);
-                Salida actual;
+                SalidaActual actual;
                 try (PreparedStatement ps = c.prepareStatement("SELECT * FROM salidas WHERE id = ?")) {
                     ps.setInt(1, salidaId);
                     try (ResultSet rs = ps.executeQuery()) {
@@ -133,7 +134,7 @@ public class SalidaDAO {
                 for (Checkpoint cp : guardarEnRuta) agregarCheckpointRuta(c, rutaId, cp);
                 if (equipamiento != null && participantes != null) {
                     reemplazarAsignaciones(c, salidaId, equipamiento, participantes,
-                            "planificada".equals(actual.estado()), refrescarEquipamiento, refrescarParticipantes);
+                            actual.planificada(), refrescarEquipamiento, refrescarParticipantes);
                 }
                 c.commit();
             } catch (SQLException | RuntimeException e) {
@@ -267,42 +268,6 @@ public class SalidaDAO {
             }
             ps.executeUpdate();
         }
-    }
-
-    public List<Salida> obtenerTodas() {
-        String sql = "SELECT * FROM salidas ORDER BY fecha DESC, id DESC";
-        List<Salida> salidas = new ArrayList<>();
-        try (Connection c = ConexionDB.conectar();
-             Statement s = c.createStatement(); ResultSet rs = s.executeQuery(sql)) {
-            while (rs.next()) salidas.add(mapear(rs));
-        } catch (SQLException | RuntimeException e) {
-            throw new IllegalStateException("No se pudieron cargar las salidas.", e);
-        }
-        return salidas;
-    }
-
-    /** Returns searchable participant copies and assigned equipment summaries for the Salidas list. */
-    public Map<Integer, ResumenOperativo> obtenerResumenesOperativos() {
-        Map<Integer, ResumenOperativo> resumenes = new HashMap<>();
-        String sql = """
-                SELECT s.id,
-                    COALESCE((SELECT GROUP_CONCAT(participante.nombre, ', ')
-                        FROM (SELECT sp.nombre_copia || ' ' || sp.apellido_copia AS nombre
-                            FROM salida_participantes sp
-                            WHERE sp.salida_id = s.id
-                            ORDER BY sp.apellido_copia COLLATE NOCASE, sp.nombre_copia COLLATE NOCASE) participante), '') AS participantes,
-                    COALESCE((SELECT GROUP_CONCAT(se.nombre_copia || ' × ' || se.cantidad, ', ')
-                        FROM salida_equipamiento se WHERE se.salida_id = s.id), '') AS equipamiento
-                FROM salidas s
-                """;
-        try (Connection c = ConexionDB.conectar(); Statement statement = c.createStatement();
-                ResultSet rs = statement.executeQuery(sql)) {
-            while (rs.next()) resumenes.put(rs.getInt("id"), new ResumenOperativo(
-                    rs.getString("participantes"), rs.getString("equipamiento")));
-        } catch (SQLException e) {
-            throw new IllegalStateException("No se pudieron cargar los resúmenes de las Salidas.", e);
-        }
-        return resumenes;
     }
 
     public Map<String, Integer> obtenerIndicadores() {
@@ -599,20 +564,8 @@ public class SalidaDAO {
         }
     }
 
-    public void cambiarEstado(int id, String nuevoEstado) throws SQLException {
-        if (!List.of("realizada", "cancelada").contains(nuevoEstado))
-            throw new SQLException("Estado de cierre inválido.");
-        try (Connection c = ConexionDB.conectar(); PreparedStatement ps = c.prepareStatement(
-                "UPDATE salidas SET estado = ? WHERE id = ? AND estado = 'planificada'")) {
-            ps.setString(1, nuevoEstado); ps.setInt(2, id);
-            if (ps.executeUpdate() != 1)
-                throw new SQLException("Solo se puede cerrar una salida planificada.");
-        }
-    }
-
-    private Salida mapear(ResultSet rs) throws SQLException {
-        return new Salida(rs.getInt("id"), rs.getInt("ruta_id"),
-                LocalDate.parse(rs.getString("fecha")), rs.getString("estado"),
+    private SalidaActual mapear(ResultSet rs) throws SQLException {
+        return new SalidaActual(rs.getInt("ruta_id"), "planificada".equals(rs.getString("estado")),
                 rs.getString("ruta_nombre"), rs.getDouble("ruta_altitud_maxima"),
                 rs.getString("ruta_tipo_terreno"), rs.getString("ruta_dificultad_tecnica"),
                 rs.getString("ruta_dificultad_fisica"));

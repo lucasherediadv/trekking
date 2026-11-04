@@ -1,7 +1,9 @@
 package com.example.desktop.service;
 
+import com.example.core.excepcion.EntidadNoEncontradaException;
+import com.example.desktop.Servicios;
 import com.example.desktop.database.ConexionDB;
-import com.example.desktop.model.Salida;
+import com.example.core.salida.Salida;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -71,15 +73,10 @@ public class FichaOperativaPDFService {
     private Ficha cargarFicha(int id) throws SQLException {
         try (Connection c = ConexionDB.conectar()) {
             Salida salida;
-            try (PreparedStatement ps = c.prepareStatement("SELECT * FROM salidas WHERE id = ?")) {
-                ps.setInt(1, id);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (!rs.next()) throw new SQLException("La Salida seleccionada ya no existe.");
-                    salida = new Salida(rs.getInt("id"), rs.getInt("ruta_id"), LocalDate.parse(rs.getString("fecha")),
-                            rs.getString("estado"), rs.getString("ruta_nombre"), rs.getDouble("ruta_altitud_maxima"),
-                            rs.getString("ruta_tipo_terreno"), rs.getString("ruta_dificultad_tecnica"),
-                            rs.getString("ruta_dificultad_fisica"));
-                }
+            try {
+                salida = Servicios.salidas().obtener(id);
+            } catch (EntidadNoEncontradaException e) {
+                throw new SQLException("La Salida seleccionada ya no existe.", e);
             }
             return new Ficha(salida, cargarCheckpoints(c, id), cargarEquipamiento(c, id), cargarParticipantes(c, id));
         }
@@ -151,7 +148,7 @@ public class FichaOperativaPDFService {
             r.cabecera(s.fecha().format(FECHA));
             r.tarjetas(
                     new Card("Salida", List.of(new Field("Identificador", String.valueOf(s.id()), false),
-                            new Field("Fecha", s.fecha().format(FECHA), false), new Field("Estado", valor(s.estado()), true))),
+                            new Field("Fecha", s.fecha().format(FECHA), false), new Field("Estado", s.estado().etiqueta(), true))),
                     new Card("Ruta", List.of(new Field("Nombre", valor(s.rutaNombre()), false),
                             new Field("Altitud máxima", String.format(Locale.ROOT, "%.0f m", s.rutaAltitudMaxima()), false),
                             new Field("Tipo de terreno", valor(s.rutaTipoTerreno()), false),

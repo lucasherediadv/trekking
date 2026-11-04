@@ -7,12 +7,14 @@ import com.example.core.cliente.CasosDeUsoFichasMedicas;
 import com.example.core.inventario.CasosDeUsoInventario;
 import com.example.core.itinerario.CasosDeUsoItinerario;
 import com.example.core.ruta.CasosDeUsoRutas;
+import com.example.core.salida.CasosDeUsoSalidas;
 import com.example.desktop.database.ConexionDB;
 import com.example.sqlite.AlmacenFichasMedicasSqlite;
 import com.example.sqlite.RepositorioClientesSqlite;
 import com.example.sqlite.RepositorioInventarioSqlite;
 import com.example.sqlite.RepositorioItinerariosSqlite;
 import com.example.sqlite.RepositorioRutasSqlite;
+import com.example.sqlite.RepositorioSalidasSqlite;
 
 /** Ensambla los casos de uso de core con su persistencia sqlite. Único lugar donde desktop conoce ambas. */
 public final class Servicios {
@@ -32,6 +34,9 @@ public final class Servicios {
 
     private static final CasosDeUsoItinerario ITINERARIOS = new CasosDeUsoItinerario(
             REPOSITORIO_RUTAS, new RepositorioItinerariosSqlite(ConexionDB.base()));
+
+    private static final CasosDeUsoSalidas SALIDAS =
+            new CasosDeUsoSalidas(new RepositorioSalidasSqlite(ConexionDB.base()), Clock.systemDefaultZone());
 
     private Servicios() {
     }
@@ -54,5 +59,9 @@ public final class Servicios {
 
     public static CasosDeUsoItinerario itinerarios() {
         return ITINERARIOS;
+    }
+
+    public static CasosDeUsoSalidas salidas() {
+        return SALIDAS;
     }
 }

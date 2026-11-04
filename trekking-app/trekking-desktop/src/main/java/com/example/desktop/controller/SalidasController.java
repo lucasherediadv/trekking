@@ -5,7 +5,10 @@ import com.example.desktop.Servicios;
 import com.example.desktop.dao.SalidaDAO;
 import com.example.desktop.service.FichaOperativaPDFService;
 import com.example.desktop.model.Ruta;
-import com.example.desktop.model.Salida;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.salida.EstadoSalida;
+import com.example.core.salida.Salida;
+import com.example.core.salida.SalidaListada;
 import com.example.core.itinerario.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
@@ -55,20 +58,19 @@ public class SalidasController {
     private final SalidaDAO salidaDAO = new SalidaDAO();
     private final FichaOperativaPDFService fichaPDFService = new FichaOperativaPDFService();
     private final RutaDAO rutaDAO = new RutaDAO();
-    @FXML private TableView<Salida> tablaSalidas;
-    @FXML private TableColumn<Salida, LocalDate> colFecha;
-    @FXML private TableColumn<Salida, String> colRuta;
-    @FXML private TableColumn<Salida, String> colEstado;
-    @FXML private TableColumn<Salida, String> colParticipantes;
-    @FXML private TableColumn<Salida, String> colEquipamiento;
-    @FXML private TableColumn<Salida, Salida> colAcciones;
+    @FXML private TableView<SalidaListada> tablaSalidas;
+    @FXML private TableColumn<SalidaListada, LocalDate> colFecha;
+    @FXML private TableColumn<SalidaListada, String> colRuta;
+    @FXML private TableColumn<SalidaListada, String> colEstado;
+    @FXML private TableColumn<SalidaListada, String> colParticipantes;
+    @FXML private TableColumn<SalidaListada, String> colEquipamiento;
+    @FXML private TableColumn<SalidaListada, SalidaListada> colAcciones;
     private Label kpiProximas, kpiRutas, kpiClientes, kpiInventario;
     @FXML private Button tarjetaProximas, tarjetaRutas, tarjetaClientes, tarjetaInventario;
     @FXML private TextField buscarField;
     @FXML private ComboBox<String> estadoFiltro;
     @FXML private Button btnRealizada, btnCancelar;
-    private Map<Integer, SalidaDAO.ResumenOperativo> resumenes = Map.of();
-    private List<Salida> salidasOriginales = List.of();
+    private List<SalidaListada> salidasOriginales = List.of();
 
     @FXML private void initialize() {
         javafx.application.Platform.runLater(buscarField::requestFocus);
@@ -76,33 +78,33 @@ public class SalidasController {
         SearchFieldIcon.install(buscarField);
         tablaSalidas.getStyleClass().add("listing-table");
         tablaSalidas.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        colFecha.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().fecha()));
+        colFecha.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().salida().fecha()));
         colFecha.setCellFactory(column -> new TableCell<>() {
             @Override protected void updateItem(LocalDate fecha, boolean empty) {
                 super.updateItem(fecha, empty);
                 setText(empty || fecha == null ? null : FechaFormato.formatear(fecha));
             }
         });
-        colRuta.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().rutaNombre()));
-        colEstado.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().estado()));
-        colEstado.setCellFactory(column -> com.example.desktop.util.EstadoCell.<Salida, String>create(estado -> switch (estado) {
-            case "planificada" -> com.example.desktop.util.EstadoCell.Tono.INFORMACION;
-            case "realizada" -> com.example.desktop.util.EstadoCell.Tono.EXITO;
-            case "cancelada" -> com.example.desktop.util.EstadoCell.Tono.PELIGRO;
+        colRuta.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().salida().rutaNombre()));
+        colEstado.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().salida().estado().etiqueta()));
+        colEstado.setCellFactory(column -> com.example.desktop.util.EstadoCell.<SalidaListada, String>create(estado -> switch (estado) {
+            case "Planificada" -> com.example.desktop.util.EstadoCell.Tono.INFORMACION;
+            case "Realizada" -> com.example.desktop.util.EstadoCell.Tono.EXITO;
+            case "Cancelada" -> com.example.desktop.util.EstadoCell.Tono.PELIGRO;
             default -> null;
-        }, estado -> estado.isEmpty() ? estado : Character.toUpperCase(estado.charAt(0)) + estado.substring(1)));
-        colParticipantes.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(resumenParticipantes(data.getValue())));
-        colEquipamiento.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(resumenEquipamiento(data.getValue())));
+        }, estado -> estado));
+        colParticipantes.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(textoResumen(data.getValue().resumen().participantes())));
+        colEquipamiento.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(textoResumen(data.getValue().resumen().equipamiento())));
         colAcciones.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue()));
         colAcciones.setCellFactory(column -> new TableCell<>() {
-            @Override protected void updateItem(Salida salida, boolean empty) {
+            @Override protected void updateItem(SalidaListada salida, boolean empty) {
                 super.updateItem(salida, empty);
                 if (empty || salida == null) { com.example.desktop.util.RowActionCell.clear(this); return; }
                 javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(3);
                 actions.getChildren().addAll(
                         com.example.desktop.util.RowActionButton.create("Editar salida", com.example.desktop.util.RowActionButton.Icon.EDIT, e -> { tablaSalidas.getSelectionModel().select(salida); editarSalida(); }),
                         com.example.desktop.util.RowActionButton.create("Descargar ficha operativa PDF", com.example.desktop.util.RowActionButton.Icon.DOWNLOAD, e -> { tablaSalidas.getSelectionModel().select(salida); generarFichaPDF(); }));
-                if ("planificada".equals(salida.estado())) {
+                if (salida.salida().estado() == EstadoSalida.PLANIFICADA) {
                     javafx.scene.control.Button cancelar = com.example.desktop.util.RowActionButton.create("Cancelar salida", com.example.desktop.util.RowActionButton.Icon.CANCEL, e -> { tablaSalidas.getSelectionModel().select(salida); cancelarSalida(); });
                     cancelar.getStyleClass().add("row-action-danger");
                     actions.getChildren().addAll(
@@ -121,9 +123,9 @@ public class SalidasController {
         buscarField.textProperty().addListener((obs, oldValue, newValue) -> aplicarFiltros());
         estadoFiltro.valueProperty().addListener((obs, oldValue, newValue) -> aplicarFiltros());
         tablaSalidas.setRowFactory(table -> new TableRow<>() {
-            @Override protected void updateItem(Salida salida, boolean empty) {
+            @Override protected void updateItem(SalidaListada salida, boolean empty) {
                 super.updateItem(salida, empty); getStyleClass().remove("salida-pendiente-vencida");
-                if (!empty && salida != null && "planificada".equals(salida.estado()) && salida.fecha().isBefore(LocalDate.now()))
+                if (!empty && salida != null && salida.vencida())
                     getStyleClass().add("salida-pendiente-vencida");
             }
         });
@@ -183,15 +185,16 @@ public class SalidasController {
 
     @FXML private void iniciarWizard() { new WizardSalida().mostrar(); }
     @FXML private void editarSalida() {
-        Salida seleccionada = tablaSalidas.getSelectionModel().getSelectedItem();
+        SalidaListada seleccionada = tablaSalidas.getSelectionModel().getSelectedItem();
         if (seleccionada == null) { aviso(Alert.AlertType.INFORMATION, "Selecciona una Salida", "Selecciona la Salida que quieres editar."); return; }
-        new EditorSalida(seleccionada).mostrar();
+        new EditorSalida(seleccionada.salida()).mostrar();
     }
-    @FXML private void marcarRealizada() { cerrar("realizada"); }
-    @FXML private void cancelarSalida() { cerrar("cancelada"); }
+    @FXML private void marcarRealizada() { cerrar(EstadoSalida.REALIZADA); }
+    @FXML private void cancelarSalida() { cerrar(EstadoSalida.CANCELADA); }
 
     @FXML private void generarFichaPDF() {
-        Salida salida = tablaSalidas.getSelectionModel().getSelectedItem();
+        SalidaListada fila = tablaSalidas.getSelectionModel().getSelectedItem();
+        Salida salida = fila == null ? null : fila.salida();
         if (salida == null) {
             aviso(Alert.AlertType.INFORMATION, "Selecciona una Salida", "Selecciona la Salida cuya ficha quieres generar.");
             return;
@@ -210,36 +213,30 @@ public class SalidasController {
         }
     }
 
-    private void cerrar(String estado) {
-        Salida salida = tablaSalidas.getSelectionModel().getSelectedItem();
-        if (salida == null) { aviso(Alert.AlertType.INFORMATION, "Selecciona una Salida", "Selecciona una Salida planificada para continuar."); return; }
-        if (!"planificada".equals(salida.estado())) {
-            aviso(Alert.AlertType.INFORMATION, "Salida ya cerrada", "Solo se pueden cerrar Salidas planificadas."); return;
-        }
-        String accion = "realizada".equals(estado) ? "marcar como realizada" : "cancelar";
+    private void cerrar(EstadoSalida nuevoEstado) {
+        SalidaListada fila = tablaSalidas.getSelectionModel().getSelectedItem();
+        if (fila == null) { aviso(Alert.AlertType.INFORMATION, "Selecciona una Salida", "Selecciona una Salida planificada para continuar."); return; }
+        Salida salida = fila.salida();
+        String accion = nuevoEstado == EstadoSalida.REALIZADA ? "marcar como realizada" : "cancelar";
         Alert confirmar = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Quieres " + accion + " la Salida " + salida.id() + "? Su reserva de stock se liberará y el estado no se podrá revertir desde el flujo normal.",
                 ButtonType.CANCEL, ButtonType.OK);
         confirmar.setTitle("Cerrar Salida"); confirmar.setHeaderText("Confirmar cierre");
         if (AlertUtils.showAndWait(confirmar, tablaSalidas).orElse(ButtonType.CANCEL) != ButtonType.OK) return;
-        try { salidaDAO.cambiarEstado(salida.id(), estado); actualizarIndicadores(); actualizarTabla(); }
-        catch (SQLException e) { aviso(Alert.AlertType.ERROR, "No se pudo actualizar la Salida", e.getMessage()); }
+        try {
+            if (nuevoEstado == EstadoSalida.REALIZADA) Servicios.salidas().marcarRealizada(salida.id());
+            else Servicios.salidas().cancelar(salida.id());
+            actualizarIndicadores(); actualizarTabla();
+        } catch (ExcepcionNegocio | IllegalStateException e) {
+            aviso(Alert.AlertType.ERROR, "No se pudo actualizar la Salida", e.getMessage());
+            actualizarTabla();
+        }
     }
 
-    private void actualizarAcciones(Salida seleccionada) {
-        boolean planificada = seleccionada != null && "planificada".equals(seleccionada.estado());
+    private void actualizarAcciones(SalidaListada seleccionada) {
+        boolean planificada = seleccionada != null && seleccionada.salida().estado() == EstadoSalida.PLANIFICADA;
         if (btnRealizada != null) btnRealizada.setDisable(!planificada);
         if (btnCancelar != null) btnCancelar.setDisable(!planificada);
-    }
-
-    private String resumenParticipantes(Salida salida) {
-        SalidaDAO.ResumenOperativo resumen = resumenes.get(salida.id());
-        return resumen == null ? "—" : textoResumen(resumen.participantes());
-    }
-
-    private String resumenEquipamiento(Salida salida) {
-        SalidaDAO.ResumenOperativo resumen = resumenes.get(salida.id());
-        return resumen == null ? "—" : textoResumen(resumen.equipamiento());
     }
 
     private String textoResumen(String texto) {
@@ -248,26 +245,25 @@ public class SalidasController {
 
     private void actualizarTabla() {
         try {
-            resumenes = salidaDAO.obtenerResumenesOperativos();
-            salidasOriginales = salidaDAO.obtenerTodas();
-            FilteredList<Salida> filas = new FilteredList<>(FXCollections.observableArrayList(salidasOriginales), s -> true);
+            salidasOriginales = Servicios.salidas().listar();
+            FilteredList<SalidaListada> filas = new FilteredList<>(FXCollections.observableArrayList(salidasOriginales), s -> true);
             tablaSalidas.setItems(filas); aplicarFiltros();
         } catch (RuntimeException e) { aviso(Alert.AlertType.ERROR, "No se pudieron cargar las Salidas", e.getMessage()); }
     }
     private void aplicarFiltros() {
         if (!(tablaSalidas.getItems() instanceof FilteredList<?> raw)) return;
-        @SuppressWarnings("unchecked") FilteredList<Salida> filas = (FilteredList<Salida>) raw;
+        @SuppressWarnings("unchecked") FilteredList<SalidaListada> filas = (FilteredList<SalidaListada>) raw;
         String consulta = buscarField == null || buscarField.getText() == null ? "" : buscarField.getText().trim().toLowerCase(Locale.ROOT);
         String estadoSeleccionado = estadoFiltro == null ? "Todos" : estadoFiltro.getValue();
-        String estado = switch (estadoSeleccionado == null ? "Todos" : estadoSeleccionado) {
-            case "Planificada" -> "planificada";
-            case "Realizada" -> "realizada";
-            case "Cancelada" -> "cancelada";
+        EstadoSalida estado = switch (estadoSeleccionado == null ? "Todos" : estadoSeleccionado) {
+            case "Planificada" -> EstadoSalida.PLANIFICADA;
+            case "Realizada" -> EstadoSalida.REALIZADA;
+            case "Cancelada" -> EstadoSalida.CANCELADA;
             default -> null;
         };
-        filas.setPredicate(s -> (consulta.isEmpty() || s.rutaNombre().toLowerCase(Locale.ROOT).contains(consulta)
+        filas.setPredicate(s -> (consulta.isEmpty() || s.salida().rutaNombre().toLowerCase(Locale.ROOT).contains(consulta)
                         || contieneCliente(s, consulta))
-                && (estado == null || s.estado().equals(estado)));
+                && (estado == null || s.salida().estado() == estado));
         boolean filtrosActivos = !consulta.isEmpty() || estado != null;
         boolean haySalidas = !salidasOriginales.isEmpty();
         TableEmptyState.update(tablaSalidas, haySalidas, filtrosActivos,
@@ -278,10 +274,8 @@ public class SalidasController {
         TableHeight.update(tablaSalidas, filas.size(), 500);
     }
 
-    private boolean contieneCliente(Salida salida, String consulta) {
-        SalidaDAO.ResumenOperativo resumen = resumenes.get(salida.id());
-        return resumen != null && resumen.participantes() != null
-                && resumen.participantes().toLowerCase(Locale.ROOT).contains(consulta);
+    private boolean contieneCliente(SalidaListada fila, String consulta) {
+        return fila.resumen().participantes().toLowerCase(Locale.ROOT).contains(consulta);
     }
     private void actualizarIndicadores() {
         try {

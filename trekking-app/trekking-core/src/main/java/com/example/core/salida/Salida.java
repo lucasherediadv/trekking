@@ -1,12 +1,13 @@
-package com.example.desktop.model;
+package com.example.core.salida;
 
 import java.time.LocalDate;
 
+/** Instancia fechada de una Ruta, con los datos de ruta conservados como copia operativa. */
 public record Salida(
         int id,
         int rutaId,
         LocalDate fecha,
-        String estado,
+        EstadoSalida estado,
         String rutaNombre,
         double rutaAltitudMaxima,
         String rutaTipoTerreno,
