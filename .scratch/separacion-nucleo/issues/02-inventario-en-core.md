@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [x] La pantalla de Inventario no accede a la persistencia: solo usa casos de uso de core.
 - [x] Los casos de uso no exponen colecciones observables, errores de SQL ni booleanos de éxito; los errores llegan como excepciones de negocio.
@@ -14,4 +14,11 @@
 - [x] En inspección sigue siendo asignable.
 - [x] Tests de casos de uso (con repositorio falso): alta válida, alta inválida con errores por campo, edición, baja y reactivación, y estados asignables y no asignables.
 - [x] Test de integración en sqlite: repositorio de inventario con cantidad reservada, y migración de "Asignado" a "Disponible".
-- [ ] Validación manual de Inventario: alta, edición, baja, reactivación, listado y filtros.
+- [x] Validación manual de Inventario: alta, edición, baja, reactivación, listado y filtros.
+
+## Comments
+
+- Implementado en 54a5402. Salidas sigue usando lecturas de `EquipamientoDAO` y consultas SQL de desktop que reciben los estados no asignables desde core; los tickets 07 a 11 las mueven a core y sqlite.
+- Las categorías pasaron a core y el validador rechaza las que no estén en la lista.
+- Pendiente para esos tickets: el texto guardado de cada estado vive en sqlite (`texto()`) y el SQL de desktop usa `etiqueta()`; se unifica al migrar esas consultas.
+- Validación manual aprobada por el usuario el 2026-11-04; issue cerrado.
