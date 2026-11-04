@@ -12,7 +12,6 @@ import com.example.core.excepcion.ErrorCampo;
 import com.example.core.excepcion.ExcepcionNegocio;
 import com.example.core.excepcion.ValidacionException;
 import com.example.desktop.Servicios;
-import com.example.desktop.dao.FichaMedicaDAO;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.ResponsiveFormLayout;
 import com.example.desktop.util.NavigationShell;
@@ -109,7 +108,6 @@ public class AgregarClienteController {
     private Label fichaMedicaLabel;
 
     private File fichaMedicaSeleccionada;
-    private final FichaMedicaDAO fichaMedicaDAO = new FichaMedicaDAO();
 
     @FXML
     private void initialize() {
@@ -340,31 +338,16 @@ public class AgregarClienteController {
 
         if (fichaMedica != null) {
             try {
-                fichaMedicaDAO.guardar(creado.id(), fichaMedica, nombreFichaMedica);
-            } catch (IllegalStateException e) {
+                Servicios.fichasMedicas().adjuntar(creado.id(), nombreFichaMedica, fichaMedica);
+            } catch (ExcepcionNegocio | IllegalStateException e) {
                 mostrarAlerta(Alert.AlertType.WARNING, "Ficha no guardada",
                         "El cliente se guardo, pero no se pudo guardar la ficha medica: " + e.getMessage());
                 fichaMedica = null;
             }
         }
 
-        boolean fichaGuardadaEnCarpeta = true;
-        if (fichaMedica != null) {
-            try {
-                FichaMedica.guardarEnCarpeta(creado.dni(), fichaMedica);
-            } catch (IOException e) {
-                fichaGuardadaEnCarpeta = false;
-            }
-        }
-
         try {
             mostrarListaClientes();
-            if (!fichaGuardadaEnCarpeta) {
-                mostrarAlerta(
-                        Alert.AlertType.WARNING,
-                        "Ficha no guardada en carpeta",
-                        "El cliente se guardo en la base de datos, pero no se pudo guardar una copia de la ficha en la carpeta.");
-            }
             mostrarAlerta(
                     Alert.AlertType.INFORMATION,
                     "Cliente agregado",

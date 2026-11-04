@@ -4,11 +4,11 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Core no conoce el sistema de archivos para las fichas médicas.
-- [ ] Al adjuntar o reemplazar una ficha ya no se escribe ninguna copia en una carpeta local.
-- [ ] Las fichas ya guardadas en la base se siguen pudiendo consultar.
-- [ ] Tests de casos de uso con almacén falso: adjuntar, reemplazar y consultar.
-- [ ] Test de integración en sqlite del almacén de fichas.
+- [x] Core no conoce el sistema de archivos para las fichas médicas.
+- [x] Al adjuntar o reemplazar una ficha ya no se escribe ninguna copia en una carpeta local.
+- [x] Las fichas ya guardadas en la base se siguen pudiendo consultar.
+- [x] Tests de casos de uso con almacén falso: adjuntar, reemplazar y consultar.
+- [x] Test de integración en sqlite del almacén de fichas.
 - [ ] Validación manual: adjuntar una ficha en el alta, reemplazarla en la edición y abrirla.

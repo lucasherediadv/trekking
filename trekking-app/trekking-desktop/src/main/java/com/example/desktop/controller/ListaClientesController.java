@@ -3,13 +3,14 @@ package com.example.desktop.controller;
 import java.io.IOException;
 import java.awt.Desktop;
 import java.nio.file.Files;
+import java.util.Optional;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.example.core.cliente.Cliente;
+import com.example.core.cliente.FichaMedica;
 import com.example.core.excepcion.ExcepcionNegocio;
 import com.example.desktop.Servicios;
-import com.example.desktop.dao.FichaMedicaDAO;
 import com.example.desktop.util.NavigationShell;
 import com.example.desktop.util.TableEmptyState;
 import com.example.desktop.util.TableHeight;
@@ -70,7 +71,6 @@ public class ListaClientesController implements Initializable {
 
     @FXML private TableColumn<Cliente, Cliente> colAcciones;
 
-    private final FichaMedicaDAO fichaMedicaDAO = new FichaMedicaDAO();
 
     private FilteredList<Cliente> clientesFiltrados;
     private ObservableList<Cliente> clientesOriginales;
@@ -280,25 +280,24 @@ public class ListaClientesController implements Initializable {
 
         try {
 
-            com.example.desktop.model.FichaMedica fichaMedica =
-                    fichaMedicaDAO.obtener(clienteSeleccionado.id());
+            Optional<FichaMedica> fichaMedica = Servicios.fichasMedicas().consultar(clienteSeleccionado.id());
 
-            if (fichaMedica != null && fichaMedica.getDatos() != null) {
+            if (fichaMedica.isPresent()) {
                 if (!Desktop.isDesktopSupported()
                         || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
                     throw new IOException("El sistema no tiene disponible un visor de PDF.");
                 }
                 java.nio.file.Path archivoTemporal =
                         Files.createTempFile("ficha-medica-", ".pdf");
-                Files.write(archivoTemporal, fichaMedica.getDatos());
+                Files.write(archivoTemporal, fichaMedica.get().contenido());
                 archivoTemporal.toFile().deleteOnExit();
                 Desktop.getDesktop().open(archivoTemporal.toFile());
             } else {
-                FichaMedica.abrirDesdeCarpeta(
-                        clienteSeleccionado.dni());
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Sin ficha médica",
+                        "El cliente no tiene una ficha médica cargada.");
             }
 
-        } catch (IOException e) {
+        } catch (IOException | ExcepcionNegocio | IllegalStateException e) {
 
             mostrarAlerta(
                     Alert.AlertType.ERROR,

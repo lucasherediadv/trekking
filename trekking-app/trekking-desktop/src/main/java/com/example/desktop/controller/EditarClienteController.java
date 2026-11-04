@@ -3,17 +3,17 @@ package com.example.desktop.controller;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Optional;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
 import com.example.core.cliente.Cliente;
 import com.example.core.cliente.DatosCliente;
+import com.example.core.cliente.FichaMedica;
 import com.example.core.excepcion.ErrorCampo;
 import com.example.core.excepcion.ExcepcionNegocio;
 import com.example.core.excepcion.ValidacionException;
 import com.example.desktop.Servicios;
-import com.example.desktop.dao.FichaMedicaDAO;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.ResponsiveFormLayout;
 import com.example.desktop.util.NavigationShell;
@@ -117,7 +117,6 @@ public class EditarClienteController {
     private Button quitarFichaButton;
 
     private final Cliente cliente;
-    private final FichaMedicaDAO fichaMedicaDAO = new FichaMedicaDAO();
     private File fichaMedicaSeleccionada;
     private boolean eliminarFichaMedica;
 
@@ -161,20 +160,9 @@ public class EditarClienteController {
         actualizarCamposTutor();
         activoCheckBox.setSelected(cliente.activo());
 
-        com.example.desktop.model.FichaMedica fichaMedica = fichaMedicaDAO.obtener(cliente.id());
-
-        boolean existeFichaEnDisco = Files.isRegularFile(
-                Path.of("fichas_medicas", cliente.dni() + ".pdf"));
-
-        boolean existeFicha = fichaMedica != null || existeFichaEnDisco;
-
-        if (fichaMedica != null) {
-            fichaMedicaLabel.setText(fichaMedica.getNombreArchivo());
-        } else if (existeFichaEnDisco) {
-            fichaMedicaLabel.setText(cliente.dni() + ".pdf");
-        } else {
-            fichaMedicaLabel.setText("Sin ficha medica");
-        }
+        Optional<FichaMedica> fichaMedica = Servicios.fichasMedicas().consultar(cliente.id());
+        boolean existeFicha = fichaMedica.isPresent();
+        fichaMedicaLabel.setText(fichaMedica.map(FichaMedica::nombreArchivo).orElse("Sin ficha medica"));
 
         quitarFichaButton.setVisible(existeFicha);
         quitarFichaButton.setManaged(existeFicha);
@@ -377,7 +365,6 @@ public class EditarClienteController {
                     "Corrige los campos marcados antes de guardar.");
             return;
         }
-        String dni = datos.dni();
 
         byte[] fichaMedica = null;
         String nombreFichaMedica = null;
@@ -419,32 +406,13 @@ public class EditarClienteController {
 
         try {
             if (fichaMedicaSeleccionada != null) {
-                fichaMedicaDAO.guardar(cliente.id(), fichaMedica, nombreFichaMedica);
+                Servicios.fichasMedicas().adjuntar(cliente.id(), nombreFichaMedica, fichaMedica);
             } else if (eliminarFichaMedica) {
-                fichaMedicaDAO.borrar(cliente.id());
+                Servicios.fichasMedicas().quitar(cliente.id());
             }
-        } catch (IllegalStateException e) {
+        } catch (ExcepcionNegocio | IllegalStateException e) {
             mostrarAlerta(Alert.AlertType.WARNING, "Ficha no actualizada",
                     "Los datos se guardaron, pero no se pudo actualizar la ficha medica: " + e.getMessage());
-        }
-
-        try {
-            if (fichaMedicaSeleccionada != null) {
-                FichaMedica.guardarEnCarpeta(dni, fichaMedica);
-                if (!cliente.dni().equals(dni)) {
-                    FichaMedica.borrarDeCarpeta(cliente.dni());
-                }
-            } else if (eliminarFichaMedica) {
-                FichaMedica.borrarDeCarpeta(cliente.dni());
-            } else if (!cliente.dni().equals(dni)) {
-                FichaMedica.renombrarEnCarpeta(cliente.dni(), dni);
-            }
-        } catch (IOException e) {
-            mostrarAlerta(
-                    Alert.AlertType.WARNING,
-                    "Ficha no actualizada en carpeta",
-                    "Los datos se guardaron en la base, pero la copia de la ficha no pudo actualizarse: "
-                            + e.getMessage());
         }
 
         try {

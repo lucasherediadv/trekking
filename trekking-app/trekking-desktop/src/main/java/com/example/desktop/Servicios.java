@@ -3,8 +3,10 @@ package com.example.desktop;
 import java.time.Clock;
 
 import com.example.core.cliente.CasosDeUsoClientes;
+import com.example.core.cliente.CasosDeUsoFichasMedicas;
 import com.example.core.inventario.CasosDeUsoInventario;
 import com.example.desktop.database.ConexionDB;
+import com.example.sqlite.AlmacenFichasMedicasSqlite;
 import com.example.sqlite.RepositorioClientesSqlite;
 import com.example.sqlite.RepositorioInventarioSqlite;
 
@@ -17,6 +19,9 @@ public final class Servicios {
     private static final CasosDeUsoClientes CLIENTES =
             new CasosDeUsoClientes(new RepositorioClientesSqlite(ConexionDB.base()), Clock.systemDefaultZone());
 
+    private static final CasosDeUsoFichasMedicas FICHAS_MEDICAS = new CasosDeUsoFichasMedicas(
+            new RepositorioClientesSqlite(ConexionDB.base()), new AlmacenFichasMedicasSqlite(ConexionDB.base()));
+
     private Servicios() {
     }
 
@@ -26,5 +31,9 @@ public final class Servicios {
 
     public static CasosDeUsoClientes clientes() {
         return CLIENTES;
+    }
+
+    public static CasosDeUsoFichasMedicas fichasMedicas() {
+        return FICHAS_MEDICAS;
     }
 }
