@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 
 import com.example.core.cliente.Cliente;
 import com.example.core.cliente.RepositorioClientes;
@@ -59,9 +60,7 @@ public class CasosDeUsoDashboard {
     }
 
     public Indicadores indicadores() {
-        int clientesActivos = (int) clientes.listarTodos().stream().filter(Cliente::activo).count();
-        return new Indicadores(rutas.listarActivas().size(), clientesActivos,
-                salidasProximas().size(), contarEquipoNoDisponible());
+        return indicadores(ElementoInventario::cantidad);
     }
 
     /**
@@ -69,12 +68,13 @@ public class CasosDeUsoDashboard {
      * por cantidad disponible (total menos Reserva de stock) en lugar de la total.
      */
     public Indicadores indicadoresDeSalidas() {
-        Set<EstadoElemento> noAsignables = EstadoElemento.noAsignables();
-        int criticos = (int) inventario.listarActivos().stream()
-                .filter(e -> e.cantidadDisponible() <= UMBRAL_STOCK_BAJO || noAsignables.contains(e.estado()))
-                .count();
-        Indicadores base = indicadores();
-        return new Indicadores(base.rutasActivas(), base.clientesActivos(), base.salidasProximas(), criticos);
+        return indicadores(ElementoInventario::cantidadDisponible);
+    }
+
+    private Indicadores indicadores(ToIntFunction<ElementoInventario> stock) {
+        int clientesActivos = (int) clientes.listarTodos().stream().filter(Cliente::activo).count();
+        return new Indicadores(rutas.listarActivas().size(), clientesActivos,
+                salidasProximas().size(), contarEquipoNoDisponible(stock));
     }
 
     /** Primeras Salidas próximas por fecha y hora de inicio, hasta {@link #LIMITE_PROXIMOS}. */
@@ -87,10 +87,10 @@ public class CasosDeUsoDashboard {
     }
 
     /** Equipo activo con stock bajo o en un estado que impide asignarlo a una Salida. */
-    private int contarEquipoNoDisponible() {
+    private int contarEquipoNoDisponible(ToIntFunction<ElementoInventario> stock) {
         Set<EstadoElemento> noAsignables = EstadoElemento.noAsignables();
         return (int) inventario.listarActivos().stream()
-                .filter(e -> e.cantidad() <= UMBRAL_STOCK_BAJO || noAsignables.contains(e.estado()))
+                .filter(e -> stock.applyAsInt(e) <= UMBRAL_STOCK_BAJO || noAsignables.contains(e.estado()))
                 .count();
     }
 
