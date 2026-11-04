@@ -43,4 +43,20 @@ public class RepositorioSalidasEnMemoria implements RepositorioSalidas {
                 s.rutaAltitudMaxima(), s.rutaTipoTerreno(), s.rutaDificultadTecnica(), s.rutaDificultadFisica()));
         return true;
     }
+
+    private final Map<Integer, CopiaOperativa> copias = new LinkedHashMap<>();
+
+    public CopiaOperativa copia(int id) {
+        return copias.get(id);
+    }
+
+    @Override
+    public int guardar(CopiaOperativa copia) {
+        int id = salidas.keySet().stream().mapToInt(Integer::intValue).max().orElse(0) + 1;
+        copias.put(id, copia);
+        agregar(new Salida(id, copia.ruta().id(), copia.fecha(), EstadoSalida.PLANIFICADA, copia.ruta().nombre(),
+                copia.ruta().altitudMaxima(), copia.ruta().tipoTerreno(), copia.ruta().dificultadTecnica(),
+                copia.ruta().dificultadFisica()));
+        return id;
+    }
 }

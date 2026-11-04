@@ -1,5 +1,7 @@
 package com.example.sqlite;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -23,15 +25,58 @@ public class BaseDatosSqlite {
         this.url = "jdbc:sqlite:" + Objects.requireNonNull(archivo, "archivo");
     }
 
+    /** Conexión de la transacción en curso en este hilo, si la hay. */
+    private final ThreadLocal<Connection> transaccionActual = new ThreadLocal<>();
+
+    /**
+     * Abre una conexión. Dentro de una {@link TransaccionSqlite} devuelve la conexión de la transacción,
+     * cuyo cierre, commit y rollback los controla la transacción y no quien la usa.
+     */
     public Connection conectar() throws SQLException {
+        Connection enCurso = transaccionActual.get();
+        return enCurso != null ? sinControlDeTransaccion(enCurso) : abrir();
+    }
+
+    Connection abrir() throws SQLException {
         Connection conexion = DriverManager.getConnection(url);
         try (Statement statement = conexion.createStatement()) {
             statement.execute("PRAGMA foreign_keys = ON");
+            statement.execute("PRAGMA busy_timeout = 5000");
         } catch (SQLException e) {
             conexion.close();
             throw e;
         }
         return conexion;
+    }
+
+    void iniciarTransaccion(Connection conexion) {
+        transaccionActual.set(conexion);
+    }
+
+    void terminarTransaccion() {
+        transaccionActual.remove();
+    }
+
+    boolean hayTransaccion() {
+        return transaccionActual.get() != null;
+    }
+
+    private static Connection sinControlDeTransaccion(Connection conexion) {
+        return (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), new Class<?>[] {Connection.class},
+                (proxy, metodo, args) -> {
+                    switch (metodo.getName()) {
+                        case "close", "commit", "rollback", "setAutoCommit" -> {
+                            return null;
+                        }
+                        default -> {
+                            try {
+                                return metodo.invoke(conexion, args);
+                            } catch (InvocationTargetException e) {
+                                throw e.getCause();
+                            }
+                        }
+                    }
+                });
     }
 
     /**

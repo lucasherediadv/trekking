@@ -7,6 +7,12 @@ import com.example.desktop.service.FichaOperativaPDFService;
 import com.example.desktop.model.Ruta;
 import com.example.core.excepcion.ExcepcionNegocio;
 import com.example.core.salida.EstadoSalida;
+import com.example.core.salida.DatosSalida;
+import com.example.core.cliente.DatosCliente;
+import com.example.core.cliente.FichaMedica;
+import com.example.core.inventario.DatosElemento;
+import com.example.core.inventario.EstadoElemento;
+import com.example.core.inventario.StockInsuficienteException;
 import com.example.core.salida.Salida;
 import com.example.core.salida.SalidaListada;
 import com.example.core.itinerario.Checkpoint;
@@ -787,14 +793,6 @@ public class SalidasController {
         private final javafx.scene.layout.HBox stepper = new javafx.scene.layout.HBox(0);
         private final DatePicker fecha = new DatePicker();
         private final ComboBox<Ruta> rutas = new ComboBox<>();
-        private final javafx.scene.control.ToggleGroup modoRuta = new javafx.scene.control.ToggleGroup();
-        private final RadioButton usarRuta = new RadioButton("Utilizar una Ruta existente");
-        private final RadioButton crearRuta = new RadioButton("Crear una Ruta nueva");
-        private final TextField nombre = new TextField();
-        private final TextField altitud = new TextField();
-        private final ComboBox<String> terreno = opciones("Rocoso", "Boscoso", "Sendero", "Mixto");
-        private final ComboBox<String> tecnica = opciones("Baja", "Media", "Alta");
-        private final ComboBox<String> fisica = opciones("Baja", "Media", "Alta");
         private final Label detalle = new Label();
         private final ComboBox<Equipamiento> inventario = new ComboBox<>();
         private final TextField cantidadAsignada = new TextField("1");
@@ -809,15 +807,9 @@ public class SalidasController {
 
         WizardSalida() {
             FechaFormato.configurar(fecha);
-            usarRuta.setToggleGroup(modoRuta); crearRuta.setToggleGroup(modoRuta); usarRuta.setSelected(true);
             rutas.setConverter(new StringConverter<>() { public String toString(Ruta r) { return r == null ? "" : r.getNombre(); } public Ruta fromString(String s) { return null; } });
             fecha.valueProperty().addListener((o, a, b) -> renderStepper());
             rutas.valueProperty().addListener((o, a, b) -> renderStepper());
-            nombre.textProperty().addListener((o, a, b) -> renderStepper());
-            altitud.textProperty().addListener((o, a, b) -> renderStepper());
-            terreno.valueProperty().addListener((o, a, b) -> renderStepper());
-            tecnica.valueProperty().addListener((o, a, b) -> renderStepper());
-            fisica.valueProperty().addListener((o, a, b) -> renderStepper());
             inventario.setConverter(new StringConverter<>() {
                 public String toString(Equipamiento item) { return item == null ? "" : item.getNombre() + " · disponible: " + item.getCantidadDisponible(); }
                 public Equipamiento fromString(String s) { return null; }
@@ -855,7 +847,6 @@ public class SalidasController {
                 }
             });
             buscarCliente.textProperty().addListener((o, a, b) -> actualizarClientesFiltrados());
-            modoRuta.selectedToggleProperty().addListener((o, a, b) -> render());
             rutas.valueProperty().addListener((o,a,b) -> actualizarDetalle());
             anterior.setOnAction(e -> { if (paso > 0) { paso--; render(); } });
             siguiente.setOnAction(e -> avanzar()); cancelar.setOnAction(e -> cancelarWizard());
@@ -863,8 +854,12 @@ public class SalidasController {
         }
         private ComboBox<String> opciones(String... valores) { return new ComboBox<>(FXCollections.observableArrayList(valores)); }
         void mostrar() {
-            rutasActivas = rutaDAO.obtenerTodas(); rutas.setItems(FXCollections.observableArrayList(rutasActivas));
-            inventario.setItems(FXCollections.observableArrayList(EquipamientoDAO.obtenerTodos()));
+            rutasActivas = Servicios.rutas().listarActivas().stream().filter(com.example.core.ruta.Ruta::puedeUsarseEnSalida)
+                    .map(Ruta::desde).toList();
+            rutas.setItems(FXCollections.observableArrayList(rutasActivas));
+            inventario.setItems(FXCollections.observableArrayList(Servicios.inventario().listarAsignables().stream()
+                    .map(e -> new Equipamiento(e.id(), e.nombre(), e.categoria(), e.cantidad(), e.estado().etiqueta(),
+                            e.cantidadReservada())).toList()));
             todosLosClientes = com.example.desktop.Servicios.clientes().listar();
             render();
             javafx.scene.layout.HBox pasoEncabezado = new javafx.scene.layout.HBox(12, progress);
@@ -906,12 +901,7 @@ public class SalidasController {
         private static final String[] TITULOS_PASOS = {"Datos", "Ruta", "Equipamiento", "Participantes", "Revisión"};
         private final java.util.Set<Integer> visitados = new java.util.HashSet<>();
         private boolean datosCompletos() { return fecha.getValue() != null; }
-        private boolean rutaCompleta() {
-            if (!isCreandoRuta()) return rutas.getValue() != null;
-            if (nombre.getText().isBlank() || terreno.getValue() == null || tecnica.getValue() == null || fisica.getValue() == null) return false;
-            try { return Double.parseDouble(altitud.getText().trim()) >= 0; }
-            catch (NumberFormatException ex) { return false; }
-        }
+        private boolean rutaCompleta() { return rutas.getValue() != null; }
         private boolean pasoCompleto(int i) {
             return switch (i) { case 0 -> datosCompletos(); case 1 -> rutaCompleta(); case 2, 3 -> visitados.contains(i); default -> false; };
         }
@@ -955,7 +945,7 @@ public class SalidasController {
         }
         private void render() {
             String[] titulos = TITULOS_PASOS;
-            String[] descripciones = {"Defina cuándo se realizará la actividad.", "Seleccione una Ruta existente o configure una nueva.",
+            String[] descripciones = {"Defina cuándo se realizará la actividad.", "Seleccione la Ruta de la Salida.",
                     "Asigne los elementos que se llevarán.", "Seleccione los Clientes que participarán.", "Revise la información antes de confirmar."};
             heading.setText(titulos[paso]);
             progress.setText("Paso " + (paso + 1) + " de " + titulos.length);
@@ -972,18 +962,10 @@ public class SalidasController {
                 content.getChildren().add(tarjeta);
             }
             if (paso == 1) {
-                VBox tarjeta = tarjetaPaso("Seleccionar Ruta", "Seleccione una Ruta existente o cree una nueva.");
-                tarjeta.getChildren().addAll(usarRuta, crearRuta);
-                if (isCreandoRuta()) {
-                    tarjeta.getChildren().addAll(campo("Nombre *", nombre), campo("Altitud máxima (m) *", altitud),
-                            new Label("Tipo de terreno"), terreno, new Label("Dificultad técnica"), tecnica,
-                            new Label("Dificultad física"), fisica,
-                            new Label("La Ruta nueva se guardará solo al confirmar la Salida. Se crea como borrador, sin Checkpoints."));
-                } else {
-                    tarjeta.getChildren().addAll(new Label("Ruta activa"), rutas, detalle);
-                    rutas.setMaxWidth(Double.MAX_VALUE);
-                    actualizarDetalle();
-                }
+                VBox tarjeta = tarjetaPaso("Seleccionar Ruta", "Seleccione una Ruta activa con Itinerario.");
+                tarjeta.getChildren().addAll(new Label("Ruta activa"), rutas, detalle);
+                rutas.setMaxWidth(Double.MAX_VALUE);
+                actualizarDetalle();
                 content.getChildren().add(tarjeta);
             }
             if (paso == 2) renderEquipamiento();
@@ -1013,13 +995,10 @@ public class SalidasController {
             return descartar;
         }
         private boolean hayCambios() {
-            return fecha.getValue() != null || rutas.getValue() != null || isCreandoRuta()
+            return fecha.getValue() != null || rutas.getValue() != null
                     || inventario.getValue() != null || !"1".equals(cantidadAsignada.getText().trim())
                     || clientes.getValue() != null || !asignaciones.isEmpty()
-                    || !participantes.isEmpty() || !nombre.getText().isBlank()
-                    || !altitud.getText().isBlank() || terreno.getValue() != null
-                    || tecnica.getValue() != null || fisica.getValue() != null
-                    || !buscarCliente.getText().isBlank();
+                    || !participantes.isEmpty() || !buscarCliente.getText().isBlank();
         }
         private void cancelarWizard() {
             if (hayCambios() && !confirmarCambioDeSeccion()) return;
@@ -1058,9 +1037,6 @@ public class SalidasController {
             return tarjeta;
         }
         private String resumenRuta() {
-            if (isCreandoRuta()) return nombre.getText().trim() + "\nAltitud máxima: " + altitud.getText().trim()
-                    + " m · " + terreno.getValue() + " · Dificultad técnica " + tecnica.getValue()
-                    + " · Dificultad física " + fisica.getValue() + "\nSin Checkpoints";
             actualizarDetalle();
             return rutas.getValue() == null ? "Sin Ruta seleccionada" : rutas.getValue().getNombre() + "\n" + detalle.getText();
         }
@@ -1556,10 +1532,7 @@ private void crearClienteParticipante() {
             Ruta rutaSeleccionada = rutas.getValue();
             String ruta;
             String puntos;
-            if (isCreandoRuta()) {
-                ruta = nombre.getText().trim();
-                puntos = "Sin Checkpoints";
-            } else if (rutaSeleccionada == null) {
+            if (rutaSeleccionada == null) {
                 ruta = "(sin Ruta)";
                 puntos = "Sin Checkpoints";
             } else {
@@ -1571,10 +1544,7 @@ private void crearClienteParticipante() {
                         .collect(java.util.stream.Collectors.joining("\n"));
                 if (puntos.isBlank()) puntos = "Sin Checkpoints";
             }
-            String datosRuta = isCreandoRuta()
-                    ? "Altitud máxima: " + altitud.getText().trim() + " m · Terreno: " + terreno.getValue()
-                            + " · Dificultad técnica: " + tecnica.getValue() + " · Dificultad física: " + fisica.getValue()
-                    : rutaSeleccionada == null ? "" : "Altitud máxima: " + rutaSeleccionada.getAltitudMaxima()
+            String datosRuta = rutaSeleccionada == null ? "" : "Altitud máxima: " + rutaSeleccionada.getAltitudMaxima()
                             + " m · Terreno: " + rutaSeleccionada.getTipoTerreno() + " · Dificultad técnica: "
                             + rutaSeleccionada.getDificultadTecnica() + " · Dificultad física: "
                             + rutaSeleccionada.getDificultadFisica();
@@ -1593,27 +1563,52 @@ private void crearClienteParticipante() {
             return "Revisa los datos antes de confirmar:\n\nFecha: " + FechaFormato.formatear(fecha.getValue()) + "\nRuta: " + ruta
                     + (datosRuta.isBlank() ? "" : "\n" + datosRuta) + "\nCheckpoints:\n" + puntos
                     + "\nEstado inicial: planificada\nEquipamiento: " + equipo + "\nParticipantes: " + detalleParticipantes
-                    + "\n\nAl confirmar se guardarán la Ruta nueva (si corresponde), los Elementos nuevos asociados, los Clientes nuevos seleccionados, las reservas, las copias operativas y la Salida en una sola operación.";
+                    + "\n\nAl confirmar se guardarán los Elementos nuevos asociados, los Clientes nuevos seleccionados, las reservas, las copias operativas y la Salida en una sola operación.";
         }
         private void avanzar() {
             if (paso == 0 && fecha.getValue() == null) { aviso(Alert.AlertType.WARNING, "Fecha obligatoria", "Selecciona la fecha de la Salida."); return; }
-            if (paso == 1) {
-                if (isCreandoRuta()) {
-                    if (nombre.getText().isBlank() || altitud.getText().isBlank() || terreno.getValue() == null || tecnica.getValue() == null || fisica.getValue() == null) { aviso(Alert.AlertType.WARNING,"Datos incompletos","Completa los datos obligatorios de la Ruta."); return; }
-                    try { if (Double.parseDouble(altitud.getText().trim()) < 0) throw new NumberFormatException(); }
-                    catch (NumberFormatException ex) { aviso(Alert.AlertType.WARNING,"Altitud inválida","La altitud debe ser un número mayor o igual a cero."); return; }
-                } else if (rutas.getValue() == null) { aviso(Alert.AlertType.WARNING,"Ruta obligatoria","Selecciona una Ruta activa."); return; }
-            }
+            if (paso == 1 && rutas.getValue() == null) { aviso(Alert.AlertType.WARNING,"Ruta obligatoria","Selecciona una Ruta activa."); return; }
             if (paso < 4) { paso++; render(); return; }
             try {
-                Ruta nueva = null; Integer rutaId = null;
-                if (isCreandoRuta()) nueva = new Ruta(Ruta.normalizarNombre(nombre.getText()), Double.parseDouble(altitud.getText().trim()), terreno.getValue(), tecnica.getValue(), fisica.getValue());
-                else rutaId = rutas.getValue().getId();
-                salidaDAO.confirmar(fecha.getValue(), rutaId, nueva, List.copyOf(asignaciones), List.copyOf(participantes));
+                Servicios.confirmarSalida().confirmar(datosSalida());
                 actualizarIndicadores(); actualizarTabla(); cerrarWizard();
                 ToastNotifications.show(escenaAplicacion.getWindow(), "Salida guardada", ToastNotifications.Kind.SUCCESS);
-            } catch (SQLException | RuntimeException ex) { aviso(Alert.AlertType.ERROR,"No se pudo confirmar la Salida",ex.getMessage()); }
+            } catch (StockInsuficienteException ex) {
+                aviso(Alert.AlertType.WARNING, "Stock insuficiente", ex.getMessage());
+            } catch (ExcepcionNegocio | IllegalStateException ex) {
+                aviso(Alert.AlertType.ERROR, "No se pudo confirmar la Salida", ex.getMessage());
+            }
         }
-        private boolean isCreandoRuta() { return crearRuta.isSelected(); }
+        /** Traduce el estado del Asistente al pedido que entiende core. */
+        private DatosSalida datosSalida() {
+            List<DatosSalida.LineaEquipamiento> existentes = new ArrayList<>();
+            List<DatosSalida.ElementoNuevo> elementosNuevos = new ArrayList<>();
+            for (AsignacionEquipamiento a : asignaciones) {
+                Equipamiento e = a.equipamiento();
+                if (a.nuevo()) {
+                    elementosNuevos.add(new DatosSalida.ElementoNuevo(new DatosElemento(e.getNombre(), e.getCategoria(),
+                            e.getCantidad(), EstadoElemento.desdeEtiqueta(e.getEstado()).orElse(null)), a.cantidad()));
+                } else {
+                    existentes.add(new DatosSalida.LineaEquipamiento(e.getId(), a.cantidad()));
+                }
+            }
+            List<Integer> clientesExistentes = new ArrayList<>();
+            List<DatosSalida.ClienteNuevo> clientesNuevos = new ArrayList<>();
+            for (AsignacionParticipante p : participantes) {
+                Cliente c = p.cliente();
+                if (p.nuevo()) {
+                    DatosCliente datos = new DatosCliente(c.dni(), c.nombre(), c.apellido(), c.fechaNacimiento(), c.email(),
+                            c.telefono(), c.sexo(), c.contactoEmergenciaNombre(), c.contactoEmergenciaTelefono(),
+                            c.contactoEmergenciaRelacion(), c.autorizacionMenores(), c.tutorNombre(), c.tutorApellido(),
+                            c.tutorDni(), c.tutorTelefono());
+                    FichaMedica ficha = p.fichaMedica() == null ? null : new FichaMedica(p.nombreFichaMedica(), p.fichaMedica());
+                    clientesNuevos.add(new DatosSalida.ClienteNuevo(datos, ficha));
+                } else {
+                    clientesExistentes.add(c.id());
+                }
+            }
+            return new DatosSalida(fecha.getValue(), rutas.getValue().getId(), existentes, elementosNuevos,
+                    clientesExistentes, clientesNuevos);
+        }
     }
 }

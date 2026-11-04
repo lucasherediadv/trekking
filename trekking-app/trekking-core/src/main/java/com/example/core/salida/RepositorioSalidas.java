@@ -22,4 +22,10 @@ public interface RepositorioSalidas {
      * @return {@code false} si la Salida ya no estaba planificada
      */
     boolean cerrarSiPlanificada(int id, EstadoSalida nuevoEstado);
+
+    /**
+     * Guarda una Salida planificada con su Copia operativa y devuelve su id. No valida: lo hace el
+     * caso de uso dentro de la misma transacción.
+     */
+    int guardar(CopiaOperativa copia);
 }

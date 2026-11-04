@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Repositorio falso para probar los casos de uso sin base de datos. */
-class RepositorioClientesEnMemoria implements RepositorioClientes {
+public class RepositorioClientesEnMemoria implements RepositorioClientes {
 
     private final Map<Integer, Cliente> clientes = new LinkedHashMap<>();
     private int siguienteId = 1;

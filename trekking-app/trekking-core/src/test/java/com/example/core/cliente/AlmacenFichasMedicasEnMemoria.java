@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /** Almacén falso para probar los casos de uso sin base de datos. */
-class AlmacenFichasMedicasEnMemoria implements AlmacenFichasMedicas {
+public class AlmacenFichasMedicasEnMemoria implements AlmacenFichasMedicas {
 
     private final Map<Integer, FichaMedica> fichas = new HashMap<>();
 
