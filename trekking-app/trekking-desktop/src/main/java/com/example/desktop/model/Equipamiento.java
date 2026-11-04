@@ -12,14 +12,6 @@ public class Equipamiento {
     public static final List<String> ESTADOS = Arrays.stream(EstadoElemento.values())
             .map(EstadoElemento::etiqueta).toList();
 
-    public static boolean categoriaValida(String categoria) {
-        return categoria != null && CATEGORIAS.contains(categoria);
-    }
-
-    public static boolean estadoValido(String estado) {
-        return estado != null && ESTADOS.contains(estado);
-    }
-
     private int id;
     private String nombre;
     private String categoria;

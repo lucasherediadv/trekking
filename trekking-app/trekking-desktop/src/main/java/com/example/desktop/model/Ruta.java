@@ -1,50 +1,8 @@
 package com.example.desktop.model;
 
-import java.util.Locale;
-
-import com.example.core.ruta.NombreRuta;
-
 public class Ruta {
 
-    public static String normalizarNombre(String nombre) {
-        return NombreRuta.normalizar(nombre);
-    }
-
-    public static String formatearNombre(String nombre) {
-        String normalizado = normalizarNombre(nombre).toLowerCase(Locale.ROOT);
-
-        if (normalizado.isEmpty()) {
-            return "";
-        }
-
-        String[] palabras = normalizado.split(" ");
-        StringBuilder resultado = new StringBuilder();
-
-        for (String palabra : palabras) {
-            if (resultado.length() > 0) {
-                resultado.append(" ");
-            }
-
-            resultado.append(
-                    Character.toUpperCase(palabra.charAt(0))
-            ).append(
-                    palabra.substring(1)
-            );
-        }
-
-        return resultado.toString();
-    }
-
-    public static boolean nombreValido(String nombre) {
-        return normalizarNombre(nombre)
-                .matches("[\\p{L}\\p{N}]+(?: [\\p{L}\\p{N}]+)*");
-    }
-
-    public static String claveNombre(String nombre) {
-        return NombreRuta.clave(nombre);
-    }
-
-    /** El Itinerario y las Salidas todavía usan este modelo (tickets 06 y 07+ lo mueven a core). */
+    /** Adapta la Ruta de core al modelo de presentación de la UI. */
     public static Ruta desde(com.example.core.ruta.Ruta ruta) {
         return new Ruta(ruta.id(), ruta.nombre(), ruta.altitudMaxima(), ruta.tipoTerreno(),
                 ruta.dificultadTecnica(), ruta.dificultadFisica());
