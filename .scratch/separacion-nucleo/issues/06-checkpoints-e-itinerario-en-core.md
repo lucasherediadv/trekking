@@ -4,11 +4,11 @@
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] Checkpoint en core no depende de JavaFX.
-- [ ] Las pantallas de Checkpoints e Itinerario no acceden a la persistencia: solo usan casos de uso de core.
-- [ ] El formulario de Checkpoint valida en vivo con el validador de core.
-- [ ] Tests de casos de uso: orden por hora, desempate por posición explícita, altitud mayor a la máxima rechazada, guardar un único Checkpoint rechazado y pasar de borrador a ruta usable.
-- [ ] Test de integración en sqlite: guardado del Itinerario con su orden.
-- [ ] Validación manual: crear, editar, reordenar y borrar Checkpoints de una Ruta.
+- [x] Checkpoint en core no depende de JavaFX.
+- [x] Las pantallas de Checkpoints e Itinerario no acceden a la persistencia: solo usan casos de uso de core.
+- [x] El formulario de Checkpoint valida en vivo con el validador de core.
+- [x] Tests de casos de uso: orden por hora, desempate por posición explícita, altitud mayor a la máxima rechazada, guardar un único Checkpoint rechazado y pasar de borrador a ruta usable.
+- [x] Test de integración en sqlite: guardado del Itinerario con su orden.
+- [x] Validación manual: crear, editar, reordenar y borrar Checkpoints de una Ruta.
