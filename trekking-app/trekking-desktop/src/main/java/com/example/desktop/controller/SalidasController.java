@@ -1261,7 +1261,7 @@ private void crearClienteParticipante() {
                         tutorApellido.getText().trim(),
                         tutorDni.getText().trim(),
                         tutorTelefono.getText().trim(),
-                        true, LocalDate.now(), LocalDate.now());
+                        true, null, null);
 
                 String error = com.example.desktop.Servicios.clientes().validar(new com.example.core.cliente.DatosCliente(
                         candidato.dni(), candidato.nombre(), candidato.apellido(), candidato.fechaNacimiento(),
@@ -1339,7 +1339,7 @@ private void crearClienteParticipante() {
                             tutorApellido.getText().trim(),
                             tutorDni.getText().trim(),
                             tutorTelefono.getText().trim(),
-                            true, LocalDate.now(), LocalDate.now())
+                            true, null, null)
                     : null);
 
             Cliente nuevo = dialog.showAndWait().orElse(null);
