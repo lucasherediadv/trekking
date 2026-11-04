@@ -4,11 +4,11 @@
 
 **Blocked by:** 02, 03
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] El listado y el cierre de Salidas no acceden a la persistencia: solo usan casos de uso de core.
-- [ ] Intentar cerrar una Salida que no está planificada produce un error de transición inválida, que desktop muestra como alerta.
-- [ ] La base sigue guardando los mismos textos de estado.
-- [ ] Tests de casos de uso con reloj fijo: planificada a realizada, planificada a cancelada, cerrar una realizada o cancelada rechazado, Reserva de stock liberada al cerrar, Salida vencida con fecha pasada y Salida no vencida en la fecha de hoy.
-- [ ] Test de integración en sqlite: listado con resúmenes y cambio de estado.
-- [ ] Validación manual: listado, filtros por estado, búsqueda, resaltado de vencidas y cierre de Salidas.
+- [x] El listado y el cierre de Salidas no acceden a la persistencia: solo usan casos de uso de core.
+- [x] Intentar cerrar una Salida que no está planificada produce un error de transición inválida, que desktop muestra como alerta.
+- [x] La base sigue guardando los mismos textos de estado.
+- [x] Tests de casos de uso con reloj fijo: planificada a realizada, planificada a cancelada, cerrar una realizada o cancelada rechazado, Reserva de stock liberada al cerrar, Salida vencida con fecha pasada y Salida no vencida en la fecha de hoy.
+- [x] Test de integración en sqlite: listado con resúmenes y cambio de estado.
+- [x] Validación manual: listado, filtros por estado, búsqueda, resaltado de vencidas y cierre de Salidas.
