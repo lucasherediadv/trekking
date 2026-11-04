@@ -32,7 +32,6 @@ import com.example.desktop.util.FechaFormato;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.RowActionButton;
 import com.example.desktop.util.ToastNotifications;
-import java.sql.SQLException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -218,7 +217,7 @@ public class SalidasController {
         try {
             fichaPDFService.exportar(salida.id(), archivo.toPath());
             ToastNotifications.show(tablaSalidas.getScene().getWindow(), "Ficha operativa guardada", ToastNotifications.Kind.SUCCESS);
-        } catch (SQLException | IOException e) {
+        } catch (com.example.core.excepcion.ExcepcionNegocio | IOException e) {
             aviso(Alert.AlertType.ERROR, "No se pudo generar la ficha", e.getMessage());
         }
     }
