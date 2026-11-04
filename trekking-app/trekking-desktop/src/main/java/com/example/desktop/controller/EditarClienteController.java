@@ -7,8 +7,13 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
-import com.example.desktop.dao.ClienteDAO;
-import com.example.desktop.model.Cliente;
+import com.example.core.cliente.Cliente;
+import com.example.core.cliente.DatosCliente;
+import com.example.core.excepcion.ErrorCampo;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.excepcion.ValidacionException;
+import com.example.desktop.Servicios;
+import com.example.desktop.dao.FichaMedicaDAO;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.ResponsiveFormLayout;
 import com.example.desktop.util.NavigationShell;
@@ -21,6 +26,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -111,7 +117,7 @@ public class EditarClienteController {
     private Button quitarFichaButton;
 
     private final Cliente cliente;
-    private final ClienteDAO clienteDAO = new ClienteDAO();
+    private final FichaMedicaDAO fichaMedicaDAO = new FichaMedicaDAO();
     private File fichaMedicaSeleccionada;
     private boolean eliminarFichaMedica;
 
@@ -133,39 +139,39 @@ public class EditarClienteController {
                 "Prefiero no decir");
         javafx.application.Platform.runLater(nombreField::requestFocus);
 
-        dniField.setText(textoSeguro(cliente.getDni()));
-        nombreField.setText(textoSeguro(cliente.getNombre()));
-        apellidoField.setText(textoSeguro(cliente.getApellido()));
-        fechaNacimientoPicker.setValue(cliente.getFechaNacimiento());
-        emailField.setText(textoSeguro(cliente.getEmail()));
-        telefonoField.setText(textoSeguro(cliente.getTelefono()));
-        sexoComboBox.setValue(cliente.getSexo());
+        dniField.setText(textoSeguro(cliente.dni()));
+        nombreField.setText(textoSeguro(cliente.nombre()));
+        apellidoField.setText(textoSeguro(cliente.apellido()));
+        fechaNacimientoPicker.setValue(cliente.fechaNacimiento());
+        emailField.setText(textoSeguro(cliente.email()));
+        telefonoField.setText(textoSeguro(cliente.telefono()));
+        sexoComboBox.setValue(cliente.sexo());
         contactoNombreField.setText(
-                textoSeguro(cliente.getContactoEmergenciaNombre()));
+                textoSeguro(cliente.contactoEmergenciaNombre()));
         contactoTelefonoField.setText(
-                textoSeguro(cliente.getContactoEmergenciaTelefono()));
+                textoSeguro(cliente.contactoEmergenciaTelefono()));
         contactoRelacionField.setText(
-                textoSeguro(cliente.getContactoEmergenciaRelacion()));
+                textoSeguro(cliente.contactoEmergenciaRelacion()));
         autorizacionMenoresCheckBox.setSelected(
-                cliente.isAutorizacionMenores());
-        tutorNombreField.setText(textoSeguro(cliente.getTutorNombre()));
-        tutorApellidoField.setText(textoSeguro(cliente.getTutorApellido()));
-        tutorDniField.setText(textoSeguro(cliente.getTutorDni()));
-        tutorTelefonoField.setText(textoSeguro(cliente.getTutorTelefono()));
+                cliente.autorizacionMenores());
+        tutorNombreField.setText(textoSeguro(cliente.tutorNombre()));
+        tutorApellidoField.setText(textoSeguro(cliente.tutorApellido()));
+        tutorDniField.setText(textoSeguro(cliente.tutorDni()));
+        tutorTelefonoField.setText(textoSeguro(cliente.tutorTelefono()));
         actualizarCamposTutor();
-        activoCheckBox.setSelected(cliente.isActivo());
+        activoCheckBox.setSelected(cliente.activo());
 
-        com.example.desktop.model.FichaMedica fichaMedica = clienteDAO.obtenerFichaMedica(cliente.getId());
+        com.example.desktop.model.FichaMedica fichaMedica = fichaMedicaDAO.obtener(cliente.id());
 
         boolean existeFichaEnDisco = Files.isRegularFile(
-                Path.of("fichas_medicas", cliente.getDni() + ".pdf"));
+                Path.of("fichas_medicas", cliente.dni() + ".pdf"));
 
         boolean existeFicha = fichaMedica != null || existeFichaEnDisco;
 
         if (fichaMedica != null) {
             fichaMedicaLabel.setText(fichaMedica.getNombreArchivo());
         } else if (existeFichaEnDisco) {
-            fichaMedicaLabel.setText(cliente.getDni() + ".pdf");
+            fichaMedicaLabel.setText(cliente.dni() + ".pdf");
         } else {
             fichaMedicaLabel.setText("Sin ficha medica");
         }
@@ -177,74 +183,27 @@ public class EditarClienteController {
     }
 
     private void configurarValidacionesEnTiempoReal() {
-        FormValidation.watch(dniField, dniField.textProperty(),
-                () -> ClienteValidator.validarDni(textoSeguro(dniField.getText()).trim()));
-        FormValidation.watch(nombreField, nombreField.textProperty(),
-                () -> ClienteValidator.validarNombre(
-                        textoSeguro(nombreField.getText()).trim(), "El nombre"));
-        FormValidation.watch(apellidoField, apellidoField.textProperty(),
-                () -> ClienteValidator.validarNombre(
-                        textoSeguro(apellidoField.getText()).trim(), "El apellido"));
+        FormValidation.watch(dniField, dniField.textProperty(), () -> errorDe("dni"));
+        FormValidation.watch(nombreField, nombreField.textProperty(), () -> errorDe("nombre"));
+        FormValidation.watch(apellidoField, apellidoField.textProperty(), () -> errorDe("apellido"));
         FormValidation.watch(fechaNacimientoPicker,
                 fechaNacimientoPicker.getEditor().textProperty(),
                 this::validarFechaNacimientoEnTiempoReal);
-        FormValidation.watch(emailField, emailField.textProperty(),
-                () -> ClienteValidator.validarEmail(
-                        textoSeguro(emailField.getText()).trim()));
-        FormValidation.watch(telefonoField, telefonoField.textProperty(),
-                () -> ClienteValidator.validarTelefono(
-                        textoSeguro(telefonoField.getText()).trim(), "El telefono"));
-        FormValidation.watch(sexoComboBox, sexoComboBox.valueProperty(),
-                () -> ClienteValidator.validarSexo(sexoComboBox.getValue()));
-
-        FormValidation.watch(contactoNombreField,
-                contactoNombreField.textProperty(),
-                () -> ClienteValidator.validarContacto(
-                        textoSeguro(contactoNombreField.getText()).trim(),
-                        textoSeguro(contactoNombreField.getText()).trim(),
-                        textoSeguro(contactoTelefonoField.getText()).trim(),
-                        textoSeguro(contactoRelacionField.getText()).trim(),
-                        "nombre"));
-        FormValidation.watch(contactoTelefonoField,
-                contactoTelefonoField.textProperty(),
-                () -> ClienteValidator.validarContacto(
-                        textoSeguro(contactoTelefonoField.getText()).trim(),
-                        textoSeguro(contactoNombreField.getText()).trim(),
-                        textoSeguro(contactoTelefonoField.getText()).trim(),
-                        textoSeguro(contactoRelacionField.getText()).trim(),
-                        "telefono"));
-        FormValidation.watch(contactoRelacionField,
-                contactoRelacionField.textProperty(),
-                () -> ClienteValidator.validarContacto(
-                        textoSeguro(contactoRelacionField.getText()).trim(),
-                        textoSeguro(contactoNombreField.getText()).trim(),
-                        textoSeguro(contactoTelefonoField.getText()).trim(),
-                        textoSeguro(contactoRelacionField.getText()).trim(),
-                        "relacion"));
-
-        FormValidation.watch(autorizacionMenoresCheckBox,
-                autorizacionMenoresCheckBox.selectedProperty(),
-                () -> ClienteValidator.validarAutorizacionMenores(
-                        fechaNacimientoPicker.getValue(),
-                        autorizacionMenoresCheckBox.isSelected()));
-        FormValidation.watch(tutorNombreField, tutorNombreField.textProperty(),
-                () -> ClienteValidator.validarTutor(
-                        textoSeguro(tutorNombreField.getText()).trim(),
-                        "nombre", fechaNacimientoPicker.getValue()));
-        FormValidation.watch(tutorApellidoField,
-                tutorApellidoField.textProperty(),
-                () -> ClienteValidator.validarTutor(
-                        textoSeguro(tutorApellidoField.getText()).trim(),
-                        "apellido", fechaNacimientoPicker.getValue()));
-        FormValidation.watch(tutorDniField, tutorDniField.textProperty(),
-                () -> ClienteValidator.validarTutor(
-                        textoSeguro(tutorDniField.getText()).trim(),
-                        "dni", fechaNacimientoPicker.getValue()));
-        FormValidation.watch(tutorTelefonoField,
-                tutorTelefonoField.textProperty(),
-                () -> ClienteValidator.validarTutor(
-                        textoSeguro(tutorTelefonoField.getText()).trim(),
-                        "telefono", fechaNacimientoPicker.getValue()));
+        FormValidation.watch(emailField, emailField.textProperty(), () -> errorDe("email"));
+        FormValidation.watch(telefonoField, telefonoField.textProperty(), () -> errorDe("telefono"));
+        FormValidation.watch(sexoComboBox, sexoComboBox.valueProperty(), () -> errorDe("sexo"));
+        FormValidation.watch(contactoNombreField, contactoNombreField.textProperty(),
+                () -> errorDe("contactoEmergenciaNombre"));
+        FormValidation.watch(contactoTelefonoField, contactoTelefonoField.textProperty(),
+                () -> errorDe("contactoEmergenciaTelefono"));
+        FormValidation.watch(contactoRelacionField, contactoRelacionField.textProperty(),
+                () -> errorDe("contactoEmergenciaRelacion"));
+        FormValidation.watch(autorizacionMenoresCheckBox, autorizacionMenoresCheckBox.selectedProperty(),
+                () -> errorDe("autorizacionMenores"));
+        FormValidation.watch(tutorNombreField, tutorNombreField.textProperty(), () -> errorDe("tutorNombre"));
+        FormValidation.watch(tutorApellidoField, tutorApellidoField.textProperty(), () -> errorDe("tutorApellido"));
+        FormValidation.watch(tutorDniField, tutorDniField.textProperty(), () -> errorDe("tutorDni"));
+        FormValidation.watch(tutorTelefonoField, tutorTelefonoField.textProperty(), () -> errorDe("tutorTelefono"));
 
         contactoNombreField.textProperty().addListener(
                 (observable, anterior, actual) -> validarContactoVinculado());
@@ -281,10 +240,53 @@ public class EditarClienteController {
             return "La fecha de nacimiento es obligatoria.";
         }
         try {
-            LocalDate fecha = fechaNacimientoPicker.getConverter().fromString(texto);
-            return ClienteValidator.validarFechaNacimiento(fecha);
+            fechaNacimientoPicker.getConverter().fromString(texto);
+            return errorDe("fechaNacimiento");
         } catch (DateTimeParseException e) {
             return "Ingresa una fecha de nacimiento valida.";
+        }
+    }
+
+    private DatosCliente leerDatos() {
+        return new DatosCliente(textoSeguro(dniField.getText()).trim(), textoSeguro(nombreField.getText()).trim(),
+                textoSeguro(apellidoField.getText()).trim(), fechaNacimientoPicker.getValue(),
+                textoSeguro(emailField.getText()).trim(), textoSeguro(telefonoField.getText()).trim(),
+                sexoComboBox.getValue(), textoSeguro(contactoNombreField.getText()).trim(),
+                textoSeguro(contactoTelefonoField.getText()).trim(),
+                textoSeguro(contactoRelacionField.getText()).trim(), autorizacionMenoresCheckBox.isSelected(),
+                textoSeguro(tutorNombreField.getText()).trim(), textoSeguro(tutorApellidoField.getText()).trim(),
+                textoSeguro(tutorDniField.getText()).trim(), textoSeguro(tutorTelefonoField.getText()).trim());
+    }
+
+    /** Mensaje de core para un campo; la pantalla solo lo muestra. */
+    private String errorDe(String campo) {
+        return Servicios.clientes().validar(leerDatos()).stream()
+                .filter(e -> e.campo().equals(campo))
+                .map(ErrorCampo::mensaje)
+                .findFirst().orElse(null);
+    }
+
+    private void marcarErrores(ValidacionException e) {
+        for (ErrorCampo error : e.errores()) {
+            Control control = switch (error.campo()) {
+                case "dni" -> dniField;
+                case "nombre" -> nombreField;
+                case "apellido" -> apellidoField;
+                case "fechaNacimiento" -> fechaNacimientoPicker;
+                case "email" -> emailField;
+                case "telefono" -> telefonoField;
+                case "sexo" -> sexoComboBox;
+                case "contactoEmergenciaNombre" -> contactoNombreField;
+                case "contactoEmergenciaTelefono" -> contactoTelefonoField;
+                case "contactoEmergenciaRelacion" -> contactoRelacionField;
+                case "autorizacionMenores" -> autorizacionMenoresCheckBox;
+                case "tutorNombre" -> tutorNombreField;
+                case "tutorApellido" -> tutorApellidoField;
+                case "tutorDni" -> tutorDniField;
+                case "tutorTelefono" -> tutorTelefonoField;
+                default -> null;
+            };
+            if (control != null) FormValidation.showError(control, error.mensaje());
         }
     }
 
@@ -369,31 +371,13 @@ public class EditarClienteController {
     @FXML
     private void guardarCambios() {
         validarFormularioVisualmente();
-        String dni = textoSeguro(dniField.getText()).trim();
-        String nombre = textoSeguro(nombreField.getText()).trim();
-        String apellido = textoSeguro(apellidoField.getText()).trim();
-        LocalDate fechaNacimiento = fechaNacimientoPicker.getValue();
-        String email = textoSeguro(emailField.getText()).trim();
-        String telefono = textoSeguro(telefonoField.getText()).trim();
-        String sexo = sexoComboBox.getValue();
-        String contactoNombre = textoSeguro(contactoNombreField.getText()).trim();
-        String contactoTelefono = textoSeguro(contactoTelefonoField.getText()).trim();
-        String contactoRelacion = textoSeguro(contactoRelacionField.getText()).trim();
-        boolean autorizacionMenores = autorizacionMenoresCheckBox.isSelected();
-        String tutorNombre = textoSeguro(tutorNombreField.getText()).trim();
-        String tutorApellido = textoSeguro(tutorApellidoField.getText()).trim();
-        String tutorDni = textoSeguro(tutorDniField.getText()).trim();
-        String tutorTelefono = textoSeguro(tutorTelefonoField.getText()).trim();
-
-        String error = ClienteValidator.validar(
-                dni, nombre, apellido, fechaNacimiento, email, telefono, sexo,
-                contactoNombre, contactoTelefono, contactoRelacion,
-                autorizacionMenores, tutorNombre, tutorApellido, tutorDni,
-                tutorTelefono);
-        if (error != null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Revisa los datos", error);
+        DatosCliente datos = leerDatos();
+        if (!Servicios.clientes().validar(datos).isEmpty()) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Revisa los datos",
+                    "Corrige los campos marcados antes de guardar.");
             return;
         }
+        String dni = datos.dni();
 
         byte[] fichaMedica = null;
         String nombreFichaMedica = null;
@@ -418,32 +402,42 @@ public class EditarClienteController {
             nombreFichaMedica = fichaMedicaSeleccionada.getName();
         }
 
-        boolean actualizarFicha = fichaMedicaSeleccionada != null
-                || eliminarFichaMedica;
-        boolean actualizado = clienteDAO.actualizarCliente(
-                cliente.getId(), dni, nombre, apellido, fechaNacimiento,
-                email, telefono, sexo, contactoNombre, contactoTelefono,
-                contactoRelacion, activoCheckBox.isSelected(),
-                autorizacionMenores, tutorNombre, tutorApellido, tutorDni,
-                tutorTelefono, fichaMedica, nombreFichaMedica, actualizarFicha);
-        if (!actualizado) {
-            mostrarAlerta(
-                    Alert.AlertType.ERROR,
-                    "No se pudo guardar",
-                    "Verifica los datos y que el DNI no este registrado.");
+        try {
+            Servicios.clientes().editar(cliente.id(), datos);
+            if (activoCheckBox.isSelected() != cliente.activo()) {
+                if (activoCheckBox.isSelected()) Servicios.clientes().reactivar(cliente.id());
+                else Servicios.clientes().darDeBaja(cliente.id());
+            }
+        } catch (ValidacionException e) {
+            marcarErrores(e);
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo guardar", e.getMessage());
+            return;
+        } catch (ExcepcionNegocio | IllegalStateException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo guardar", e.getMessage());
             return;
         }
 
         try {
             if (fichaMedicaSeleccionada != null) {
+                fichaMedicaDAO.guardar(cliente.id(), fichaMedica, nombreFichaMedica);
+            } else if (eliminarFichaMedica) {
+                fichaMedicaDAO.borrar(cliente.id());
+            }
+        } catch (IllegalStateException e) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Ficha no actualizada",
+                    "Los datos se guardaron, pero no se pudo actualizar la ficha medica: " + e.getMessage());
+        }
+
+        try {
+            if (fichaMedicaSeleccionada != null) {
                 FichaMedica.guardarEnCarpeta(dni, fichaMedica);
-                if (!cliente.getDni().equals(dni)) {
-                    FichaMedica.borrarDeCarpeta(cliente.getDni());
+                if (!cliente.dni().equals(dni)) {
+                    FichaMedica.borrarDeCarpeta(cliente.dni());
                 }
             } else if (eliminarFichaMedica) {
-                FichaMedica.borrarDeCarpeta(cliente.getDni());
-            } else if (!cliente.getDni().equals(dni)) {
-                FichaMedica.renombrarEnCarpeta(cliente.getDni(), dni);
+                FichaMedica.borrarDeCarpeta(cliente.dni());
+            } else if (!cliente.dni().equals(dni)) {
+                FichaMedica.renombrarEnCarpeta(cliente.dni(), dni);
             }
         } catch (IOException e) {
             mostrarAlerta(

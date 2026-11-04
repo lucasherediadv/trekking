@@ -7,7 +7,7 @@ import com.example.desktop.model.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
 import com.example.desktop.model.AsignacionParticipante;
-import com.example.desktop.model.Cliente;
+import com.example.core.cliente.Cliente;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -180,7 +180,7 @@ public class SalidaDAO {
         java.util.Set<Integer> clientesVistos = new java.util.HashSet<>();
         for (AsignacionParticipante a : participantes) {
             if (a == null || a.cliente() == null || a.nuevo()) throw new SQLException("En edición, selecciona Clientes existentes.");
-            int id = a.cliente().getId();
+            int id = a.cliente().id();
             if (!clientesVistos.add(id)) throw new SQLException("No se puede asociar dos veces el mismo Cliente.");
             if (!clienteCopias.containsKey(id) || refrescarParticipantes.contains(id)) {
                 try (PreparedStatement ps = c.prepareStatement("SELECT activo FROM clientes WHERE id=?")) {
@@ -209,10 +209,10 @@ public class SalidaDAO {
         }
         try (PreparedStatement ps=c.prepareStatement("DELETE FROM salida_participantes WHERE salida_id=?")) { ps.setInt(1,salidaId); ps.executeUpdate(); }
         for (AsignacionParticipante a : participantes) {
-            Cliente cl=a.cliente(); String[] cp=clienteCopias.get(cl.getId());
-            if (refrescarParticipantes.contains(cl.getId())) cp=null;
+            Cliente cl=a.cliente(); String[] cp=clienteCopias.get(cl.id());
+            if (refrescarParticipantes.contains(cl.id())) cp=null;
             try(PreparedStatement ins=c.prepareStatement("INSERT INTO salida_participantes(salida_id,cliente_id,dni_copia,nombre_copia,apellido_copia,telefono_copia,emergencia_nombre_copia,emergencia_telefono_copia,emergencia_relacion_copia) VALUES(?,?,?,?,?,?,?,?,?)")) {
-                ins.setInt(1,salidaId); ins.setInt(2,cl.getId()); ins.setString(3,cp==null?cl.getDni():cp[0]); ins.setString(4,cp==null?cl.getNombre():cp[1]); ins.setString(5,cp==null?cl.getApellido():cp[2]); ins.setString(6,cp==null?cl.getTelefono():cp[3]); ins.setString(7,cp==null?cl.getContactoEmergenciaNombre():cp[4]); ins.setString(8,cp==null?cl.getContactoEmergenciaTelefono():cp[5]); ins.setString(9,cp==null?cl.getContactoEmergenciaRelacion():cp[6]); ins.executeUpdate();
+                ins.setInt(1,salidaId); ins.setInt(2,cl.id()); ins.setString(3,cp==null?cl.dni():cp[0]); ins.setString(4,cp==null?cl.nombre():cp[1]); ins.setString(5,cp==null?cl.apellido():cp[2]); ins.setString(6,cp==null?cl.telefono():cp[3]); ins.setString(7,cp==null?cl.contactoEmergenciaNombre():cp[4]); ins.setString(8,cp==null?cl.contactoEmergenciaTelefono():cp[5]); ins.setString(9,cp==null?cl.contactoEmergenciaRelacion():cp[6]); ins.executeUpdate();
             }
         }
     }
@@ -442,10 +442,10 @@ public class SalidaDAO {
             if (asignacion == null || asignacion.cliente() == null)
                 throw new SQLException("Hay un Participante inválido.");
             Cliente cliente = asignacion.cliente();
-            String dni = cliente.getDni() == null ? "" : cliente.getDni().trim();
+            String dni = cliente.dni() == null ? "" : cliente.dni().trim();
             if (dni.isEmpty() || !dnis.add(dni))
                 throw new SQLException("No se puede asociar dos veces el mismo Cliente.");
-            int clienteId = cliente.getId();
+            int clienteId = cliente.id();
             if (asignacion.nuevo()) {
                 try (PreparedStatement ps = c.prepareStatement("SELECT activo FROM clientes WHERE dni = ?")) {
                     ps.setString(1, dni);
@@ -479,11 +479,11 @@ public class SalidaDAO {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """)) {
                 ps.setInt(1, salidaId); ps.setInt(2, clienteId); ps.setString(3, dni);
-                ps.setString(4, cliente.getNombre()); ps.setString(5, cliente.getApellido());
-                ps.setString(6, cliente.getTelefono());
-                ps.setString(7, cliente.getContactoEmergenciaNombre());
-                ps.setString(8, cliente.getContactoEmergenciaTelefono());
-                ps.setString(9, cliente.getContactoEmergenciaRelacion());
+                ps.setString(4, cliente.nombre()); ps.setString(5, cliente.apellido());
+                ps.setString(6, cliente.telefono());
+                ps.setString(7, cliente.contactoEmergenciaNombre());
+                ps.setString(8, cliente.contactoEmergenciaTelefono());
+                ps.setString(9, cliente.contactoEmergenciaRelacion());
                 ps.executeUpdate();
             }
         }

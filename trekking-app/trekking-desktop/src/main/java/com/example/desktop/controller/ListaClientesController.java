@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.example.desktop.dao.ClienteDAO;
-import com.example.desktop.model.Cliente;
+import com.example.core.cliente.Cliente;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.desktop.Servicios;
+import com.example.desktop.dao.FichaMedicaDAO;
 import com.example.desktop.util.NavigationShell;
 import com.example.desktop.util.TableEmptyState;
 import com.example.desktop.util.TableHeight;
@@ -28,7 +30,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.event.ActionEvent;
 
 @SuppressWarnings("unused")
@@ -69,7 +70,7 @@ public class ListaClientesController implements Initializable {
 
     @FXML private TableColumn<Cliente, Cliente> colAcciones;
 
-    private final ClienteDAO clienteDAO = new ClienteDAO();
+    private final FichaMedicaDAO fichaMedicaDAO = new FichaMedicaDAO();
 
     private FilteredList<Cliente> clientesFiltrados;
     private ObservableList<Cliente> clientesOriginales;
@@ -85,23 +86,17 @@ public class ListaClientesController implements Initializable {
         tablaClientes.setColumnResizePolicy(
                 TableView.CONSTRAINED_RESIZE_POLICY);
 
-        colDni.setCellValueFactory(
-                new PropertyValueFactory<>("dni"));
+        colDni.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().dni()));
 
-        colNombre.setCellValueFactory(
-                new PropertyValueFactory<>("nombre"));
+        colNombre.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().nombre()));
 
-        colApellido.setCellValueFactory(
-                new PropertyValueFactory<>("apellido"));
+        colApellido.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().apellido()));
 
-        colEmail.setCellValueFactory(
-                new PropertyValueFactory<>("email"));
+        colEmail.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().email()));
 
-        colTelefono.setCellValueFactory(
-                new PropertyValueFactory<>("telefono"));
+        colTelefono.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().telefono()));
 
-        colFechaNacimiento.setCellValueFactory(
-                new PropertyValueFactory<>("fechaNacimiento"));
+        colFechaNacimiento.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().fechaNacimiento()));
         colFechaNacimiento.setCellFactory(column -> new javafx.scene.control.TableCell<>() {
             @Override protected void updateItem(java.time.LocalDate fecha, boolean empty) {
                 super.updateItem(fecha, empty);
@@ -109,11 +104,9 @@ public class ListaClientesController implements Initializable {
             }
         });
 
-        colSexo.setCellValueFactory(
-                new PropertyValueFactory<>("sexo"));
+        colSexo.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().sexo()));
 
-        colActivo.setCellValueFactory(
-                new PropertyValueFactory<>("activo"));
+        colActivo.setCellValueFactory(fila -> new javafx.beans.property.ReadOnlyObjectWrapper<>(fila.getValue().activo()));
         colActivo.setCellFactory(column -> com.example.desktop.util.EstadoCell.create(
                 activo -> activo ? com.example.desktop.util.EstadoCell.Tono.EXITO : com.example.desktop.util.EstadoCell.Tono.NEUTRO,
                 activo -> activo ? "Activo" : "Inactivo"));
@@ -127,10 +120,10 @@ public class ListaClientesController implements Initializable {
                 actions.getChildren().addAll(
                         com.example.desktop.util.RowActionButton.create("Editar cliente", com.example.desktop.util.RowActionButton.Icon.EDIT, e -> abrirEdicion(cliente)),
                         com.example.desktop.util.RowActionButton.create("Abrir ficha médica", com.example.desktop.util.RowActionButton.Icon.MEDICAL, e -> abrirFichaMedica(cliente)),
-                        com.example.desktop.util.RowActionButton.create(cliente.isActivo() ? "Dar de baja" : "Reactivar",
-                                cliente.isActivo() ? com.example.desktop.util.RowActionButton.Icon.DELETE : com.example.desktop.util.RowActionButton.Icon.RESTORE,
+                        com.example.desktop.util.RowActionButton.create(cliente.activo() ? "Dar de baja" : "Reactivar",
+                                cliente.activo() ? com.example.desktop.util.RowActionButton.Icon.DELETE : com.example.desktop.util.RowActionButton.Icon.RESTORE,
                                 e -> cambiarEstado(cliente)));
-                if (cliente.isActivo()) actions.getChildren().get(2).getStyleClass().add("row-action-danger");
+                if (cliente.activo()) actions.getChildren().get(2).getStyleClass().add("row-action-danger");
                 com.example.desktop.util.RowActionCell.showCentered(this, actions);
             }
         });
@@ -149,7 +142,7 @@ public class ListaClientesController implements Initializable {
 
     private void cargarClientes() {
 
-        ObservableList<Cliente> clientes = clienteDAO.obtenerTodosLosClientes();
+        ObservableList<Cliente> clientes = javafx.collections.FXCollections.observableArrayList(Servicios.clientes().listar());
         clientesOriginales = clientes;
 
         clientesFiltrados = new FilteredList<>(clientes);
@@ -174,11 +167,11 @@ public class ListaClientesController implements Initializable {
 
             boolean coincideTexto =
                     texto.isEmpty()
-                    || contiene(cliente.getDni(), texto)
-                    || contiene(cliente.getNombre(), texto)
-                    || contiene(cliente.getApellido(), texto);
+                    || contiene(cliente.dni(), texto)
+                    || contiene(cliente.nombre(), texto)
+                    || contiene(cliente.apellido(), texto);
 
-            return coincideTexto && cliente.isActivo() == filtrarActivos;
+            return coincideTexto && cliente.activo() == filtrarActivos;
         });
         actualizarEstadoTabla();
     }
@@ -288,7 +281,7 @@ public class ListaClientesController implements Initializable {
         try {
 
             com.example.desktop.model.FichaMedica fichaMedica =
-                    clienteDAO.obtenerFichaMedica(clienteSeleccionado.getId());
+                    fichaMedicaDAO.obtener(clienteSeleccionado.id());
 
             if (fichaMedica != null && fichaMedica.getDatos() != null) {
                 if (!Desktop.isDesktopSupported()
@@ -302,7 +295,7 @@ public class ListaClientesController implements Initializable {
                 Desktop.getDesktop().open(archivoTemporal.toFile());
             } else {
                 FichaMedica.abrirDesdeCarpeta(
-                        clienteSeleccionado.getDni());
+                        clienteSeleccionado.dni());
             }
 
         } catch (IOException e) {
@@ -344,16 +337,20 @@ public class ListaClientesController implements Initializable {
 
         confirmacion.setContentText(
                 "Queres dar de baja a "
-                + clienteSeleccionado.getNombre()
+                + clienteSeleccionado.nombre()
                 + " "
-                + clienteSeleccionado.getApellido()
+                + clienteSeleccionado.apellido()
                 + "?");
 
         if (AlertUtils.showAndWait(confirmacion, tablaClientes).orElse(null)
                 == javafx.scene.control.ButtonType.OK) {
 
-            clienteDAO.eliminarCliente(
-                    clienteSeleccionado.getId());
+            try {
+                Servicios.clientes().darDeBaja(clienteSeleccionado.id());
+            } catch (ExcepcionNegocio | IllegalStateException e) {
+                mostrarAlerta(Alert.AlertType.ERROR, "No se pudo dar de baja", e.getMessage());
+                return;
+            }
 
             cargarClientes();
 
@@ -365,15 +362,20 @@ public class ListaClientesController implements Initializable {
     }
 
     private void cambiarEstado(Cliente cliente) {
-        String verbo = cliente.isActivo() ? "dar de baja" : "reactivar";
+        String verbo = cliente.activo() ? "dar de baja" : "reactivar";
         Alert confirmar = new Alert(Alert.AlertType.CONFIRMATION);
         confirmar.setTitle("Confirmar " + verbo);
         confirmar.setHeaderText(null);
-        confirmar.setContentText("¿Quieres " + verbo + " a " + cliente.getNombre() + " " + cliente.getApellido()
-                + (cliente.isActivo() ? "? Dejará de estar disponible para el uso activo." : "?"));
+        confirmar.setContentText("¿Quieres " + verbo + " a " + cliente.nombre() + " " + cliente.apellido()
+                + (cliente.activo() ? "? Dejará de estar disponible para el uso activo." : "?"));
         if (AlertUtils.showAndWait(confirmar, tablaClientes).orElse(javafx.scene.control.ButtonType.CANCEL) != javafx.scene.control.ButtonType.OK) return;
-        if (cliente.isActivo()) clienteDAO.eliminarCliente(cliente.getId());
-        else clienteDAO.reactivarCliente(cliente.getId());
+        try {
+            if (cliente.activo()) Servicios.clientes().darDeBaja(cliente.id());
+            else Servicios.clientes().reactivar(cliente.id());
+        } catch (ExcepcionNegocio | IllegalStateException e) {
+            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo completar la acción", e.getMessage());
+            return;
+        }
         cargarClientes();
     }
 

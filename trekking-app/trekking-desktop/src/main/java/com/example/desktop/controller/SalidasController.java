@@ -10,8 +10,7 @@ import com.example.desktop.model.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
 import com.example.desktop.dao.EquipamientoDAO;
-import com.example.desktop.dao.ClienteDAO;
-import com.example.desktop.model.Cliente;
+import com.example.core.cliente.Cliente;
 import com.example.desktop.model.AsignacionParticipante;
 import com.example.desktop.util.NavigationShell;
 import com.example.desktop.util.SearchFieldIcon;
@@ -539,9 +538,9 @@ public class SalidasController {
                 setText(null);
                 if (empty || a == null) { setGraphic(null); return; }
                 Cliente c = a.cliente();
-                Button quitar = RowActionButton.create("Quitar participante " + c.getApellido() + ", " + c.getNombre(), RowActionButton.Icon.DELETE, e -> quitarParticipante(a));
+                Button quitar = RowActionButton.create("Quitar participante " + c.apellido() + ", " + c.nombre(), RowActionButton.Icon.DELETE, e -> quitarParticipante(a));
                 quitar.getStyleClass().add("row-action-danger");
-                setGraphic(filaLista(List.of(etiquetaFila(c.getApellido() + ", " + c.getNombre(), -1), etiquetaFila("DNI " + c.getDni(), 110)), quitar));
+                setGraphic(filaLista(List.of(etiquetaFila(c.apellido() + ", " + c.nombre(), -1), etiquetaFila("DNI " + c.dni(), 110)), quitar));
             }});
         }
 
@@ -594,11 +593,11 @@ public class SalidasController {
             equipamiento.forEach(a -> { if(equipos.stream().noneMatch(e->e.getId()==a.equipamiento().getId())) equipos.add(a.equipamiento()); });
             selectorEquipo.setItems(FXCollections.observableArrayList(equipos));
             selectorEquipo.setConverter(new StringConverter<>() { public String toString(Equipamiento e){return e==null?"":e.getNombre()+" · disponible: "+e.getCantidadDisponible();} public Equipamiento fromString(String s){return null;} });
-            selectorCliente.setConverter(new StringConverter<>() { public String toString(Cliente c){return c==null?"":c.getApellido()+", "+c.getNombre()+" · DNI "+c.getDni();} public Cliente fromString(String s){return null;} });
-            var todos = new ClienteDAO().obtenerTodosLosClientes();
+            selectorCliente.setConverter(new StringConverter<>() { public String toString(Cliente c){return c==null?"":c.apellido()+", "+c.nombre()+" · DNI "+c.dni();} public Cliente fromString(String s){return null;} });
+            var todos = com.example.desktop.Servicios.clientes().listar();
             var clientes = new ArrayList<Cliente>();
-            todos.stream().filter(Cliente::isActivo).forEach(clientes::add);
-            participantes.forEach(a -> { if(clientes.stream().noneMatch(c->c.getId()==a.cliente().getId())) clientes.add(a.cliente()); });
+            todos.stream().filter(Cliente::activo).forEach(clientes::add);
+            participantes.forEach(a -> { if(clientes.stream().noneMatch(c->c.id()==a.cliente().id())) clientes.add(a.cliente()); });
             selectorCliente.setItems(FXCollections.observableArrayList(clientes));
             renderAsignaciones();
         }
@@ -645,7 +644,7 @@ public class SalidasController {
         private void agregarParticipante() {
             Cliente cliente = selectorCliente.getValue();
             if (cliente == null) return;
-            if (participantes.stream().anyMatch(a -> a.cliente().getId() == cliente.getId())) {
+            if (participantes.stream().anyMatch(a -> a.cliente().id() == cliente.id())) {
                 aviso(Alert.AlertType.INFORMATION, "Cliente ya asociado", "Ese Cliente ya está asociado a esta Salida.");
                 return;
             }
@@ -657,9 +656,9 @@ public class SalidasController {
         private void quitarParticipante(AsignacionParticipante asignacion) {
             cambiosRealizados = true;
             participantes.remove(asignacion);
-            refrescarParticipantes.add(asignacion.cliente().getId());
-            if (!asignacion.cliente().isActivo()) {
-                selectorCliente.getItems().removeIf(cliente -> cliente.getId() == asignacion.cliente().getId());
+            refrescarParticipantes.add(asignacion.cliente().id());
+            if (!asignacion.cliente().activo()) {
+                selectorCliente.getItems().removeIf(cliente -> cliente.id() == asignacion.cliente().id());
             }
             renderAsignaciones();
         }
@@ -789,7 +788,6 @@ public class SalidasController {
         private final RutaCheckpointDAO checkpointDAO = new RutaCheckpointDAO();
         private final List<AsignacionEquipamiento> asignaciones = new ArrayList<>();
         private final List<AsignacionParticipante> participantes = new ArrayList<>();
-        private final ClienteDAO clienteDAO = new ClienteDAO();
         private final VBox content = new VBox(14);
         private final Label heading = new Label();
         private final Label progress = new Label();
@@ -853,14 +851,14 @@ public class SalidasController {
                 }
             });
             clientes.setConverter(new StringConverter<>() {
-                public String toString(Cliente c) { return c == null ? "" : c.getApellido() + ", " + c.getNombre() + " · DNI " + c.getDni(); }
+                public String toString(Cliente c) { return c == null ? "" : c.apellido() + ", " + c.nombre() + " · DNI " + c.dni(); }
                 public Cliente fromString(String s) { return null; }
             });
             listaParticipantes.setCellFactory(view -> new ListCell<>() {
                 @Override protected void updateItem(AsignacionParticipante item, boolean empty) {
                     super.updateItem(item, empty);
-                    setText(empty || item == null ? null : item.cliente().getApellido() + ", " + item.cliente().getNombre()
-                            + " · DNI " + item.cliente().getDni() + (item.nuevo() ? " · nuevo" : ""));
+                    setText(empty || item == null ? null : item.cliente().apellido() + ", " + item.cliente().nombre()
+                            + " · DNI " + item.cliente().dni() + (item.nuevo() ? " · nuevo" : ""));
                 }
             });
             buscarCliente.textProperty().addListener((o, a, b) -> actualizarClientesFiltrados());
@@ -874,7 +872,7 @@ public class SalidasController {
         void mostrar() {
             rutasActivas = rutaDAO.obtenerTodas(); rutas.setItems(FXCollections.observableArrayList(rutasActivas));
             inventario.setItems(FXCollections.observableArrayList(EquipamientoDAO.obtenerTodos()));
-            todosLosClientes = clienteDAO.obtenerTodosLosClientes();
+            todosLosClientes = com.example.desktop.Servicios.clientes().listar();
             render();
             javafx.scene.layout.HBox pasoEncabezado = new javafx.scene.layout.HBox(12, progress);
             pasoEncabezado.getStyleClass().add("wizard-step-caption");
@@ -1080,8 +1078,8 @@ public class SalidasController {
         }
         private String resumenParticipantesWizard() {
             if (participantes.isEmpty()) return "Sin Participantes asignados";
-            return participantes.stream().map(p -> p.cliente().getApellido() + ", " + p.cliente().getNombre()
-                    + " · DNI " + p.cliente().getDni()).collect(java.util.stream.Collectors.joining("\n"));
+            return participantes.stream().map(p -> p.cliente().apellido() + ", " + p.cliente().nombre()
+                    + " · DNI " + p.cliente().dni()).collect(java.util.stream.Collectors.joining("\n"));
         }
         private void renderEquipamiento() {
             listaAsignaciones.setMaxHeight(220);
@@ -1146,9 +1144,9 @@ public class SalidasController {
         }
         private void actualizarClientesFiltrados() {
             String consulta = buscarCliente.getText() == null ? "" : buscarCliente.getText().trim().toLowerCase();
-            var filtrados = todosLosClientes.stream().filter(Cliente::isActivo)
-                    .filter(c -> consulta.isEmpty() || c.getDni().toLowerCase().contains(consulta)
-                            || c.getNombre().toLowerCase().contains(consulta) || c.getApellido().toLowerCase().contains(consulta))
+            var filtrados = todosLosClientes.stream().filter(Cliente::activo)
+                    .filter(c -> consulta.isEmpty() || c.dni().toLowerCase().contains(consulta)
+                            || c.nombre().toLowerCase().contains(consulta) || c.apellido().toLowerCase().contains(consulta))
                     .toList();
             clientes.setItems(FXCollections.observableArrayList(filtrados));
             if (clientes.getValue() != null && !filtrados.contains(clientes.getValue())) clientes.setValue(null);
@@ -1156,7 +1154,7 @@ public class SalidasController {
         private void agregarClienteExistente() {
             Cliente cliente = clientes.getValue();
             if (cliente == null) { aviso(Alert.AlertType.WARNING, "Selecciona un Cliente", "Busca y selecciona un Cliente activo."); return; }
-            if (participantes.stream().anyMatch(p -> p.cliente().getId() == cliente.getId())) {
+            if (participantes.stream().anyMatch(p -> p.cliente().id() == cliente.id())) {
                 aviso(Alert.AlertType.INFORMATION, "Cliente ya asociado", "Ese Cliente ya está asociado a esta Salida."); return;
             }
             participantes.add(new AsignacionParticipante(cliente, false)); render();
@@ -1285,22 +1283,14 @@ private void crearClienteParticipante() {
                         tutorTelefono.getText().trim(),
                         true, LocalDate.now(), LocalDate.now());
 
-                String error = ClienteValidator.validar(
-                        candidato.getDni(),
-                        candidato.getNombre(),
-                        candidato.getApellido(),
-                        candidato.getFechaNacimiento(),
-                        candidato.getEmail(),
-                        candidato.getTelefono(),
-                        candidato.getSexo(),
-                        candidato.getContactoEmergenciaNombre(),
-                        candidato.getContactoEmergenciaTelefono(),
-                        candidato.getContactoEmergenciaRelacion(),
-                        candidato.isAutorizacionMenores(),
-                        candidato.getTutorNombre(),
-                        candidato.getTutorApellido(),
-                        candidato.getTutorDni(),
-                        candidato.getTutorTelefono());
+                String error = com.example.desktop.Servicios.clientes().validar(new com.example.core.cliente.DatosCliente(
+                        candidato.dni(), candidato.nombre(), candidato.apellido(), candidato.fechaNacimiento(),
+                        candidato.email(), candidato.telefono(), candidato.sexo(),
+                        candidato.contactoEmergenciaNombre(), candidato.contactoEmergenciaTelefono(),
+                        candidato.contactoEmergenciaRelacion(), candidato.autorizacionMenores(),
+                        candidato.tutorNombre(), candidato.tutorApellido(), candidato.tutorDni(),
+                        candidato.tutorTelefono())).stream()
+                        .map(com.example.core.excepcion.ErrorCampo::mensaje).findFirst().orElse(null);
 
                 if (error != null) {
                     // NUEVO: conservar el formulario y los valores.
@@ -1396,13 +1386,13 @@ private void crearClienteParticipante() {
 
             // SIN CAMBIOS: comprobar si el DNI ya existe.
             Cliente existente = todosLosClientes.stream()
-                    .filter(c -> c.getDni().trim()
-                            .equals(nuevo.getDni()))
+                    .filter(c -> c.dni().trim()
+                            .equals(nuevo.dni()))
                     .findFirst()
                     .orElse(null);
 
             if (existente != null) {
-                if (!existente.isActivo()) {
+                if (!existente.activo()) {
                     aviso(Alert.AlertType.WARNING,
                             "DNI de Cliente inactivo",
                             "Ese DNI pertenece a un Cliente inactivo. "
@@ -1415,16 +1405,16 @@ private void crearClienteParticipante() {
                     confirmar.setHeaderText("Usar el Cliente existente");
                     confirmar.setContentText(
                             "El DNI pertenece a "
-                            + existente.getNombre() + " "
-                            + existente.getApellido()
+                            + existente.nombre() + " "
+                            + existente.apellido()
                             + ". ¿Quieres asociar ese registro?");
 
                     if (AlertUtils.showAndWait(confirmar, tablaSalidas)
                             .orElse(ButtonType.CANCEL) == ButtonType.OK) {
 
                         if (participantes.stream().noneMatch(
-                                p -> p.cliente().getId()
-                                        == existente.getId())) {
+                                p -> p.cliente().id()
+                                        == existente.id())) {
                             participantes.add(
                                     new AsignacionParticipante(
                                             existente, false));
@@ -1437,7 +1427,7 @@ private void crearClienteParticipante() {
             }
 
             if (participantes.stream().anyMatch(
-                    p -> p.cliente().getDni().equals(nuevo.getDni()))) {
+                    p -> p.cliente().dni().equals(nuevo.dni()))) {
                 aviso(Alert.AlertType.INFORMATION,
                         "Cliente ya asociado",
                         "Ese DNI ya está asociado a esta Salida.");
@@ -1600,12 +1590,12 @@ private void crearClienteParticipante() {
                             + " · " + a.equipamiento().getCategoria() + " × " + a.cantidad())
                     .collect(java.util.stream.Collectors.joining("\n"));
             String detalleParticipantes = participantes.isEmpty() ? "ninguno" : participantes.stream()
-                    .map(p -> "Ref #" + p.cliente().getId() + " · DNI " + p.cliente().getDni() + " · "
-                            + p.cliente().getApellido() + ", " + p.cliente().getNombre()
-                            + " · Teléfono: " + textoResumen(p.cliente().getTelefono())
-                            + " · Emergencia: " + textoResumen(p.cliente().getContactoEmergenciaNombre())
-                            + " / " + textoResumen(p.cliente().getContactoEmergenciaTelefono())
-                            + " / " + textoResumen(p.cliente().getContactoEmergenciaRelacion()))
+                    .map(p -> "Ref #" + p.cliente().id() + " · DNI " + p.cliente().dni() + " · "
+                            + p.cliente().apellido() + ", " + p.cliente().nombre()
+                            + " · Teléfono: " + textoResumen(p.cliente().telefono())
+                            + " · Emergencia: " + textoResumen(p.cliente().contactoEmergenciaNombre())
+                            + " / " + textoResumen(p.cliente().contactoEmergenciaTelefono())
+                            + " / " + textoResumen(p.cliente().contactoEmergenciaRelacion()))
                     .collect(java.util.stream.Collectors.joining("\n"));
             return "Revisa los datos antes de confirmar:\n\nFecha: " + FechaFormato.formatear(fecha.getValue()) + "\nRuta: " + ruta
                     + (datosRuta.isBlank() ? "" : "\n" + datosRuta) + "\nCheckpoints:\n" + puntos
