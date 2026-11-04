@@ -1,16 +1,13 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.CheckpointDAO;
-import com.example.desktop.model.Checkpoint;
+import com.example.core.excepcion.ErrorCampo;
+import com.example.core.itinerario.Checkpoint;
+import com.example.core.itinerario.ValidadorCheckpoint;
 import com.example.desktop.util.AlertUtils;
 import com.example.desktop.util.FormValidation;
-import com.example.desktop.util.NavigationShell;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -19,33 +16,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.stage.Stage;
 import javafx.stage.Window;
 
-import java.io.IOException;
 import java.net.URL;
-import java.sql.SQLException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/** Formulario en-contenedor para crear o editar un Checkpoint. */
+/** Formulario en-contenedor para crear o editar un Checkpoint del Itinerario pendiente de una Ruta. */
 public class CheckpointFormController implements Initializable {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(CheckpointFormController.class.getName());
-    private static final double LAT_MIN = -90.0;
-    private static final double LAT_MAX = 90.0;
-    private static final double LON_MIN = -180.0;
-    private static final double LON_MAX = 180.0;
-    private static final DateTimeFormatter HORA_FORMATTER =
-            DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT);
     private static final String DECIMAL_PATTERN = "-?\\d*([.,]\\d*)?";
     private static final String HORA_PATTERN = "\\d{0,2}:?\\d{0,2}";
 
@@ -60,12 +40,10 @@ public class CheckpointFormController implements Initializable {
     @FXML private TextArea txtDescripcion;
     @FXML private Button guardarButton;
 
-    private final CheckpointDAO checkpointDAO = new CheckpointDAO();
     private Checkpoint checkpointEnEdicion;
-    private boolean modoItinerario;
     private boolean modificandoCampos;
     private boolean formularioModificado;
-    private double altitudMaxima = Double.POSITIVE_INFINITY;
+    private double altitudMaxima;
     private Consumer<Checkpoint> aceptarCheckpoint;
     private Runnable cancelarItinerario;
     private BooleanSupplier confirmarSalidaItinerario;
@@ -77,11 +55,11 @@ public class CheckpointFormController implements Initializable {
         txtAltitud.setTextFormatter(createDecimalTextFormatter());
         txtHora.setTextFormatter(createHoraTextFormatter());
 
-        FormValidation.watch(txtNombre, txtNombre.textProperty(), this::validarNombre);
-        FormValidation.watch(txtHora, txtHora.textProperty(), this::validarHora);
-        FormValidation.watch(txtLatitud, txtLatitud.textProperty(), this::validarLatitud);
-        FormValidation.watch(txtLongitud, txtLongitud.textProperty(), this::validarLongitud);
-        FormValidation.watch(txtAltitud, txtAltitud.textProperty(), this::validarAltitud);
+        FormValidation.watch(txtNombre, txtNombre.textProperty(), () -> errorDe("nombre"));
+        FormValidation.watch(txtHora, txtHora.textProperty(), () -> errorDe("hora"));
+        FormValidation.watch(txtLatitud, txtLatitud.textProperty(), () -> errorDe("latitud"));
+        FormValidation.watch(txtLongitud, txtLongitud.textProperty(), () -> errorDe("longitud"));
+        FormValidation.watch(txtAltitud, txtAltitud.textProperty(), () -> errorDe("altitud"));
 
         txtNombre.textProperty().addListener((obs, oldValue, newValue) -> marcarModificado());
         txtHora.textProperty().addListener((obs, oldValue, newValue) -> marcarModificado());
@@ -93,14 +71,6 @@ public class CheckpointFormController implements Initializable {
         Platform.runLater(txtNombre::requestFocus);
     }
 
-    /** Mantiene el modo de edición directa usado por el módulo de Checkpoints. */
-    public void cargarCheckpoint(Checkpoint checkpoint) {
-        checkpointEnEdicion = checkpoint;
-        modoItinerario = false;
-        configurarTitulo(checkpoint != null);
-        cargarCampos(checkpoint);
-    }
-
     /** Abre el formulario como parte de la edición pendiente del Itinerario. */
     public void cargarCheckpointParaItinerario(
             Checkpoint checkpoint,
@@ -109,7 +79,6 @@ public class CheckpointFormController implements Initializable {
             Runnable cancelar,
             BooleanSupplier confirmarSalida) {
         checkpointEnEdicion = checkpoint;
-        modoItinerario = true;
         altitudMaxima = maximoRuta;
         aceptarCheckpoint = aceptar;
         cancelarItinerario = cancelar;
@@ -129,12 +98,12 @@ public class CheckpointFormController implements Initializable {
 
     private void cargarCampos(Checkpoint checkpoint) {
         modificandoCampos = true;
-        txtNombre.setText(checkpoint == null ? "" : checkpoint.getNombre());
-        txtHora.setText(checkpoint == null ? "" : checkpoint.getHora());
-        txtLatitud.setText(checkpoint == null ? "" : String.valueOf(checkpoint.getLatitud()));
-        txtLongitud.setText(checkpoint == null ? "" : String.valueOf(checkpoint.getLongitud()));
-        txtAltitud.setText(checkpoint == null ? "0" : String.valueOf(checkpoint.getAltitud()));
-        txtDescripcion.setText(checkpoint == null ? "" : checkpoint.getDescripcion());
+        txtNombre.setText(checkpoint == null ? "" : checkpoint.nombre());
+        txtHora.setText(checkpoint == null ? "" : checkpoint.hora());
+        txtLatitud.setText(checkpoint == null ? "" : String.valueOf(checkpoint.latitud()));
+        txtLongitud.setText(checkpoint == null ? "" : String.valueOf(checkpoint.longitud()));
+        txtAltitud.setText(checkpoint == null ? "0" : String.valueOf(checkpoint.altitud()));
+        txtDescripcion.setText(checkpoint == null ? "" : checkpoint.descripcion());
         modificandoCampos = false;
         formularioModificado = false;
         Platform.runLater(txtNombre::requestFocus);
@@ -146,35 +115,7 @@ public class CheckpointFormController implements Initializable {
 
     @FXML
     private void guardarCheckpoint() {
-        if (modoItinerario) {
-            guardarEnEdicionPendiente();
-            return;
-        }
-        if (!validateInput()) return;
-
-        Checkpoint resultado = crearCheckpoint();
-        try {
-            if (checkpointEnEdicion == null) {
-                long id = checkpointDAO.insertar(resultado);
-                if (id == -1) {
-                    AlertUtils.showError(getWindow(), "Error al guardar",
-                            "No se pudo confirmar el guardado del Checkpoint.");
-                    return;
-                }
-            } else if (checkpointDAO.actualizar(resultado) == 0) {
-                AlertUtils.showError(getWindow(), "Error al guardar",
-                        "No se pudo actualizar el Checkpoint.");
-                return;
-            }
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error al guardar el Checkpoint", ex);
-            AlertUtils.showError(getWindow(), "Error al guardar",
-                    "No se pudo guardar el Checkpoint en la base de datos.\n" + ex.getMessage());
-            return;
-        }
-
-        mostrarConfirmacionExito();
-        volverListado();
+        guardarEnEdicionPendiente();
     }
 
     private boolean guardarEnEdicionPendiente() {
@@ -185,27 +126,22 @@ public class CheckpointFormController implements Initializable {
 
     private Checkpoint crearCheckpoint() {
         return new Checkpoint(
-                checkpointEnEdicion == null ? 0L : checkpointEnEdicion.getId(),
+                checkpointEnEdicion == null ? 0L : checkpointEnEdicion.id(),
                 txtNombre.getText().trim(),
                 txtHora.getText().trim(),
-                parseDecimal(txtLatitud.getText()),
-                parseDecimal(txtLongitud.getText()),
-                parseDecimal(txtAltitud.getText()),
+                ValidadorCheckpoint.parsearDecimal(txtLatitud.getText()),
+                ValidadorCheckpoint.parsearDecimal(txtLongitud.getText()),
+                ValidadorCheckpoint.parsearDecimal(txtAltitud.getText()),
                 txtDescripcion.getText().trim());
     }
 
     @FXML
     private void cancelar() {
-        if (modoItinerario) {
-            if (cancelarItinerario != null) cancelarItinerario.run();
-        } else {
-            volverListado();
-        }
+        if (cancelarItinerario != null) cancelarItinerario.run();
     }
 
     /** Protege la navegación de la shell ante datos de formulario pendientes. */
     public boolean confirmarNavegacion() {
-        if (!modoItinerario) return true;
         if (!formularioModificado) {
             return confirmarSalidaItinerario == null || confirmarSalidaItinerario.getAsBoolean();
         }
@@ -228,22 +164,6 @@ public class CheckpointFormController implements Initializable {
         return confirmarSalidaItinerario == null || confirmarSalidaItinerario.getAsBoolean();
     }
 
-    private void volverListado() {
-        try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/example/fxml/checkpoints.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) txtNombre.getScene().getWindow();
-            NavigationShell.setNavigationGuard(stage.getScene(), null);
-            NavigationShell.setRoot(stage.getScene(), root);
-            stage.setTitle("Checkpoints");
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Error al volver al listado de Checkpoints", ex);
-            AlertUtils.showError(getWindow(), "Error",
-                    "No se pudo volver al listado de Checkpoints.");
-        }
-    }
-
     public boolean validateInput() {
         boolean valido = true;
         valido = FormValidation.validateNow(txtNombre) && valido;
@@ -254,50 +174,11 @@ public class CheckpointFormController implements Initializable {
         return valido;
     }
 
-    private String validarNombre() {
-        return txtNombre.getText().isBlank() ? "Ingresa el nombre del Checkpoint." : null;
-    }
-
-    private String validarHora() {
-        String hora = txtHora.getText().trim();
-        if (!hora.matches("(?:[01]\\d|2[0-3]):[0-5]\\d")) {
-            return "Usa el formato de 24 horas HH:mm, por ejemplo 14:30.";
-        }
-        try {
-            LocalTime.parse(hora, HORA_FORMATTER);
-            return null;
-        } catch (DateTimeParseException ex) {
-            return "Usa el formato de 24 horas HH:mm, por ejemplo 14:30.";
-        }
-    }
-
-    private String validarLatitud() {
-        return validarRango(txtLatitud.getText(), LAT_MIN, LAT_MAX,
-                "La latitud debe estar entre -90 y 90.");
-    }
-
-    private String validarLongitud() {
-        return validarRango(txtLongitud.getText(), LON_MIN, LON_MAX,
-                "La longitud debe estar entre -180 y 180.");
-    }
-
-    private String validarAltitud() {
-        String error = validarRango(txtAltitud.getText(), 0, altitudMaxima,
-                modoItinerario
-                        ? "La altitud debe estar entre 0 y " + altitudMaxima + " m."
-                        : "La altitud debe ser mayor o igual a 0 m.");
-        return error;
-    }
-
-    private String validarRango(String texto, double minimo, double maximo, String mensaje) {
-        if (texto == null || texto.isBlank()) return "Este campo es obligatorio.";
-        try {
-            double numero = parseDecimal(texto);
-            return Double.isFinite(numero) && numero >= minimo && numero <= maximo
-                    ? null : mensaje;
-        } catch (NumberFormatException ex) {
-            return "Ingresa un número decimal válido.";
-        }
+    /** Validación en vivo con el validador de core: error del campo indicado, o null si es válido. */
+    private String errorDe(String campo) {
+        return ValidadorCheckpoint.validar(txtNombre.getText(), txtHora.getText(), txtLatitud.getText(),
+                        txtLongitud.getText(), txtAltitud.getText(), altitudMaxima).stream()
+                .filter(e -> e.campo().equals(campo)).map(ErrorCampo::mensaje).findFirst().orElse(null);
     }
 
     private TextFormatter<String> createDecimalTextFormatter() {
@@ -314,22 +195,7 @@ public class CheckpointFormController implements Initializable {
         });
     }
 
-    private void mostrarConfirmacionExito() {
-        boolean esAlta = checkpointEnEdicion == null;
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setTitle(esAlta ? "Checkpoint creado" : "Checkpoint actualizado");
-        alerta.setHeaderText(null);
-        alerta.setContentText(esAlta
-                ? "El Checkpoint se creó correctamente."
-                : "El Checkpoint se actualizó correctamente.");
-        AlertUtils.showAndWait(alerta, getWindow());
-    }
-
     private Window getWindow() {
         return txtNombre.getScene() == null ? null : txtNombre.getScene().getWindow();
-    }
-
-    private static double parseDecimal(String raw) {
-        return Double.parseDouble(raw.trim().replace(',', '.'));
     }
 }

@@ -1,7 +1,10 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.RutaCheckpointDAO;
-import com.example.desktop.model.Checkpoint;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.excepcion.ValidacionException;
+import com.example.core.itinerario.Checkpoint;
+import com.example.core.itinerario.Itinerario;
+import com.example.desktop.Servicios;
 import com.example.desktop.model.Ruta;
 import com.example.desktop.util.AlertUtils;
 import com.example.desktop.util.NavigationShell;
@@ -28,8 +31,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /** Edición pendiente y guardado atómico del Itinerario de una Ruta. */
@@ -43,8 +44,7 @@ public class ItinerarioRutaController {
     @FXML private ListView<Checkpoint> lista;
     @FXML private Button agregarButton;
 
-    private final RutaCheckpointDAO dao = new RutaCheckpointDAO();
-    private final List<Checkpoint> puntos = new ArrayList<>();
+    private Itinerario itinerario = Itinerario.vacio();
     private Ruta ruta;
     private Scene scene;
     private boolean cambios;
@@ -62,9 +62,8 @@ public class ItinerarioRutaController {
                 "Altitud máxima %.0f m · %s · Dificultad %s / %s",
                 ruta.getAltitudMaxima(), ruta.getTipoTerreno(),
                 ruta.getDificultadTecnica(), ruta.getDificultadFisica()));
-        puntos.clear();
-        puntos.addAll(dao.obtenerPorRuta(ruta.getId()));
-        ordenarPorHora();
+        itinerario = Servicios.itinerarios().obtener(ruta.getId());
+        cambios = false;
         configurarFilas();
         refrescar();
         Platform.runLater(() -> {
@@ -85,10 +84,10 @@ public class ItinerarioRutaController {
             private final Region separador = new Region();
             private final Button editar = RowActionButton.create(
                     "Editar Checkpoint", RowActionButton.Icon.EDIT,
-                    event -> ItinerarioRutaController.this.editar(getItem()));
+                    event -> ItinerarioRutaController.this.editar(getIndex()));
             private final Button quitar = RowActionButton.create(
                     "Quitar Checkpoint", RowActionButton.Icon.DELETE,
-                    event -> ItinerarioRutaController.this.quitar(getItem()));
+                    event -> ItinerarioRutaController.this.quitar(getIndex()));
             private final HBox acciones = new HBox(4, editar, quitar);
             private final HBox fila = new HBox(14, hora, datos, separador, acciones);
 
@@ -125,10 +124,10 @@ public class ItinerarioRutaController {
                     setText(null);
                     return;
                 }
-                hora.setText(checkpoint.getHora());
-                nombre.setText(checkpoint.getNombre());
+                hora.setText(checkpoint.hora());
+                nombre.setText(checkpoint.nombre());
                 detalle.setText(String.format("%.0f m · %.5f, %.5f",
-                        checkpoint.getAltitud(), checkpoint.getLatitud(), checkpoint.getLongitud()));
+                        checkpoint.altitud(), checkpoint.latitud(), checkpoint.longitud()));
                 setGraphic(fila);
                 setText(null);
             }
@@ -136,7 +135,7 @@ public class ItinerarioRutaController {
     }
 
     private void refrescar() {
-        ordenarPorHora();
+        List<Checkpoint> puntos = itinerario.checkpoints();
         lista.setItems(FXCollections.observableArrayList(puntos));
         cantidad.setText("(" + puntos.size() + ")");
         estado.setText(puntos.isEmpty()
@@ -147,17 +146,15 @@ public class ItinerarioRutaController {
                 : Math.min(420, Math.max(82, puntos.size() * 82.0)));
     }
 
-    private void ordenarPorHora() {
-        // List.sort es estable: conserva el orden explícito entre horas iguales.
-        puntos.sort(Comparator.comparing(Checkpoint::getHora));
-    }
-
     @FXML
     private void agregar() {
-        editar(null);
+        editar(-1);
     }
 
-    private void editar(Checkpoint original) {
+    /** @param posicion posición en el Itinerario del Checkpoint a editar, o -1 para uno nuevo */
+    private void editar(int posicion) {
+        if (posicion >= itinerario.cantidad()) return;
+        Checkpoint original = posicion < 0 ? null : itinerario.checkpoints().get(posicion);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                     "/com/example/fxml/checkpoint-form.fxml"));
@@ -166,7 +163,7 @@ public class ItinerarioRutaController {
             controller.cargarCheckpointParaItinerario(
                     original,
                     ruta.getAltitudMaxima(),
-                    actualizado -> guardarCheckpointPendiente(original, actualizado),
+                    actualizado -> guardarCheckpointPendiente(posicion, actualizado),
                     this::volverAlItinerario,
                     this::confirmarSalida);
             scene = lista.getScene();
@@ -178,17 +175,8 @@ public class ItinerarioRutaController {
         }
     }
 
-    private void guardarCheckpointPendiente(Checkpoint original, Checkpoint actualizado) {
-        if (original == null) {
-            puntos.add(actualizado);
-        } else {
-            for (int i = 0; i < puntos.size(); i++) {
-                if (puntos.get(i) == original) {
-                    puntos.set(i, actualizado);
-                    break;
-                }
-            }
-        }
+    private void guardarCheckpointPendiente(int posicion, Checkpoint actualizado) {
+        itinerario = posicion < 0 ? itinerario.agregar(actualizado) : itinerario.reemplazar(posicion, actualizado);
         cambios = true;
         volverAlItinerario();
         refrescar();
@@ -200,9 +188,9 @@ public class ItinerarioRutaController {
         NavigationShell.setRoot(scene, root, "itinerario-ruta");
     }
 
-    private void quitar(Checkpoint checkpoint) {
-        if (checkpoint != null) {
-            puntos.remove(checkpoint);
+    private void quitar(int posicion) {
+        if (posicion >= 0 && posicion < itinerario.cantidad()) {
+            itinerario = itinerario.quitar(posicion);
             cambios = true;
             refrescar();
         }
@@ -210,19 +198,18 @@ public class ItinerarioRutaController {
 
     @FXML
     private void guardar() {
-        if (puntos.size() == 1) {
-            alerta("Itinerario incompleto",
-                    "El Itinerario necesita inicio y fin. Agrega otro Checkpoint o quita el único punto.");
-            return;
-        }
-        if (dao.reemplazarPorRuta(ruta.getId(), List.copyOf(puntos))) {
+        try {
+            Servicios.itinerarios().guardar(ruta.getId(), itinerario);
+            itinerario = Servicios.itinerarios().obtener(ruta.getId());
             cambios = false;
             refrescar();
             ToastNotifications.show(scene.getWindow(), "Itinerario guardado",
                     ToastNotifications.Kind.SUCCESS);
-        } else {
+        } catch (ValidacionException ex) {
+            alerta("Itinerario inválido", ex.getMessage());
+        } catch (ExcepcionNegocio | IllegalStateException ex) {
             alerta("No se pudo guardar",
-                    "El Itinerario anterior se conserva. Verifica la altitud máxima y vuelve a intentar.");
+                    "El Itinerario anterior se conserva. " + ex.getMessage());
         }
     }
 

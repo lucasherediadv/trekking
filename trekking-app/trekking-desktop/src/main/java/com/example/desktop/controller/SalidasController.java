@@ -1,12 +1,12 @@
 package com.example.desktop.controller;
 
 import com.example.desktop.dao.RutaDAO;
-import com.example.desktop.dao.RutaCheckpointDAO;
+import com.example.desktop.Servicios;
 import com.example.desktop.dao.SalidaDAO;
 import com.example.desktop.service.FichaOperativaPDFService;
 import com.example.desktop.model.Ruta;
 import com.example.desktop.model.Salida;
-import com.example.desktop.model.Checkpoint;
+import com.example.core.itinerario.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
 import com.example.desktop.dao.EquipamientoDAO;
@@ -352,7 +352,7 @@ public class SalidasController {
                     cambiosRealizados = true;
                     actualizarDesdeRuta = false;
                     checkpointsGuardarEnRuta.clear();
-                    checkpoints.clear(); checkpoints.addAll(new RutaCheckpointDAO().obtenerPorRuta(b.getId())); actualizarPuntos();
+                    checkpoints.clear(); checkpoints.addAll(Servicios.itinerarios().obtener(b.getId()).checkpoints()); actualizarPuntos();
                 }
                 actualizarDetalle();
             });
@@ -520,10 +520,10 @@ public class SalidasController {
                 super.updateItem(cp, empty);
                 setText(null);
                 if (empty || cp == null) { setGraphic(null); return; }
-                Button editar = RowActionButton.create("Editar checkpoint " + cp.getNombre(), RowActionButton.Icon.EDIT, e -> editarCheckpoint(cp));
-                Button quitar = RowActionButton.create("Quitar checkpoint " + cp.getNombre(), RowActionButton.Icon.DELETE, e -> quitarCheckpoint(cp));
+                Button editar = RowActionButton.create("Editar checkpoint " + cp.nombre(), RowActionButton.Icon.EDIT, e -> editarCheckpoint(cp));
+                Button quitar = RowActionButton.create("Quitar checkpoint " + cp.nombre(), RowActionButton.Icon.DELETE, e -> quitarCheckpoint(cp));
                 quitar.getStyleClass().add("row-action-danger");
-                setGraphic(filaLista(List.of(etiquetaFila(cp.getHora(), 56), etiquetaFila(cp.getNombre(), -1), etiquetaFila(cp.getAltitud() + " m", 80)), editar, quitar));
+                setGraphic(filaLista(List.of(etiquetaFila(cp.hora(), 56), etiquetaFila(cp.nombre(), -1), etiquetaFila(cp.altitud() + " m", 80)), editar, quitar));
             }});
             listaEquipo.setCellFactory(v -> new ListCell<>() { @Override protected void updateItem(AsignacionEquipamiento a, boolean empty) {
                 super.updateItem(a, empty);
@@ -582,7 +582,7 @@ public class SalidasController {
                 cambiosRealizados = true;
                 actualizarDesdeRuta = true;
                 checkpointsGuardarEnRuta.clear();
-                checkpoints.clear(); checkpoints.addAll(new RutaCheckpointDAO().obtenerPorRuta(rutas.getValue().getId())); actualizarPuntos();
+                checkpoints.clear(); checkpoints.addAll(Servicios.itinerarios().obtener(rutas.getValue().getId()).checkpoints()); actualizarPuntos();
             }
         }
 
@@ -676,15 +676,15 @@ public class SalidasController {
 
         private void editarCheckpoint(Checkpoint existente) {
             Ruta ruta = rutas.getValue(); if (ruta == null) return;
-            TextField nombre = new TextField(existente == null ? "" : existente.getNombre());
-            TextField hora = new TextField(existente == null ? "" : existente.getHora());
-            TextField latitud = new TextField(existente == null ? "" : String.valueOf(existente.getLatitud()));
-            TextField longitud = new TextField(existente == null ? "" : String.valueOf(existente.getLongitud()));
-            TextField altitud = new TextField(existente == null ? "" : String.valueOf(existente.getAltitud()));
-            TextField descripcion = new TextField(existente == null ? "" : existente.getDescripcion());
+            TextField nombre = new TextField(existente == null ? "" : existente.nombre());
+            TextField hora = new TextField(existente == null ? "" : existente.hora());
+            TextField latitud = new TextField(existente == null ? "" : String.valueOf(existente.latitud()));
+            TextField longitud = new TextField(existente == null ? "" : String.valueOf(existente.longitud()));
+            TextField altitud = new TextField(existente == null ? "" : String.valueOf(existente.altitud()));
+            TextField descripcion = new TextField(existente == null ? "" : existente.descripcion());
             CheckBox guardarRuta = new CheckBox("Guardar también en la Ruta");
             boolean activa = rutaDAO.estaActiva(ruta.getId());
-            int cantidadPlantilla = new RutaCheckpointDAO().obtenerPorRuta(ruta.getId()).size();
+            int cantidadPlantilla = Servicios.itinerarios().obtener(ruta.getId()).cantidad();
             boolean permiteGuardar = cantidadPlantilla + 1 >= 2;
             guardarRuta.setVisible(existente == null && activa && permiteGuardar);
             guardarRuta.setManaged(existente == null && activa && permiteGuardar);
@@ -714,8 +714,8 @@ public class SalidasController {
                 Checkpoint cp = new Checkpoint(0L, nombre.getText().trim(), hora.getText().trim(),
                         Double.parseDouble(latitud.getText().trim().replace(',', '.')), Double.parseDouble(longitud.getText().trim().replace(',', '.')),
                         Double.parseDouble(altitud.getText().trim().replace(',', '.')), descripcion.getText().trim());
-                if (cp.getNombre().isBlank() || !cp.getHora().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || cp.getLatitud() < -90 || cp.getLatitud() > 90
-                        || cp.getLongitud() < -180 || cp.getLongitud() > 180 || cp.getAltitud() < 0 || cp.getAltitud() > altitudMaxima)
+                if (cp.nombre().isBlank() || !cp.hora().matches("(?:[01]\\d|2[0-3]):[0-5]\\d") || cp.latitud() < -90 || cp.latitud() > 90
+                        || cp.longitud() < -180 || cp.longitud() > 180 || cp.altitud() < 0 || cp.altitud() > altitudMaxima)
                     throw new IllegalArgumentException("Verifica los campos; la altitud debe estar entre cero y " + altitudMaxima + " m.");
                 if (existente == null) {
                     checkpoints.add(cp);
@@ -785,7 +785,6 @@ public class SalidasController {
 
     private final class WizardSalida {
         private final Scene escenaAplicacion = tablaSalidas.getScene();
-        private final RutaCheckpointDAO checkpointDAO = new RutaCheckpointDAO();
         private final List<AsignacionEquipamiento> asignaciones = new ArrayList<>();
         private final List<AsignacionParticipante> participantes = new ArrayList<>();
         private final VBox content = new VBox(14);
@@ -1552,8 +1551,8 @@ private void crearClienteParticipante() {
         private void actualizarDetalle() {
             Ruta r = rutas.getValue();
             if (r == null) { detalle.setText("Selecciona una Ruta para ver sus datos."); return; }
-            String puntos = checkpointDAO.obtenerPorRuta(r.getId()).stream()
-                    .map(cp -> cp.getHora() + " · " + cp.getNombre() + " · " + cp.getAltitud() + " m")
+            String puntos = Servicios.itinerarios().obtener(r.getId()).checkpoints().stream()
+                    .map(cp -> cp.hora() + " · " + cp.nombre() + " · " + cp.altitud() + " m")
                     .collect(java.util.stream.Collectors.joining("\n"));
             detalle.setWrapText(true);
             detalle.setText(r.getNombre() + " · " + r.getAltitudMaxima() + " m · " + r.getTipoTerreno() + " · " + r.getDificultadTecnica() + "/" + r.getDificultadFisica()
@@ -1571,10 +1570,10 @@ private void crearClienteParticipante() {
                 puntos = "Sin Checkpoints";
             } else {
                 ruta = rutaSeleccionada.getNombre();
-                puntos = checkpointDAO.obtenerPorRuta(rutaSeleccionada.getId()).stream()
-                        .map(cp -> cp.getHora() + " · " + cp.getNombre() + " · " + cp.getLatitud() + ", "
-                                + cp.getLongitud() + " · " + cp.getAltitud() + " m"
-                                + (cp.getDescripcion() == null || cp.getDescripcion().isBlank() ? "" : " · " + cp.getDescripcion()))
+                puntos = Servicios.itinerarios().obtener(rutaSeleccionada.getId()).checkpoints().stream()
+                        .map(cp -> cp.hora() + " · " + cp.nombre() + " · " + cp.latitud() + ", "
+                                + cp.longitud() + " · " + cp.altitud() + " m"
+                                + (cp.descripcion() == null || cp.descripcion().isBlank() ? "" : " · " + cp.descripcion()))
                         .collect(java.util.stream.Collectors.joining("\n"));
                 if (puntos.isBlank()) puntos = "Sin Checkpoints";
             }

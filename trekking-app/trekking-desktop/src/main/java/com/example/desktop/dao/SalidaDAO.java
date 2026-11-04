@@ -3,7 +3,7 @@ package com.example.desktop.dao;
 import com.example.desktop.database.ConexionDB;
 import com.example.desktop.model.Ruta;
 import com.example.desktop.model.Salida;
-import com.example.desktop.model.Checkpoint;
+import com.example.core.itinerario.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
 import com.example.desktop.model.AsignacionParticipante;
@@ -104,11 +104,11 @@ public class SalidaDAO {
                 for (Checkpoint cp : puntos) validarCheckpoint(cp, ruta.getAltitudMaxima());
                 if (!guardarEnRuta.isEmpty()) {
                     if (mismaRuta && !rutaActiva(c, rutaId)) throw new SQLException("La Ruta inactiva no admite nuevos Checkpoints.");
-                    int total = new RutaCheckpointDAO().obtenerPorRuta(c, rutaId).size();
+                    int total = checkpointsDeRuta(c, rutaId).size();
                     if (total + guardarEnRuta.size() == 1) throw new SQLException("La Ruta no puede quedar con exactamente un Checkpoint.");
                     for (Checkpoint cp : guardarEnRuta) {
                         validarCheckpoint(cp, ruta.getAltitudMaxima());
-                        if (cp.getAltitud() > rutaCatalogo.getAltitudMaxima())
+                        if (cp.altitud() > rutaCatalogo.getAltitudMaxima())
                             throw new SQLException("El Checkpoint supera la altitud máxima actual de la Ruta.");
                     }
                 }
@@ -124,9 +124,9 @@ public class SalidaDAO {
                 try (PreparedStatement ins = c.prepareStatement("INSERT INTO salida_checkpoints (salida_id,nombre,hora,latitud,longitud,altitud,descripcion,orden) VALUES (?,?,?,?,?,?,?,?)")) {
                     int orden = 0;
                     for (Checkpoint cp : puntos) {
-                        ins.setInt(1, salidaId); ins.setString(2, cp.getNombre().trim()); ins.setString(3, cp.getHora());
-                        ins.setDouble(4, cp.getLatitud()); ins.setDouble(5, cp.getLongitud()); ins.setDouble(6, cp.getAltitud());
-                        ins.setString(7, cp.getDescripcion()); ins.setInt(8, orden++); ins.addBatch();
+                        ins.setInt(1, salidaId); ins.setString(2, cp.nombre().trim()); ins.setString(3, cp.hora());
+                        ins.setDouble(4, cp.latitud()); ins.setDouble(5, cp.longitud()); ins.setDouble(6, cp.altitud());
+                        ins.setString(7, cp.descripcion()); ins.setInt(8, orden++); ins.addBatch();
                     }
                     ins.executeBatch();
                 }
@@ -228,20 +228,36 @@ public class SalidaDAO {
         }
     }
 
+    private List<Checkpoint> checkpointsDeRuta(Connection c, int rutaId) throws SQLException {
+        try (PreparedStatement ps = c.prepareStatement("""
+                SELECT cp.id, cp.nombre, cp.hora, cp.latitud, cp.longitud, cp.altitud, cp.descripcion
+                FROM checkpoints cp INNER JOIN ruta_checkpoints rc ON rc.checkpoint_id = cp.id
+                WHERE rc.ruta_id = ? ORDER BY rc.orden
+                """)) {
+            ps.setInt(1, rutaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Checkpoint> puntos = new ArrayList<>();
+                while (rs.next()) puntos.add(new Checkpoint(rs.getLong("id"), rs.getString("nombre"), rs.getString("hora"),
+                        rs.getDouble("latitud"), rs.getDouble("longitud"), rs.getDouble("altitud"), rs.getString("descripcion")));
+                return puntos;
+            }
+        }
+    }
+
     private void validarCheckpoint(Checkpoint cp, double maxima) throws SQLException {
-        if (cp == null || cp.getNombre() == null || cp.getNombre().isBlank() || cp.getHora() == null
-                || !cp.getHora().matches("(?:[01]\\d|2[0-3]):[0-5]\\d")
-                || !Double.isFinite(cp.getLatitud()) || cp.getLatitud() < -90 || cp.getLatitud() > 90
-                || !Double.isFinite(cp.getLongitud()) || cp.getLongitud() < -180 || cp.getLongitud() > 180
-                || !Double.isFinite(cp.getAltitud()) || cp.getAltitud() < 0 || cp.getAltitud() > maxima)
+        if (cp == null || cp.nombre() == null || cp.nombre().isBlank() || cp.hora() == null
+                || !cp.hora().matches("(?:[01]\\d|2[0-3]):[0-5]\\d")
+                || !Double.isFinite(cp.latitud()) || cp.latitud() < -90 || cp.latitud() > 90
+                || !Double.isFinite(cp.longitud()) || cp.longitud() < -180 || cp.longitud() > 180
+                || !Double.isFinite(cp.altitud()) || cp.altitud() < 0 || cp.altitud() > maxima)
             throw new SQLException("Revisa nombre, hora, coordenadas y altitud de cada Checkpoint. Ninguno puede superar la altitud máxima copiada de la Ruta (" + maxima + " m).");
     }
 
     private void agregarCheckpointRuta(Connection c, int rutaId, Checkpoint cp) throws SQLException {
         long id;
         try (PreparedStatement ps = c.prepareStatement("INSERT INTO checkpoints (nombre,hora,latitud,longitud,altitud,descripcion) VALUES (?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, cp.getNombre().trim()); ps.setString(2, cp.getHora()); ps.setDouble(3, cp.getLatitud());
-            ps.setDouble(4, cp.getLongitud()); ps.setDouble(5, cp.getAltitud()); ps.setString(6, cp.getDescripcion()); ps.executeUpdate();
+            ps.setString(1, cp.nombre().trim()); ps.setString(2, cp.hora()); ps.setDouble(3, cp.latitud());
+            ps.setDouble(4, cp.longitud()); ps.setDouble(5, cp.altitud()); ps.setString(6, cp.descripcion()); ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) { if (!rs.next()) throw new SQLException("No se pudo crear el Checkpoint de Ruta."); id = rs.getLong(1); }
         }
         try (PreparedStatement ps = c.prepareStatement("INSERT INTO ruta_checkpoints (ruta_id,checkpoint_id,orden) VALUES (?,?,?)")) {
@@ -403,7 +419,7 @@ public class SalidaDAO {
                         salidaId = keys.getInt(1);
                     }
                 }
-                List<Checkpoint> puntos = new RutaCheckpointDAO().obtenerPorRuta(c, idRuta);
+                List<Checkpoint> puntos = checkpointsDeRuta(c, idRuta);
                 try (PreparedStatement ps = c.prepareStatement("""
                         INSERT INTO salida_checkpoints
                             (salida_id, nombre, hora, latitud, longitud, altitud, descripcion, orden)
@@ -411,11 +427,11 @@ public class SalidaDAO {
                         """)) {
                     int orden = 0;
                     for (Checkpoint cp : puntos) {
-                        if (cp.getAltitud() > ruta.getAltitudMaxima())
+                        if (cp.altitud() > ruta.getAltitudMaxima())
                             throw new SQLException("Un Checkpoint supera la altitud máxima de la Ruta.");
-                        ps.setInt(1, salidaId); ps.setString(2, cp.getNombre()); ps.setString(3, cp.getHora());
-                        ps.setDouble(4, cp.getLatitud()); ps.setDouble(5, cp.getLongitud());
-                        ps.setDouble(6, cp.getAltitud()); ps.setString(7, cp.getDescripcion());
+                        ps.setInt(1, salidaId); ps.setString(2, cp.nombre()); ps.setString(3, cp.hora());
+                        ps.setDouble(4, cp.latitud()); ps.setDouble(5, cp.longitud());
+                        ps.setDouble(6, cp.altitud()); ps.setString(7, cp.descripcion());
                         ps.setInt(8, orden++); ps.addBatch();
                     }
                     ps.executeBatch();
