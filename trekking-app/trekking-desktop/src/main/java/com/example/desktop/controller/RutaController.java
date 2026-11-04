@@ -1,8 +1,9 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.RutaDAO;
-import com.example.desktop.dao.RutaCheckpointDAO;
-import com.example.desktop.model.Ruta;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.ruta.CasosDeUsoRutas;
+import com.example.core.ruta.Ruta;
+import com.example.desktop.Servicios;
 import com.example.desktop.util.NavigationShell;
 import com.example.desktop.util.TableEmptyState;
 import com.example.desktop.util.TableHeight;
@@ -29,14 +30,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.ListCell;
 import javafx.stage.Stage;
 
 public class RutaController implements Initializable {
 
-        private final RutaDAO rutaDAO = new RutaDAO();
-        private final RutaCheckpointDAO rutaCheckpointDAO = new RutaCheckpointDAO();
+        private final CasosDeUsoRutas rutasUseCases = Servicios.rutas();
 
         private ObservableList<Ruta> rutas;
         private FilteredList<Ruta> rutasFiltradas;
@@ -96,27 +95,29 @@ public class RutaController implements Initializable {
                 tablaRutas.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
                 colNombre.setCellValueFactory(
-                                new PropertyValueFactory<>("nombre"));
+                                data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().nombre()));
 
                 colNombre.setComparator(String.CASE_INSENSITIVE_ORDER);
                 colNombre.setSortType(TableColumn.SortType.ASCENDING);
 
                 colAltitudMaxima.setCellValueFactory(
-                                new PropertyValueFactory<>("altitudMaxima"));
+                                data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().altitudMaxima()));
 
                 colTipoTerreno.setCellValueFactory(
-                                new PropertyValueFactory<>("tipoTerreno"));
+                                data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().tipoTerreno()));
 
                 colDificultadTecnica.setCellValueFactory(
-                                new PropertyValueFactory<>("dificultadTecnica"));
+                                data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().dificultadTecnica()));
 
                 colDificultadFisica.setCellValueFactory(
-                                new PropertyValueFactory<>("dificultadFisica"));
+                                data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().dificultadFisica()));
                 colDificultadTecnica.setCellFactory(column -> com.example.desktop.util.EstadoCell.create(this::tonoDificultad));
                 colDificultadFisica.setCellFactory(column -> com.example.desktop.util.EstadoCell.create(this::tonoDificultad));
                 colEstadoItinerario.setCellValueFactory(data -> {
-                        int cantidad = rutaCheckpointDAO.obtenerPorRuta(data.getValue().getId()).size();
-                        return new javafx.beans.property.SimpleStringProperty(cantidad == 0 ? "Borrador · 0" : cantidad + " Checkpoints · Completa");
+                        Ruta ruta = data.getValue();
+                        return new javafx.beans.property.SimpleStringProperty(ruta.esBorrador()
+                                        ? "Borrador · 0"
+                                        : ruta.cantidadCheckpoints() + " Checkpoints · Completa");
                 });
                 colAcciones.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue()));
 
@@ -124,7 +125,7 @@ public class RutaController implements Initializable {
                         @Override protected void updateItem(Ruta ruta, boolean empty) {
                                 super.updateItem(ruta, empty);
                                 if (empty || ruta == null) { com.example.desktop.util.RowActionCell.clear(this); return; }
-                                boolean activa = rutaDAO.estaActiva(ruta.getId());
+                                boolean activa = ruta.activa();
                                 javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(3);
                                 Button estado = com.example.desktop.util.RowActionButton.create(activa ? "Dar de baja" : "Reactivar",
                                         activa ? com.example.desktop.util.RowActionButton.Icon.DELETE : com.example.desktop.util.RowActionButton.Icon.RESTORE,
@@ -149,9 +150,9 @@ public class RutaController implements Initializable {
         private void cargarRutas() {
 
                 rutas = FXCollections.observableArrayList(switch (filtroEstadoCombo.getValue()) {
-                        case "Inactivo" -> rutaDAO.obtenerTodasInactivas();
-                        case "Activo" -> rutaDAO.obtenerTodas();
-                        default -> rutaDAO.obtenerTodasIncluyendoInactivas();
+                        case "Inactivo" -> rutasUseCases.listarDadasDeBaja();
+                        case "Activo" -> rutasUseCases.listarActivas();
+                        default -> rutasUseCases.listarTodas();
                 });
 
                 rutasFiltradas = new FilteredList<>(rutas);
@@ -165,7 +166,7 @@ public class RutaController implements Initializable {
                 try {
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/fxml/itinerario-ruta.fxml"));
                         Parent root = loader.load();
-                        loader.<ItinerarioRutaController>getController().cargar(ruta);
+                        loader.<ItinerarioRutaController>getController().cargar(com.example.desktop.model.Ruta.desde(ruta));
                         NavigationShell.setRoot(tablaRutas.getScene(), root, "itinerario-ruta");
                 } catch (IOException ex) { mostrarAlerta("Error", "No se pudo abrir el Itinerario de la Ruta."); }
         }
@@ -188,34 +189,6 @@ public class RutaController implements Initializable {
                 NavigationShell.setRoot(stage.getScene(), root, "ruta-alta");
         }
 
-        @FXML
-        private void editarRuta() throws IOException {
-
-                Ruta rutaSeleccionada = tablaRutas.getSelectionModel().getSelectedItem();
-
-                if (rutaSeleccionada == null) {
-                        mostrarAlerta(
-                                        "Selecciona una ruta",
-                                        "Selecciona una ruta para editar.");
-                        return;
-                }
-
-                Stage stage = (Stage) tablaRutas.getScene().getWindow();
-
-                FXMLLoader loader = new FXMLLoader(
-                                getClass().getResource(
-                                                "/com/example/fxml/ruta-form.fxml"));
-
-                Parent root = loader.load();
-
-                RutaFormController controller = loader.getController();
-
-                controller.setRutaEnEdicion(rutaSeleccionada);
-
-
-                NavigationShell.setRoot(stage.getScene(), root, "ruta-edicion");
-        }
-
         private void abrirEdicion(Ruta rutaSeleccionada) {
                 try {
                         Stage stage = (Stage) tablaRutas.getScene().getWindow();
@@ -227,69 +200,21 @@ public class RutaController implements Initializable {
         }
 
         private void cambiarEstado(Ruta ruta) {
-                boolean activa = rutaDAO.estaActiva(ruta.getId());
+                boolean activa = ruta.activa();
                 Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
                 confirmacion.setTitle(activa ? "Dar de baja Ruta" : "Reactivar Ruta");
                 confirmacion.setHeaderText(null);
-                confirmacion.setContentText("¿" + (activa ? "Dar de baja" : "Reactivar") + " la Ruta «" + ruta.getNombre() + "»?"
+                confirmacion.setContentText("¿" + (activa ? "Dar de baja" : "Reactivar") + " la Ruta «" + ruta.nombre() + "»?"
                                 + (activa ? " Quedará excluida del uso activo." : ""));
                 if (AlertUtils.showAndWait(confirmacion, tablaRutas).orElse(ButtonType.CANCEL) != ButtonType.OK) return;
-                boolean actualizado = activa ? rutaDAO.eliminar(ruta.getId()) : rutaDAO.reactivar(ruta.getId());
-                if (!actualizado) mostrarAlerta("Error", "No se pudo actualizar el estado de la Ruta.");
-                cargarRutas(); tablaRutas.getSelectionModel().select(ruta);
-        }
-
-        @FXML
-        private void eliminarRuta() {
-
-                Ruta rutaSeleccionada = tablaRutas.getSelectionModel().getSelectedItem();
-
-                if (rutaSeleccionada == null) {
-
-                        mostrarAlerta(
-                                        "Selecciona una ruta",
-                                        "Selecciona una ruta para eliminar.");
-
-                        return;
+                try {
+                        if (activa) rutasUseCases.darDeBaja(ruta.id()); else rutasUseCases.reactivar(ruta.id());
+                } catch (ExcepcionNegocio | IllegalStateException e) {
+                        mostrarAlerta("Error", "No se pudo actualizar el estado de la Ruta.");
                 }
-
-                if (!rutaDAO.estaActiva(rutaSeleccionada.getId())) {
-                        if (rutaDAO.reactivar(rutaSeleccionada.getId())) {
-                                cargarRutas();
-                                mostrarAlerta("Ruta reactivada", "La Ruta volvió a estar activa.");
-                        } else {
-                                mostrarAlerta("Error", "No se pudo reactivar la Ruta.");
-                        }
-                        return;
-                }
-
-                Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-
-                confirmacion.setTitle("Confirmar eliminación");
-                confirmacion.setHeaderText("¿Estás seguro?");
-
-                confirmacion.setContentText(
-                                "¿Eliminar la ruta \""
-                                                + rutaSeleccionada.getNombre()
-                                                + "\"?");
-
-                if (AlertUtils.showAndWait(confirmacion, tablaRutas).orElse(null) == ButtonType.OK) {
-
-                        if (rutaDAO.eliminar(rutaSeleccionada.getId())) {
-
-                                cargarRutas();
-
-                                mostrarAlerta(
-                                                "Éxito",
-                                                "Ruta eliminada correctamente.");
-
-                        } else {
-
-                                mostrarAlerta(
-                                                "Error",
-                                                "No se pudo eliminar la ruta.");
-                        }
-                }
+                cargarRutas();
+                tablaRutas.getItems().stream().filter(r -> r.id() == ruta.id()).findFirst()
+                                .ifPresent(tablaRutas.getSelectionModel()::select);
         }
 
         private void configurarFiltros() {
@@ -350,20 +275,20 @@ public class RutaController implements Initializable {
                 rutasFiltradas.setPredicate(ruta -> {
 
                         boolean coincideNombre = texto.isEmpty()
-                                        || ruta.getNombre()
+                                        || ruta.nombre()
                                                         .toLowerCase()
                                                         .contains(texto);
 
                         boolean coincideTerreno = terreno.equals("Todos")
-                                        || ruta.getTipoTerreno()
+                                        || ruta.tipoTerreno()
                                                         .equals(terreno);
 
                         boolean coincideDificultadTecnica = dificultadTecnica.equals("Todas")
-                                        || ruta.getDificultadTecnica()
+                                        || ruta.dificultadTecnica()
                                                         .equals(dificultadTecnica);
 
                         boolean coincideDificultadFisica = dificultadFisica.equals("Todas")
-                                        || ruta.getDificultadFisica()
+                                        || ruta.dificultadFisica()
                                                         .equals(dificultadFisica);
 
                         return coincideNombre

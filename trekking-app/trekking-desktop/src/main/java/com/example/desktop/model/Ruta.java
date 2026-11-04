@@ -44,6 +44,12 @@ public class Ruta {
         return NombreRuta.clave(nombre);
     }
 
+    /** El Itinerario y las Salidas todavía usan este modelo (tickets 06 y 07+ lo mueven a core). */
+    public static Ruta desde(com.example.core.ruta.Ruta ruta) {
+        return new Ruta(ruta.id(), ruta.nombre(), ruta.altitudMaxima(), ruta.tipoTerreno(),
+                ruta.dificultadTecnica(), ruta.dificultadFisica());
+    }
+
     private int id;
     private String nombre;
     private double altitudMaxima;

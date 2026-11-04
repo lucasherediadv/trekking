@@ -1,7 +1,13 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.RutaDAO;
-import com.example.desktop.model.Ruta;
+import com.example.core.excepcion.ErrorCampo;
+import com.example.core.excepcion.ExcepcionNegocio;
+import com.example.core.excepcion.ValidacionException;
+import com.example.core.ruta.DatosRuta;
+import com.example.core.ruta.NombreRuta;
+import com.example.core.ruta.Ruta;
+import com.example.core.ruta.ValidadorRuta;
+import com.example.desktop.Servicios;
 import com.example.desktop.util.FormValidation;
 import com.example.desktop.util.ResponsiveFormLayout;
 import com.example.desktop.util.NavigationShell;
@@ -27,8 +33,6 @@ import java.io.IOException;
 import java.util.function.UnaryOperator;
 
 public class RutaFormController {
-
-        private final RutaDAO rutaDAO = new RutaDAO();
 
         private Ruta rutaEnEdicion;
 
@@ -63,21 +67,9 @@ public class RutaFormController {
                 configurarCampos();
                 ResponsiveFormLayout.adapt(formGrid);
 
-                tipoTerrenoCombo.getItems().addAll(
-                                "Rocoso",
-                                "Boscoso",
-                                "Sendero",
-                                "Mixto");
-
-                dificultadTecnicaCombo.getItems().addAll(
-                                "Baja",
-                                "Media",
-                                "Alta");
-
-                dificultadFisicaCombo.getItems().addAll(
-                                "Baja",
-                                "Media",
-                                "Alta");
+                tipoTerrenoCombo.getItems().addAll(ValidadorRuta.TIPOS_TERRENO);
+                dificultadTecnicaCombo.getItems().addAll(ValidadorRuta.DIFICULTADES);
+                dificultadFisicaCombo.getItems().addAll(ValidadorRuta.DIFICULTADES);
 
                 configurarValidacionesEnTiempoReal();
 
@@ -113,102 +105,43 @@ public class RutaFormController {
         @FXML
         private void guardarRuta() throws IOException {
 
-                FormValidation.validateNow(nombreField);
-                FormValidation.validateNow(altitudMaximaField);
-                FormValidation.validateNow(tipoTerrenoCombo);
-                FormValidation.validateNow(dificultadTecnicaCombo);
-                FormValidation.validateNow(dificultadFisicaCombo);
-
-                String nombre = Ruta.normalizarNombre(
-                                nombreField.getText());
-
-                if (!validarNombre(nombre)) {
+                boolean valido = FormValidation.validateNow(nombreField);
+                valido = FormValidation.validateNow(altitudMaximaField) && valido;
+                valido = FormValidation.validateNow(tipoTerrenoCombo) && valido;
+                valido = FormValidation.validateNow(dificultadTecnicaCombo) && valido;
+                valido = FormValidation.validateNow(dificultadFisicaCombo) && valido;
+                if (!valido) {
+                        mostrarError("Revisa los campos",
+                                        "Completa los datos requeridos y corrige los campos marcados.");
                         return;
                 }
 
-                if (!validarNombreDuplicado(nombre)) {
+                DatosRuta datos = new DatosRuta(
+                                NombreRuta.normalizar(nombreField.getText()),
+                                ValidadorRuta.parsearAltitud(altitudMaximaField.getText()),
+                                tipoTerrenoCombo.getValue(),
+                                dificultadTecnicaCombo.getValue(),
+                                dificultadFisicaCombo.getValue());
+
+                Ruta ruta;
+                try {
+                        ruta = rutaEnEdicion == null
+                                        ? Servicios.rutas().alta(datos)
+                                        : Servicios.rutas().editar(rutaEnEdicion.id(), datos);
+                } catch (ValidacionException e) {
+                        marcarErrores(e);
+                        mostrarError("No se pudo guardar", e.getMessage());
                         return;
-                }
-
-                if (tipoTerrenoCombo.getValue() == null) {
-                        mostrarError(
-                                        "Tipo de terreno",
-                                        "Selecciona un tipo de terreno.");
+                } catch (ExcepcionNegocio | IllegalStateException e) {
+                        mostrarError("No se pudo guardar", e.getMessage());
                         return;
-                }
-
-                if (dificultadTecnicaCombo.getValue() == null) {
-                        mostrarError(
-                                        "Dificultad técnica",
-                                        "Selecciona una dificultad técnica.");
-                        return;
-                }
-
-                if (dificultadFisicaCombo.getValue() == null) {
-                        mostrarError(
-                                        "Dificultad física",
-                                        "Selecciona una dificultad física.");
-                        return;
-                }
-
-                Double altitudMaxima = obtenerAltitud();
-
-                if (altitudMaxima == null) {
-                        return;
-                }
-
-                String tipoTerreno = tipoTerrenoCombo.getValue();
-                String dificultadTecnica = dificultadTecnicaCombo.getValue();
-                String dificultadFisica = dificultadFisicaCombo.getValue();
-
-                Ruta ruta = rutaEnEdicion == null
-                                ? new Ruta(
-                                                nombre,
-                                                altitudMaxima,
-                                                tipoTerreno,
-                                                dificultadTecnica,
-                                                dificultadFisica)
-                                : new Ruta(
-                                                rutaEnEdicion.getId(),
-                                                nombre,
-                                                altitudMaxima,
-                                                tipoTerreno,
-                                                dificultadTecnica,
-                                                dificultadFisica);
-
-                int rutaId;
-
-                if (rutaEnEdicion == null) {
-
-                        rutaId = rutaDAO.insertar(ruta);
-
-                        if (rutaId == -1) {
-                                mostrarError(
-                                                "Error",
-                                                "No se pudo guardar la ruta.");
-                                return;
-                        }
-
-                } else {
-
-                        boolean rutaActualizada = rutaDAO.actualizar(ruta);
-
-                        if (!rutaActualizada) {
-                                mostrarError(
-                                                "Error",
-                                                "No se pudo actualizar la ruta.");
-                                return;
-                        }
-
-                        rutaId = ruta.getId();
                 }
 
                 var ventana = nombreField.getScene().getWindow();
                 if (rutaEnEdicion == null) {
-                        ruta.setId(rutaId);
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/fxml/itinerario-ruta.fxml"));
                         Parent root = loader.load();
-                        loader.<ItinerarioRutaController>getController().cargar(ruta);
+                        loader.<ItinerarioRutaController>getController().cargar(com.example.desktop.model.Ruta.desde(ruta));
                         NavigationShell.setRoot(nombreField.getScene(), root, "itinerario-ruta");
                         ToastNotifications.show(ventana, "Ruta guardada. Complete el Itinerario para usarla en una Salida.", ToastNotifications.Kind.SUCCESS);
                 } else {
@@ -217,110 +150,16 @@ public class RutaFormController {
                 }
         }
 
-        private boolean validarNombre(String nombre) {
-
-                if (nombre.isBlank()) {
-
-                        mostrarError(
-                                        "Nombre de ruta",
-                                        "El nombre de la ruta es obligatorio.");
-
-                        nombreField.requestFocus();
-
-                        return false;
-                }
-
-                if (!Ruta.nombreValido(nombre)) {
-
-                        mostrarError(
-                                        "Nombre de ruta",
-                                        "El nombre solamente puede contener letras, "
-                                                        + "números y espacios.");
-
-                        nombreField.requestFocus();
-
-                        return false;
-                }
-
-                return true;
-        }
-
-        private boolean validarNombreDuplicado(String nombre) {
-
-                int idExcluido = rutaEnEdicion == null
-                                ? -1
-                                : rutaEnEdicion.getId();
-
-                if (rutaDAO.existeNombre(nombre, idExcluido)) {
-
-                        FormValidation.showError(
-                                        nombreField,
-                                        "Ya existe una ruta con ese nombre.");
-                        mostrarError(
-                                        "Nombre duplicado",
-                                        "Ya existe una ruta con ese nombre.");
-
-                        nombreField.requestFocus();
-
-                        return false;
-                }
-
-                return true;
-        }
-
-        private Double obtenerAltitud() {
-
-                String texto = altitudMaximaField.getText().trim();
-
-                if (texto.isEmpty()) {
-
-                        mostrarError(
-                                        "Altitud máxima",
-                                        "La altitud máxima es obligatoria.");
-
-                        altitudMaximaField.requestFocus();
-
-                        return null;
-                }
-
-                try {
-
-                        double valor = Double.parseDouble(
-                                        texto.replace(',', '.'));
-
-                        if (!Double.isFinite(valor)) {
-
-                                mostrarError(
-                                                "Altitud máxima",
-                                                "Ingresa un valor numérico válido.");
-
-                                altitudMaximaField.requestFocus();
-
-                                return null;
+        private void marcarErrores(ValidacionException e) {
+                for (ErrorCampo error : e.errores()) {
+                        switch (error.campo()) {
+                                case "nombre" -> FormValidation.showError(nombreField, error.mensaje());
+                                case "altitudMaxima" -> FormValidation.showError(altitudMaximaField, error.mensaje());
+                                case "tipoTerreno" -> FormValidation.showError(tipoTerrenoCombo, error.mensaje());
+                                case "dificultadTecnica" -> FormValidation.showError(dificultadTecnicaCombo, error.mensaje());
+                                case "dificultadFisica" -> FormValidation.showError(dificultadFisicaCombo, error.mensaje());
+                                default -> { }
                         }
-
-                        if (valor < 0) {
-
-                                mostrarError(
-                                                "Altitud máxima",
-                                                "La altitud no puede ser negativa.");
-
-                                altitudMaximaField.requestFocus();
-
-                                return null;
-                        }
-
-                        return valor;
-
-                } catch (NumberFormatException e) {
-
-                        mostrarError(
-                                        "Altitud máxima",
-                                        "Ingresa un valor numérico válido.");
-
-                        altitudMaximaField.requestFocus();
-
-                        return null;
                 }
         }
 
@@ -382,52 +221,23 @@ public class RutaFormController {
         }
 
         private void configurarValidacionesEnTiempoReal() {
-                FormValidation.watch(nombreField, nombreField.textProperty(), () -> {
-                        String nombre = Ruta.formatearNombre(nombreField.getText());
-                        if (nombre.isBlank()) {
-                                return "El nombre de la ruta es obligatorio.";
-                        }
-                        if (!Ruta.nombreValido(nombre)) {
-                                return "El nombre solo puede contener letras, numeros y espacios.";
-                        }
-                        return null;
-                });
-                FormValidation.watch(
-                                altitudMaximaField,
-                                altitudMaximaField.textProperty(),
-                                this::validarAltitudEnTiempoReal);
-                FormValidation.watch(tipoTerrenoCombo, tipoTerrenoCombo.valueProperty(),
-                                () -> tipoTerrenoCombo.getValue() == null
-                                                ? "Selecciona un tipo de terreno."
-                                                : null);
-                FormValidation.watch(
-                                dificultadTecnicaCombo,
-                                dificultadTecnicaCombo.valueProperty(),
-                                () -> dificultadTecnicaCombo.getValue() == null
-                                                ? "Selecciona una dificultad tecnica."
-                                                : null);
-                FormValidation.watch(
-                                dificultadFisicaCombo,
-                                dificultadFisicaCombo.valueProperty(),
-                                () -> dificultadFisicaCombo.getValue() == null
-                                                ? "Selecciona una dificultad fisica."
-                                                : null);
+                // Los mensajes vienen del validador de core; la pantalla solo los muestra junto a cada campo.
+                FormValidation.watch(nombreField, nombreField.textProperty(), () -> errorDe("nombre"));
+                FormValidation.watch(altitudMaximaField, altitudMaximaField.textProperty(), () -> errorDe("altitudMaxima"));
+                FormValidation.watch(tipoTerrenoCombo, tipoTerrenoCombo.valueProperty(), () -> errorDe("tipoTerreno"));
+                FormValidation.watch(dificultadTecnicaCombo, dificultadTecnicaCombo.valueProperty(),
+                                () -> errorDe("dificultadTecnica"));
+                FormValidation.watch(dificultadFisicaCombo, dificultadFisicaCombo.valueProperty(),
+                                () -> errorDe("dificultadFisica"));
         }
 
-        private String validarAltitudEnTiempoReal() {
-                String texto = altitudMaximaField.getText().trim();
-                if (texto.isEmpty()) {
-                        return "La altitud maxima es obligatoria.";
-                }
-                try {
-                        double valor = Double.parseDouble(texto.replace(',', '.'));
-                        if (!Double.isFinite(valor) || valor < 0) {
-                                return "La altitud debe ser un numero valido mayor o igual a cero.";
-                        }
-                        return null;
-                } catch (NumberFormatException e) {
-                        return "Ingresa un valor numerico valido.";
-                }
+        private String errorDe(String campo) {
+                return ValidadorRuta.validar(nombreField.getText(), altitudMaximaField.getText(),
+                                                tipoTerrenoCombo.getValue(), dificultadTecnicaCombo.getValue(),
+                                                dificultadFisicaCombo.getValue()).stream()
+                                .filter(e -> e.campo().equals(campo))
+                                .map(ErrorCampo::mensaje)
+                                .findFirst().orElse(null);
         }
 
         private void configurarCampoNumerico(
@@ -465,20 +275,20 @@ public class RutaFormController {
         private void cargarRuta(Ruta ruta) {
 
                 nombreField.setText(
-                                ruta.getNombre());
+                                ruta.nombre());
 
                 altitudMaximaField.setText(
                                 formatearNumero(
-                                                ruta.getAltitudMaxima()));
+                                                ruta.altitudMaxima()));
 
                 tipoTerrenoCombo.setValue(
-                                ruta.getTipoTerreno());
+                                ruta.tipoTerreno());
 
                 dificultadTecnicaCombo.setValue(
-                                ruta.getDificultadTecnica());
+                                ruta.dificultadTecnica());
 
                 dificultadFisicaCombo.setValue(
-                                ruta.getDificultadFisica());
+                                ruta.dificultadFisica());
         }
 
         private String formatearNumero(double valor) {

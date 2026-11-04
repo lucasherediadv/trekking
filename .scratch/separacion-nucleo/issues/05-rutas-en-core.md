@@ -4,11 +4,11 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Las pantallas de Rutas no acceden a la persistencia de Rutas: solo usan casos de uso de core.
-- [ ] La condición de Ruta borrador la calcula core.
-- [ ] El formulario de Ruta valida en vivo con el validador de core.
-- [ ] Tests de casos de uso: alta válida e inválida, edición, baja y reactivación, Ruta borrador sin Checkpoints y Ruta no borrador con dos o más.
-- [ ] Test de integración en sqlite: repositorio de rutas.
+- [x] Las pantallas de Rutas no acceden a la persistencia de Rutas: solo usan casos de uso de core.
+- [x] La condición de Ruta borrador la calcula core.
+- [x] El formulario de Ruta valida en vivo con el validador de core.
+- [x] Tests de casos de uso: alta válida e inválida, edición, baja y reactivación, Ruta borrador sin Checkpoints y Ruta no borrador con dos o más.
+- [x] Test de integración en sqlite: repositorio de rutas.
 - [ ] Validación manual de Rutas: alta, edición, baja, reactivación, listado y filtros.
