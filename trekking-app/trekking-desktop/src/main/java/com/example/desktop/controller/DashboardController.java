@@ -1,10 +1,10 @@
 package com.example.desktop.controller;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
-import com.example.desktop.service.DashboardService;
+import com.example.core.dashboard.CasosDeUsoDashboard;
+import com.example.desktop.Servicios;
 import com.example.desktop.util.TableEmptyState;
 import com.example.desktop.util.NavigationShell;
 
@@ -23,7 +23,7 @@ import javafx.scene.control.TableView;
  */
 public class DashboardController {
 
-    private final DashboardService dashboardService = new DashboardService();
+    private final CasosDeUsoDashboard dashboard = Servicios.dashboard();
 
     @FXML
     private Label kpiRutas;
@@ -38,19 +38,19 @@ public class DashboardController {
     private Label kpiEquipo;
 
     @FXML
-    private TableView<DashboardService.ProximaSalida> tablaProximos;
+    private TableView<CasosDeUsoDashboard.ProximaSalida> tablaProximos;
 
     @FXML
-    private TableColumn<DashboardService.ProximaSalida, LocalDate> colFecha;
+    private TableColumn<CasosDeUsoDashboard.ProximaSalida, LocalDate> colFecha;
 
     @FXML
-    private TableColumn<DashboardService.ProximaSalida, String> colRuta;
+    private TableColumn<CasosDeUsoDashboard.ProximaSalida, String> colRuta;
 
     @FXML
-    private TableColumn<DashboardService.ProximaSalida, LocalTime> colHorario;
+    private TableColumn<CasosDeUsoDashboard.ProximaSalida, String> colHorario;
 
     @FXML
-    private TableColumn<DashboardService.ProximaSalida, Integer> colParticipantes;
+    private TableColumn<CasosDeUsoDashboard.ProximaSalida, Integer> colParticipantes;
 
     @FXML
     private Label errorLabel;
@@ -65,14 +65,14 @@ public class DashboardController {
                 celda.getValue() == null ? null : celda.getValue().horaInicio()));
         colHorario.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
             @Override
-            protected void updateItem(LocalTime item, boolean empty) {
+            protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || getIndex() < 0
                         || getIndex() >= getTableView().getItems().size()) {
                     setText(null);
                     return;
                 }
-                DashboardService.ProximaSalida salida =
+                CasosDeUsoDashboard.ProximaSalida salida =
                         getTableView().getItems().get(getIndex());
                 String inicio = salida.horaInicio() == null
                         ? "—"
@@ -100,14 +100,14 @@ public class DashboardController {
 
     private void cargar() {
         try {
-            DashboardService.Kpis kpis = dashboardService.obtenerKpis();
+            CasosDeUsoDashboard.Indicadores kpis = dashboard.indicadores();
             kpiRutas.setText(String.valueOf(kpis.rutasActivas()));
             kpiClientes.setText(String.valueOf(kpis.clientesActivos()));
             kpiSalidas.setText(String.valueOf(kpis.salidasProximas()));
-            kpiEquipo.setText(String.valueOf(kpis.equipamientoCritico()));
+            kpiEquipo.setText(String.valueOf(kpis.equipoNoDisponible()));
 
-            List<DashboardService.ProximaSalida> proximos =
-                    dashboardService.obtenerProximasSalidas();
+            List<CasosDeUsoDashboard.ProximaSalida> proximos =
+                    dashboard.proximasSalidas();
             tablaProximos.setItems(
                     FXCollections.observableArrayList(proximos));
 

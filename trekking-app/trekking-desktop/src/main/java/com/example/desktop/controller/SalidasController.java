@@ -1,7 +1,6 @@
 package com.example.desktop.controller;
 
 import com.example.desktop.Servicios;
-import com.example.desktop.dao.SalidaDAO;
 import com.example.desktop.service.FichaOperativaPDFService;
 import com.example.desktop.model.Ruta;
 import com.example.core.excepcion.ExcepcionNegocio;
@@ -61,7 +60,6 @@ import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 public class SalidasController {
-    private final SalidaDAO salidaDAO = new SalidaDAO();
     private final FichaOperativaPDFService fichaPDFService = new FichaOperativaPDFService();
     @FXML private TableView<SalidaListada> tablaSalidas;
     @FXML private TableColumn<SalidaListada, LocalDate> colFecha;
@@ -288,9 +286,9 @@ public class SalidasController {
     }
     private void actualizarIndicadores() {
         try {
-            var indicadores = salidaDAO.obtenerIndicadores();
-            kpiProximas.setText(String.valueOf(indicadores.get("proximas"))); kpiRutas.setText(String.valueOf(indicadores.get("rutas")));
-            kpiClientes.setText(String.valueOf(indicadores.get("clientes"))); kpiInventario.setText(String.valueOf(indicadores.get("criticos")));
+            var indicadores = Servicios.dashboard().indicadoresDeSalidas();
+            kpiProximas.setText(String.valueOf(indicadores.salidasProximas())); kpiRutas.setText(String.valueOf(indicadores.rutasActivas()));
+            kpiClientes.setText(String.valueOf(indicadores.clientesActivos())); kpiInventario.setText(String.valueOf(indicadores.equipoNoDisponible()));
             tarjetaProximas.setAccessibleText("Salidas próximas: " + kpiProximas.getText()
                     + ". Planificadas; hoy y próximos 7 días inclusive. Activar para abrir Salidas.");
             tarjetaRutas.setAccessibleText("Rutas activas: " + kpiRutas.getText()

@@ -4,6 +4,7 @@ import java.time.Clock;
 
 import com.example.core.cliente.CasosDeUsoClientes;
 import com.example.core.cliente.CasosDeUsoFichasMedicas;
+import com.example.core.dashboard.CasosDeUsoDashboard;
 import com.example.core.inventario.CasosDeUsoInventario;
 import com.example.core.itinerario.CasosDeUsoItinerario;
 import com.example.core.ruta.CasosDeUsoRutas;
@@ -54,6 +55,10 @@ public final class Servicios {
     private static final CasosDeUsoFichaOperativa FICHA_OPERATIVA =
             new CasosDeUsoFichaOperativa(REPOSITORIO_SALIDAS, Clock.systemDefaultZone());
 
+    private static final CasosDeUsoDashboard DASHBOARD = new CasosDeUsoDashboard(
+            REPOSITORIO_RUTAS, new RepositorioClientesSqlite(ConexionDB.base()),
+            new RepositorioInventarioSqlite(ConexionDB.base()), REPOSITORIO_SALIDAS, Clock.systemDefaultZone());
+
     private Servicios() {
     }
 
@@ -91,5 +96,9 @@ public final class Servicios {
 
     public static CasosDeUsoFichaOperativa fichaOperativa() {
         return FICHA_OPERATIVA;
+    }
+
+    public static CasosDeUsoDashboard dashboard() {
+        return DASHBOARD;
     }
 }
