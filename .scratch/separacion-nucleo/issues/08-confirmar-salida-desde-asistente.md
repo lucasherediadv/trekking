@@ -4,12 +4,19 @@
 
 **Blocked by:** 06, 07
 
-**Status:** ready-for-agent
+**Status:** closed
 
-- [ ] El Asistente no accede a la persistencia: confirma mediante el caso de uso de core.
-- [ ] La validación de la Reserva de stock vive en core y no en consultas de sqlite.
-- [ ] Un stock insuficiente produce un error que identifica el elemento, y desktop lo muestra.
-- [ ] No es posible confirmar con una Ruta borrador o dada de baja.
-- [ ] Tests de casos de uso: confirmación válida, stock insuficiente, elemento no asignable por estado, Ruta borrador rechazada y Copia operativa aislada de cambios posteriores en los catálogos.
-- [ ] Test de integración en sqlite: dos transacciones concurrentes no pueden reservar en conjunto más que el stock total.
-- [ ] Validación manual: recorrer el Asistente completo, incluidos volver a pasos completados y omitir los pasos opcionales.
+- [x] El Asistente no accede a la persistencia: confirma mediante el caso de uso de core.
+- [x] La validación de la Reserva de stock vive en core y no en consultas de sqlite.
+- [x] Un stock insuficiente produce un error que identifica el elemento, y desktop lo muestra.
+- [x] No es posible confirmar con una Ruta borrador o dada de baja.
+- [x] Tests de casos de uso: confirmación válida, stock insuficiente, elemento no asignable por estado, Ruta borrador rechazada y Copia operativa aislada de cambios posteriores en los catálogos.
+- [x] Test de integración en sqlite: dos transacciones concurrentes no pueden reservar en conjunto más que el stock total.
+- [x] Validación manual: recorrer el Asistente completo, incluidos volver a pasos completados y omitir los pasos opcionales.
+
+## Comments
+
+- Implementado en 422b28a: `CasosDeUsoConfirmarSalida` en core, contrato `Transaccion` (implementado por `TransaccionSqlite` con `BEGIN IMMEDIATE`) y `StockInsuficienteException`.
+- Se quitó "Crear una Ruta nueva" del Asistente: una Ruta nueva es borrador y no puede confirmarse. Se mantienen las altas inline de Elementos y Clientes nuevos dentro de la confirmación. La lista de equipamiento del Asistente muestra solo elementos asignables.
+- La edición de Salida sigue fuera de la transacción de core; la cubre el ticket 09.
+- Validación manual aprobada por el usuario el 2026-11-04; issue cerrado.
