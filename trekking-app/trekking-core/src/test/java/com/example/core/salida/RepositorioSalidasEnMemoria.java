@@ -59,4 +59,18 @@ public class RepositorioSalidasEnMemoria implements RepositorioSalidas {
                 copia.ruta().dificultadFisica()));
         return id;
     }
+
+    @Override
+    public Optional<CopiaOperativa> buscarCopia(int id) {
+        return Optional.ofNullable(copias.get(id));
+    }
+
+    @Override
+    public void reemplazarCopia(int id, CopiaOperativa copia) {
+        Salida s = salidas.get(id);
+        copias.put(id, copia);
+        salidas.put(id, new Salida(id, copia.ruta().id(), copia.fecha(), s.estado(), copia.ruta().nombre(),
+                copia.ruta().altitudMaxima(), copia.ruta().tipoTerreno(), copia.ruta().dificultadTecnica(),
+                copia.ruta().dificultadFisica()));
+    }
 }

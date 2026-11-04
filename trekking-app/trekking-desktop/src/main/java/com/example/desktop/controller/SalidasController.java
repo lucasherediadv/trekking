@@ -1,6 +1,5 @@
 package com.example.desktop.controller;
 
-import com.example.desktop.dao.RutaDAO;
 import com.example.desktop.Servicios;
 import com.example.desktop.dao.SalidaDAO;
 import com.example.desktop.service.FichaOperativaPDFService;
@@ -18,7 +17,9 @@ import com.example.core.salida.SalidaListada;
 import com.example.core.itinerario.Checkpoint;
 import com.example.desktop.model.Equipamiento;
 import com.example.desktop.model.AsignacionEquipamiento;
-import com.example.desktop.dao.EquipamientoDAO;
+import com.example.core.inventario.ElementoInventario;
+import com.example.core.salida.CopiaOperativa;
+import com.example.core.salida.DatosEdicionSalida;
 import com.example.core.cliente.Cliente;
 import com.example.desktop.model.AsignacionParticipante;
 import com.example.desktop.util.NavigationShell;
@@ -63,7 +64,6 @@ import javafx.util.StringConverter;
 public class SalidasController {
     private final SalidaDAO salidaDAO = new SalidaDAO();
     private final FichaOperativaPDFService fichaPDFService = new FichaOperativaPDFService();
-    private final RutaDAO rutaDAO = new RutaDAO();
     @FXML private TableView<SalidaListada> tablaSalidas;
     @FXML private TableColumn<SalidaListada, LocalDate> colFecha;
     @FXML private TableColumn<SalidaListada, String> colRuta;
@@ -187,6 +187,10 @@ public class SalidasController {
     private void navegarAIndicador(String seccion) {
         Scene escena = tarjetaProximas.getScene();
         if (escena != null) NavigationShell.navigate(escena, seccion);
+    }
+
+    private static Equipamiento aEquipamiento(ElementoInventario e) {
+        return new Equipamiento(e.id(), e.nombre(), e.categoria(), e.cantidad(), e.estado().etiqueta(), e.cantidadReservada());
     }
 
     @FXML private void iniciarWizard() { new WizardSalida().mostrar(); }
@@ -330,11 +334,14 @@ public class SalidasController {
 
         void mostrar() {
             try {
-                checkpoints.addAll(salidaDAO.obtenerCheckpoints(original.id()));
-                equipamiento.addAll(salidaDAO.obtenerEquipamiento(original.id()));
-                participantes.addAll(salidaDAO.obtenerParticipantes(original.id()));
-                rutas.setItems(FXCollections.observableArrayList(rutaDAO.obtenerTodasIncluyendoInactivas()));
-            } catch (SQLException e) {
+                CopiaOperativa copia = Servicios.editarSalida().copia(original.id());
+                checkpoints.addAll(copia.checkpoints());
+                copia.equipamiento().forEach(l -> equipamiento.add(
+                        new AsignacionEquipamiento(aEquipamiento(l.elemento()), l.cantidad(), false)));
+                copia.participantes().forEach(c -> participantes.add(new AsignacionParticipante(c, false)));
+                rutas.setItems(FXCollections.observableArrayList(
+                        Servicios.rutas().listarTodas().stream().map(Ruta::desde).toList()));
+            } catch (ExcepcionNegocio | IllegalStateException e) {
                 aviso(Alert.AlertType.ERROR, "No se pudo abrir la Salida", e.getMessage()); return;
             }
             rutas.setConverter(new StringConverter<>() { public String toString(Ruta r) { return r == null ? "" : r.getNombre(); } public Ruta fromString(String s) { return null; } });
@@ -345,7 +352,7 @@ public class SalidasController {
             });
             rutas.getItems().stream().filter(r -> r.getId() == original.rutaId()).findFirst().ifPresent(rutas::setValue);
             rutas.valueProperty().addListener((o, a, b) -> {
-                if (b != null && b.getId() != original.rutaId() && !rutaDAO.estaActiva(b.getId())) {
+                if (b != null && b.getId() != original.rutaId() && !Servicios.rutas().obtener(b.getId()).activa()) {
                     rutas.setValue(a); aviso(Alert.AlertType.WARNING, "Ruta inactiva", "No se puede cambiar a una Ruta inactiva."); return;
                 }
                 if (b != null && a != null && b.getId() != a.getId()) {
@@ -587,10 +594,9 @@ public class SalidasController {
         }
 
         private void configurarAsignaciones() {
-            var equipos = new ArrayList<Equipamiento>(EquipamientoDAO.obtenerTodosParaEdicion(original.id()));
-            equipos.forEach(e->equiposActivos.add(e.getId()));
-            EquipamientoDAO.obtenerDadosDeBaja().forEach(e -> { if (equipamiento.stream().anyMatch(a -> a.equipamiento().getId()==e.getId())) equipos.add(e); });
-            equipamiento.forEach(a -> { if(equipos.stream().noneMatch(e->e.getId()==a.equipamiento().getId())) equipos.add(a.equipamiento()); });
+            var equipos = new ArrayList<Equipamiento>(Servicios.editarSalida().elementosParaEditar(original.id())
+                    .stream().map(SalidasController::aEquipamiento).toList());
+            Servicios.inventario().listarAsignables().forEach(e -> equiposActivos.add(e.id()));
             selectorEquipo.setItems(FXCollections.observableArrayList(equipos));
             selectorEquipo.setConverter(new StringConverter<>() { public String toString(Equipamiento e){return e==null?"":e.getNombre()+" · disponible: "+e.getCantidadDisponible();} public Equipamiento fromString(String s){return null;} });
             selectorCliente.setConverter(new StringConverter<>() { public String toString(Cliente c){return c==null?"":c.apellido()+", "+c.nombre()+" · DNI "+c.dni();} public Cliente fromString(String s){return null;} });
@@ -683,7 +689,7 @@ public class SalidasController {
             TextField altitud = new TextField(existente == null ? "" : String.valueOf(existente.altitud()));
             TextField descripcion = new TextField(existente == null ? "" : existente.descripcion());
             CheckBox guardarRuta = new CheckBox("Guardar también en la Ruta");
-            boolean activa = rutaDAO.estaActiva(ruta.getId());
+            boolean activa = Servicios.rutas().obtener(ruta.getId()).activa();
             int cantidadPlantilla = Servicios.itinerarios().obtener(ruta.getId()).cantidad();
             boolean permiteGuardar = cantidadPlantilla + 1 >= 2;
             guardarRuta.setVisible(existente == null && activa && permiteGuardar);
@@ -739,12 +745,20 @@ public class SalidasController {
                 return;
             }
             try {
-                List<Checkpoint> copia = List.copyOf(checkpoints);
-                salidaDAO.actualizar(original.id(), fecha.getValue(), rutas.getValue().getId(), copia, List.copyOf(checkpointsGuardarEnRuta), actualizarDesdeRuta, List.copyOf(equipamiento), List.copyOf(participantes), java.util.Set.copyOf(refrescarEquipamiento), java.util.Set.copyOf(refrescarParticipantes));
+                Servicios.editarSalida().editar(original.id(), new DatosEdicionSalida(fecha.getValue(),
+                        rutas.getValue().getId(), actualizarDesdeRuta, List.copyOf(checkpoints),
+                        List.copyOf(checkpointsGuardarEnRuta),
+                        equipamiento.stream().map(a -> new DatosSalida.LineaEquipamiento(a.equipamiento().getId(), a.cantidad())).toList(),
+                        participantes.stream().map(a -> a.cliente().id()).toList(),
+                        java.util.Set.copyOf(refrescarEquipamiento), java.util.Set.copyOf(refrescarParticipantes)));
                 NavigationShell.setNavigationGuard(escenaAplicacion, null);
                 volverAlListado();
                 ToastNotifications.show(escenaAplicacion.getWindow(), "Salida actualizada", ToastNotifications.Kind.SUCCESS);
-            } catch (SQLException | RuntimeException e) { aviso(Alert.AlertType.ERROR, "No se pudo actualizar la Salida", e.getMessage()); }
+            } catch (StockInsuficienteException e) {
+                aviso(Alert.AlertType.WARNING, "Stock insuficiente", e.getMessage());
+            } catch (ExcepcionNegocio | IllegalStateException e) {
+                aviso(Alert.AlertType.ERROR, "No se pudo actualizar la Salida", e.getMessage());
+            }
         }
 
         private boolean confirmarCambioDeSeccion() {

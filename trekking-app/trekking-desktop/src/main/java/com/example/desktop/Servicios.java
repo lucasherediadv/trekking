@@ -8,6 +8,7 @@ import com.example.core.inventario.CasosDeUsoInventario;
 import com.example.core.itinerario.CasosDeUsoItinerario;
 import com.example.core.ruta.CasosDeUsoRutas;
 import com.example.core.salida.CasosDeUsoConfirmarSalida;
+import com.example.core.salida.CasosDeUsoEditarSalida;
 import com.example.core.salida.CasosDeUsoSalidas;
 import com.example.desktop.database.ConexionDB;
 import com.example.sqlite.AlmacenFichasMedicasSqlite;
@@ -46,6 +47,9 @@ public final class Servicios {
             new TransaccionSqlite(ConexionDB.base()), REPOSITORIO_SALIDAS,
             RUTAS, ITINERARIOS, INVENTARIO, CLIENTES, FICHAS_MEDICAS);
 
+    private static final CasosDeUsoEditarSalida EDITAR_SALIDA = new CasosDeUsoEditarSalida(
+            new TransaccionSqlite(ConexionDB.base()), REPOSITORIO_SALIDAS, RUTAS, ITINERARIOS, INVENTARIO, CLIENTES);
+
     private Servicios() {
     }
 
@@ -75,5 +79,9 @@ public final class Servicios {
 
     public static CasosDeUsoConfirmarSalida confirmarSalida() {
         return CONFIRMAR_SALIDA;
+    }
+
+    public static CasosDeUsoEditarSalida editarSalida() {
+        return EDITAR_SALIDA;
     }
 }
