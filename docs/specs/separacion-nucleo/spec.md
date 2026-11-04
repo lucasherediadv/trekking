@@ -1,6 +1,6 @@
 # Especificación técnica: separación del núcleo de la presentación
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Fecha:** 03/11/2026  
 **Alcance:** Primera fase de la migración a web. Separar la lógica de la aplicación de su presentación JavaFX, manteniendo la app de escritorio funcionando sin cambios visibles para el usuario.
 
