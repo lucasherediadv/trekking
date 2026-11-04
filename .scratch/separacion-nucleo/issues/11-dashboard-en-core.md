@@ -4,14 +4,14 @@
 
 **Blocked by:** 02, 07
 
-**Status:** ready-for-human
+**Status:** closed
 
 - [x] El Dashboard no accede a la persistencia: solo usa casos de uso de core.
 - [x] La lista de estados no asignables no aparece escrita en ninguna consulta.
 - [x] Tests de casos de uso con reloj fijo: próximas salidas dentro y fuera de la ventana, Salidas no planificadas excluidas y conteo de equipo no disponible.
-- [ ] Validación manual: el Dashboard muestra los mismos valores que antes del cambio sobre la misma base.
+- [x] Validación manual: el Dashboard muestra los mismos valores que antes del cambio sobre la misma base.
 
 ## Comments
 
 - Implementado en `CasosDeUsoDashboard` (core). El tablero de la pantalla Salidas usa `indicadoresDeSalidas()` (equipo crítico por cantidad disponible, como antes); se eliminaron `DashboardService`, `SalidaDAO` y `EquipamientoDAO`.
-- Pendiente: validación manual del usuario (Dashboard y tablero de Salidas con los mismos valores que antes).
+- Validación manual aprobada por el usuario el 2026-11-04; issue cerrado.
