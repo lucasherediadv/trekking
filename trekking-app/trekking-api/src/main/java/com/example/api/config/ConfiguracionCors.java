@@ -20,7 +20,7 @@ public class ConfiguracionCors implements WebMvcConfigurer {
         if (origenWeb.isEmpty()) return;
         registro.addMapping("/api/**")
                 .allowedOrigins(origenWeb)
-                .allowedMethods("GET", "POST", "PUT", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .exposedHeaders("Content-Disposition");
     }
 }
