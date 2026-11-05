@@ -155,13 +155,11 @@ class InventarioApiTest extends PruebaApi {
     void darDeBajaYReactivarSonAccionesPost() throws Exception {
         int id = crear("Inv baja y alta", EstadoElemento.DISPONIBLE, true);
 
-        mvc.perform(post("/api/inventario/{id}/baja", id)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.activo").value(false));
+        mvc.perform(post("/api/inventario/{id}/baja", id)).andExpect(status().isNoContent());
         mvc.perform(get("/api/inventario").param("estado", "bajas"))
                 .andExpect(jsonPath("$[*].nombre", hasItem("Inv baja y alta")));
 
-        mvc.perform(post("/api/inventario/{id}/reactivar", id)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.activo").value(true));
+        mvc.perform(post("/api/inventario/{id}/reactivar", id)).andExpect(status().isNoContent());
         mvc.perform(get("/api/inventario"))
                 .andExpect(jsonPath("$[*].nombre", hasItem("Inv baja y alta")));
     }

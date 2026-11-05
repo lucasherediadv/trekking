@@ -63,15 +63,15 @@ public class InventarioController {
     }
 
     @PostMapping("/{id}/baja")
-    public ElementoDto darDeBaja(@PathVariable int id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void darDeBaja(@PathVariable int id) {
         inventario.darDeBaja(id);
-        return dto(inventario.obtener(id));
     }
 
     @PostMapping("/{id}/reactivar")
-    public ElementoDto reactivar(@PathVariable int id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivar(@PathVariable int id) {
         inventario.reactivar(id);
-        return dto(inventario.obtener(id));
     }
 
     private static java.util.ArrayList<ElementoDto> dtos(List<ElementoInventario> elementos, boolean activo) {
