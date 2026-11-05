@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `GET` del Itinerario de una Ruta devuelve sus Checkpoints en orden, con horas `HH:mm`.
-- [ ] `PUT` del Itinerario guarda la secuencia completa con el orden explícito y devuelve la Ruta resultante.
-- [ ] Una Ruta borrador deja de serlo al guardar dos o más Checkpoints, y el detalle de la Ruta lo refleja.
-- [ ] Un Checkpoint inválido responde 422 con errores por campo.
-- [ ] Un Itinerario de una Ruta inexistente responde 404.
-- [ ] Tests `MockMvc` con SQLite en `@TempDir`: camino feliz, reordenamiento, transición de borrador, 422 y 404.
+- [x] `GET` del Itinerario de una Ruta devuelve sus Checkpoints en orden, con horas `HH:mm`.
+- [x] `PUT` del Itinerario guarda la secuencia completa con el orden explícito y devuelve la Ruta resultante.
+- [x] Una Ruta borrador deja de serlo al guardar dos o más Checkpoints, y el detalle de la Ruta lo refleja.
+- [x] Un Checkpoint inválido responde 422 con errores por campo.
+- [x] Un Itinerario de una Ruta inexistente responde 404.
+- [x] Tests `MockMvc` con SQLite en `@TempDir`: camino feliz, reordenamiento, transición de borrador, 422 y 404.
