@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `GET` lista Clientes con `estado=activas|bajas|todas` (por defecto activas) y devuelve el detalle de uno, incluida su condición de menor.
 - [x] `POST` crea un Cliente (201) y `PUT` lo edita; datos inválidos responden 422 con errores por campo.

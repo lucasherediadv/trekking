@@ -4,7 +4,7 @@
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `PUT` multipart sobre la ficha médica de un Cliente la adjunta o la reemplaza.
 - [x] `GET` descarga el archivo con su nombre original; si el Cliente no tiene ficha responde 404.

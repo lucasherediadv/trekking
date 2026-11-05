@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `POST /api/salidas/{id}/realizada` y `POST /api/salidas/{id}/cancelar` cierran una Salida planificada.
 - [x] Cerrar una Salida que ya está realizada o cancelada responde 409.

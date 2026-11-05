@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `GET /api/salidas` lista las Salidas con su resumen operativo y la condición calculada de Salida vencida.
 - [x] `GET /api/salidas/{id}` devuelve el detalle, incluido el estado.

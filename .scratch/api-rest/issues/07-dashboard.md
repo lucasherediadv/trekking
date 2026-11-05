@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Un endpoint devuelve los indicadores generales (Rutas activas, Clientes activos, Salidas próximas y equipo no disponible).
 - [x] Un endpoint devuelve los indicadores de Salidas.

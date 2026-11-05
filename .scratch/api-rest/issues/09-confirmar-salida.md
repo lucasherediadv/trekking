@@ -4,7 +4,7 @@
 
 **Blocked by:** 03, 04, 06, 08
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `POST /api/salidas` recibe fecha, `rutaId`, líneas de equipamiento (elemento y cantidad), elementos nuevos, ids de Clientes existentes y Clientes nuevos; los Checkpoints no se envían, la Salida copia el Itinerario vigente.
 - [x] Cada Cliente nuevo puede traer su ficha como nombre de archivo y contenido en base64, que se guarda en la misma transacción.

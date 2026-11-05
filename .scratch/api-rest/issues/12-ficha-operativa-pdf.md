@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Un endpoint de la Salida devuelve el PDF con tipo de contenido PDF y un nombre de archivo reconocible en la descarga.
 - [x] El contenido es el generado por core a partir de la Copia operativa vigente; la API solo lo entrega.

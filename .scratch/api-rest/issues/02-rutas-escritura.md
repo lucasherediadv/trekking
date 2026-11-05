@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `POST /api/rutas` crea una Ruta y responde 201 con el recurso creado.
 - [x] `PUT /api/rutas/{id}` edita una Ruta.

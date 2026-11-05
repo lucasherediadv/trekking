@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `GET` del Itinerario de una Ruta devuelve sus Checkpoints en orden, con horas `HH:mm`.
 - [x] `PUT` del Itinerario guarda la secuencia completa con el orden explícito y devuelve la Ruta resultante.

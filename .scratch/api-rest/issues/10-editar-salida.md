@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `PUT /api/salidas/{id}` edita una Salida planificada y devuelve la Salida resultante.
 - [x] Un endpoint lista los elementos disponibles para editar esa Salida, considerando la reserva de la propia Salida.

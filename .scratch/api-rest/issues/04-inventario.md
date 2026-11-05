@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Se pueden listar elementos activos, dados de baja y asignables, y obtener el detalle de uno (cantidad total, Estado del elemento y vigencia).
 - [x] `POST` crea un elemento (201) y `PUT` lo edita; datos inválidos responden 422 con errores por campo.

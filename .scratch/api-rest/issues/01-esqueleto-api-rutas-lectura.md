@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] Existe el módulo `trekking-api` en el proyecto Maven padre; depende solo de `trekking-core` y `trekking-sqlite`, y nada depende de él.
 - [x] La API arranca con un comando Maven desde la raíz y escucha por defecto en `127.0.0.1:8080`; puerto y bind son configurables.
