@@ -9,6 +9,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -54,6 +55,12 @@ public class ManejadorErrores {
     ResponseEntity<CuerpoError> peticionInvalida(Exception e) {
         return ResponseEntity.badRequest()
                 .body(CuerpoError.de("PETICION_INVALIDA", "La petición está mal formada o tiene valores inválidos."));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<CuerpoError> archivoDemasiadoGrande(MaxUploadSizeExceededException e) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(CuerpoError.de("ARCHIVO_DEMASIADO_GRANDE", "El archivo supera el tamaño máximo permitido."));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
