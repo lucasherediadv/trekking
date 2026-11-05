@@ -60,10 +60,10 @@ class FichaOperativaApiTest extends PruebaApi {
         return Integer.parseInt(respuesta.replaceAll(".*\"id\":(\\d+).*", "$1"));
     }
 
-    /** Nombres de Cliente: solo letras. */
+    /** Nombres de Cliente: solo letras y cortos, para que el PDF no parta el nombre en dos líneas. */
     private static String letras(String base) {
         StringBuilder s = new StringBuilder(base).append(' ');
-        for (char c : Long.toString(System.nanoTime()).toCharArray()) s.append((char) ('a' + (c - '0')));
+        for (char c : Long.toString(System.nanoTime() % 1_000_000).toCharArray()) s.append((char) ('a' + (c - '0')));
         return s.toString();
     }
 
