@@ -15,7 +15,7 @@ public record CheckpointDto(Long id, String nombre, String hora, Double latitud,
                 cp.descripcion());
     }
 
-    Checkpoint aCheckpoint() {
+    public Checkpoint aCheckpoint() {
         return new Checkpoint(0, nombre, hora, numero(latitud), numero(longitud), numero(altitud), descripcion);
     }
 
