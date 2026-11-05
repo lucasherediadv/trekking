@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -58,6 +59,12 @@ public class ManejadorErrores {
     @ExceptionHandler(NoResourceFoundException.class)
     ResponseEntity<CuerpoError> rutaDesconocida(NoResourceFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CuerpoError.de("NO_ENCONTRADO", "El recurso no existe."));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    ResponseEntity<CuerpoError> metodoNoPermitido(HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(CuerpoError.de("METODO_NO_PERMITIDO", "El método no está permitido para este recurso."));
     }
 
     @ExceptionHandler(Exception.class)

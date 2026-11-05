@@ -1,9 +1,16 @@
 package com.example.api.ruta;
 
+import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,5 +42,28 @@ public class RutasController {
     @GetMapping("/{id}")
     public RutaDto obtener(@PathVariable int id) {
         return RutaDto.de(rutas.obtener(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<RutaDto> crear(@RequestBody DatosRutaDto datos) {
+        RutaDto creada = RutaDto.de(rutas.alta(datos.aDatos()));
+        return ResponseEntity.created(URI.create("/api/rutas/" + creada.id())).body(creada);
+    }
+
+    @PutMapping("/{id}")
+    public RutaDto editar(@PathVariable int id, @RequestBody DatosRutaDto datos) {
+        return RutaDto.de(rutas.editar(id, datos.aDatos()));
+    }
+
+    @PostMapping("/{id}/baja")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void darDeBaja(@PathVariable int id) {
+        rutas.darDeBaja(id);
+    }
+
+    @PostMapping("/{id}/reactivar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivar(@PathVariable int id) {
+        rutas.reactivar(id);
     }
 }
