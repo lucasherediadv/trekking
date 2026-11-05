@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import com.example.api.compartido.LineaEquipamientoDto;
+import com.example.api.compartido.Solicitudes;
 import com.example.core.cliente.DatosCliente;
 import com.example.core.cliente.FichaMedica;
 import com.example.core.excepcion.ErrorCampo;
@@ -18,12 +20,9 @@ import com.example.core.salida.DatosSalida;
  * Cuerpo de {@code POST /api/salidas}: lo que reúne el Asistente de Salida. No lleva Checkpoints (la Salida
  * copia el Itinerario vigente). Las listas ausentes se toman como vacías; las reglas de negocio las valida core.
  */
-public record SolicitudSalidaDto(LocalDate fecha, Integer rutaId, List<LineaEquipamientoSolicitud> equipamiento,
+public record SolicitudSalidaDto(LocalDate fecha, Integer rutaId, List<LineaEquipamientoDto> equipamiento,
         List<ElementoNuevoSolicitud> elementosNuevos, List<Integer> clientesExistentes,
         List<ClienteNuevoSolicitud> clientesNuevos) {
-
-    public record LineaEquipamientoSolicitud(int elementoId, int cantidad) {
-    }
 
     public record ElementoNuevoSolicitud(DatosElemento elemento, int cantidad) {
     }
@@ -43,14 +42,13 @@ public record SolicitudSalidaDto(LocalDate fecha, Integer rutaId, List<LineaEqui
      */
     public DatosSalida aDatosSalida(long maxFicha) {
         List<ErrorCampo> errores = new ArrayList<>();
-        if (fecha == null) errores.add(new ErrorCampo("fecha", "La fecha de la Salida es obligatoria."));
-        if (rutaId == null) errores.add(new ErrorCampo("rutaId", "La Ruta es obligatoria."));
+        Solicitudes.exigirFechaYRuta(fecha, rutaId, errores);
 
         var lineas = new ArrayList<DatosSalida.LineaEquipamiento>();
-        for (var l : orVacia(equipamiento)) lineas.add(new DatosSalida.LineaEquipamiento(l.elementoId(), l.cantidad()));
+        for (var l : Solicitudes.orVacia(equipamiento)) lineas.add(l.aLinea());
 
         var nuevosElementos = new ArrayList<DatosSalida.ElementoNuevo>();
-        var elementos = orVacia(elementosNuevos);
+        var elementos = Solicitudes.orVacia(elementosNuevos);
         for (int i = 0; i < elementos.size(); i++) {
             var e = elementos.get(i);
             if (e == null || e.elemento() == null) {
@@ -61,13 +59,13 @@ public record SolicitudSalidaDto(LocalDate fecha, Integer rutaId, List<LineaEqui
         }
 
         var existentes = new ArrayList<Integer>();
-        for (Integer id : orVacia(clientesExistentes)) {
+        for (Integer id : Solicitudes.orVacia(clientesExistentes)) {
             if (id == null) errores.add(new ErrorCampo("clientesExistentes", "El id de Cliente es obligatorio."));
             else existentes.add(id);
         }
 
         var nuevosClientes = new ArrayList<DatosSalida.ClienteNuevo>();
-        var clientes = orVacia(clientesNuevos);
+        var clientes = Solicitudes.orVacia(clientesNuevos);
         for (int i = 0; i < clientes.size(); i++) {
             var c = clientes.get(i);
             String campo = "clientesNuevos[" + i + "]";
@@ -97,9 +95,5 @@ public record SolicitudSalidaDto(LocalDate fecha, Integer rutaId, List<LineaEqui
             errores.add(new ErrorCampo(campo, "El contenido de la ficha médica no es base64 válido."));
             return null;
         }
-    }
-
-    private static <T> List<T> orVacia(List<T> lista) {
-        return lista == null ? List.of() : lista;
     }
 }
