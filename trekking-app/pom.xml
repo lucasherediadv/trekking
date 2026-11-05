@@ -11,19 +11,30 @@
         <module>trekking-core</module>
         <module>trekking-sqlite</module>
         <module>trekking-desktop</module>
+        <module>trekking-api</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
         <javafx.version>17</javafx.version>
         <sqlite-jdbc.version>3.50.3.0</sqlite-jdbc.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <junit.version>5.11.0</junit.version>
+        <spring-boot.version>3.3.5</spring-boot.version>
+        <springdoc.version>2.6.0</springdoc.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.example</groupId>
                 <artifactId>trekking-core</artifactId>
@@ -80,6 +91,16 @@
         <plugins>
             <!-- `javafx:run` desde la raíz corre en todos los módulos: se omite en
                  todos menos en trekking-desktop. mainClass es obligatorio aunque se omita. -->
+            <!-- `spring-boot:run` desde la raíz corre en todos los módulos: se omite en
+                 todos menos en trekking-api. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
