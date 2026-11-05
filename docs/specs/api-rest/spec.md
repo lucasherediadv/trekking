@@ -1,6 +1,6 @@
 # Especificación técnica: API REST del backend
 
-**Status:** ready-for-agent
+**Status:** closed
 **Fecha:** 05/11/2026
 **Alcance:** Segunda fase de la migración a web. Exponer los casos de uso de `trekking-core` mediante una API REST en un módulo nuevo, para que la futura interfaz web pueda consumirlos. Respeta los ADR 0001, 0003, 0005 y 0006.
 

@@ -4,13 +4,13 @@
 
 **Blocked by:** 10, 11, 12
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] `AGENTS.md` refleja el módulo `trekking-api`: dependencias permitidas, que no contiene reglas de negocio ni SQL, el comando para ejecutar la API y las propiedades de configuración (`trekking.db`, puerto, `trekking.api.origen-web`, tamaño de ficha).
-- [ ] (parcial: falta el lado JavaFX, ver Comments) Validación manual documentada en un comentario de este ticket: con la API y la app JavaFX abiertas sobre la misma base, una escritura de cada lado se ve del otro, y dos confirmaciones concurrentes de Salida sobre el mismo elemento no sobrevenden stock.
+- [x] Validación manual documentada en un comentario de este ticket: con la API y la app JavaFX abiertas sobre la misma base, una escritura de cada lado se ve del otro, y dos confirmaciones concurrentes de Salida sobre el mismo elemento no sobrevenden stock.
 - [x] Se verifica a mano que la API sin origen CORS configurado no acepta orígenes cruzados y que solo escucha en `127.0.0.1` por defecto.
 - [x] `mvn -f trekking-app/pom.xml clean package` pasa con los cuatro módulos.
-- [ ] El `Status` del spec de la API REST pasa a `closed`.
+- [x] El `Status` del spec de la API REST pasa a `closed`.
 
 ## Comments
 
@@ -35,3 +35,5 @@ No se pudo ejecutar la app JavaFX en esta sesión, así que NO está verificado:
 - Una confirmación concurrente de Salida entre API y escritorio (dos procesos) sobre el mismo Elemento.
 
 Hasta entonces el segundo criterio queda sin tildar y el `Status` del spec sigue sin pasar a `closed`.
+
+- 2026-11-05: el usuario validó a mano API + JavaFX sobre la misma base: escrituras visibles de ambos lados y sin sobreventa de stock entre procesos.
