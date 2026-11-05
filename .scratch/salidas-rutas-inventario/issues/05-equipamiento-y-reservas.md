@@ -4,7 +4,7 @@
 
 **Blocked by:** 03: Gestionar el catálogo de Inventario; 04: Crear Salidas desde el nuevo flujo
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] El paso Equipamiento lista solo Elementos activos y muestra su cantidad disponible.
 - [ ] Una asignación exige cantidad entera positiva no mayor que disponible; el error muestra cuánto hay disponible.

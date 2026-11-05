@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] Se puede crear, listar, buscar, editar y dar de baja o reactivar una Ruta.
 - [ ] Nombre obligatorio de hasta 100 caracteres, normalizado recortando y colapsando espacios, con letras Unicode/números/espacios y único sin distinguir mayúsculas entre Rutas activas e inactivas.

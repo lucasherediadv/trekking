@@ -1,6 +1,6 @@
 # Rediseño integral de Salidas, Rutas e Inventario
 
-Status: ready-for-agent
+Status: closed
 
 ## Objetivo
 

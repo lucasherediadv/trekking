@@ -4,7 +4,7 @@
 
 **Blocked by:** 05: Asignar Equipamiento y reservar stock; 06: Asociar Participantes a una Salida; 07: Editar Ruta y Checkpoints de una Salida
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] El wizard permite agregar o quitar asignaciones de Equipamiento y Participantes sin duplicados.
 - [ ] Para refrescar una copia de Cliente o Elemento de inventario se lo quita y vuelve a agregar; los datos copiados no se actualizan automáticamente.

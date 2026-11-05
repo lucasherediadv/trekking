@@ -4,7 +4,7 @@
 
 **Blocked by:** 04: Crear Salidas desde el nuevo flujo; 05: Asignar Equipamiento y reservar stock; 06: Asociar Participantes a una Salida
 
-**Status:** ready-for-human
+**Status:** closed
 
 - [x] El wizard de edición abre con la copia operativa guardada y permite modificar fecha, Ruta y Checkpoints.
 - [x] Cambiar la Ruta reemplaza la copia de Ruta y sus Checkpoints, conservando Equipamiento y Participantes.

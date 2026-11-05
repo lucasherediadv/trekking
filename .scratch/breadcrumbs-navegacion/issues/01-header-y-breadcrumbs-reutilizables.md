@@ -1,6 +1,6 @@
 # Header global y breadcrumbs reutilizables
 
-**Status:** ready-for-agent  
+**Status:** closed  
 **Spec:** [docs/specs/breadcrumbs-navegacion/spec.md](../../../docs/specs/breadcrumbs-navegacion/spec.md)
 
 ## Objetivo

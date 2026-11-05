@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] Se pueden crear, listar, buscar, editar, dar de baja y reactivar Elementos de inventario.
 - [ ] El formulario exige nombre, categoría cerrada, cantidad total entera >= 0 y estado cerrado.

@@ -4,7 +4,7 @@
 
 **Blocked by:** 04: Crear Salidas desde el nuevo flujo; 05: Asignar Equipamiento y reservar stock; 06: Asociar Participantes a una Salida
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] Una Salida planificada se puede marcar realizada o cancelada; ambas acciones liberan reservas.
 - [ ] Las transiciones son manuales y los estados realizada/cancelada no se revierten en el flujo normal; editar conserva el estado.

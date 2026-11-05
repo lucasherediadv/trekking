@@ -4,7 +4,7 @@
 
 **Blocked by:** 04: Crear Salidas desde el nuevo flujo
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] El paso Participantes permite buscar y seleccionar Clientes activos desde la Salida.
 - [ ] No se puede asociar dos veces el mismo Cliente.

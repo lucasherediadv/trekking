@@ -4,7 +4,7 @@
 
 **Blocked by:** 02: Gestionar Rutas e Itinerarios; 03: Gestionar el catálogo de Inventario
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] La aplicación abre en Salidas y la navegación muestra Salidas, Rutas, Clientes e Inventario; Checkpoints, Inicio/dashboard y Recorridos dejan de ser módulos de navegación.
 - [ ] La pantalla Salidas permite iniciar el wizard y consultar las Salidas confirmadas en una tabla ordenada por fecha descendente.

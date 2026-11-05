@@ -4,7 +4,7 @@
 
 **Blocked by:** 07: Editar Ruta y Checkpoints de una Salida; 08: Editar Equipamiento y Participantes de una Salida; 09: Cerrar Salidas y consultar el resumen operativo
 
-**Status:** ready-for-agent
+**Status:** closed
 
 - [ ] El PDF se genera desde las copias operativas vigentes, no desde los datos vivos de los catálogos.
 - [ ] Incluye título, identificador, fecha, estado, datos técnicos de Ruta, Checkpoints, Equipamiento y Participantes.
