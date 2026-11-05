@@ -31,11 +31,7 @@ public class RutasController {
 
     @GetMapping
     public List<RutaDto> listar(@RequestParam(defaultValue = "activas") EstadoFiltro estado) {
-        List<Ruta> resultado = switch (estado) {
-            case activas -> rutas.listarActivas();
-            case bajas -> rutas.listarDadasDeBaja();
-            case todas -> rutas.listarTodas();
-        };
+        List<Ruta> resultado = estado.seleccionar(rutas::listarActivas, rutas::listarDadasDeBaja, rutas::listarTodas);
         return resultado.stream().map(RutaDto::de).toList();
     }
 

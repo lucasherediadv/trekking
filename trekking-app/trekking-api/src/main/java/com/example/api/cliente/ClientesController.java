@@ -31,12 +31,10 @@ public class ClientesController {
 
     @GetMapping
     public List<ClienteDto> listar(@RequestParam(defaultValue = "activas") EstadoFiltro estado) {
-        return clientes.listar().stream()
-                .filter(c -> switch (estado) {
-                    case activas -> c.activo();
-                    case bajas -> !c.activo();
-                    case todas -> true;
-                })
+        return estado.seleccionar(
+                        () -> clientes.listar().stream().filter(Cliente::activo).toList(),
+                        () -> clientes.listar().stream().filter(c -> !c.activo()).toList(),
+                        clientes::listar).stream()
                 .map(this::dto)
                 .toList();
     }

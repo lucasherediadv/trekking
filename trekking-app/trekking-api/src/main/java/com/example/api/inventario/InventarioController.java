@@ -30,15 +30,14 @@ public class InventarioController {
 
     @GetMapping
     public List<ElementoDto> listar(@RequestParam(defaultValue = "activas") EstadoFiltro estado) {
-        return switch (estado) {
-            case activas -> dtos(inventario.listarActivos(), true);
-            case bajas -> dtos(inventario.listarDadosDeBaja(), false);
-            case todas -> {
-                var todos = dtos(inventario.listarActivos(), true);
-                todos.addAll(dtos(inventario.listarDadosDeBaja(), false));
-                yield todos;
-            }
-        };
+        return estado.seleccionar(
+                () -> dtos(inventario.listarActivos(), true),
+                () -> dtos(inventario.listarDadosDeBaja(), false),
+                () -> {
+                    var todos = dtos(inventario.listarActivos(), true);
+                    todos.addAll(dtos(inventario.listarDadosDeBaja(), false));
+                    return todos;
+                });
     }
 
     @GetMapping("/asignables")
