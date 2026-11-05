@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `GET /api/salidas` lista las Salidas con su resumen operativo y la condición calculada de Salida vencida.
-- [ ] `GET /api/salidas/{id}` devuelve el detalle, incluido el estado.
-- [ ] Un endpoint devuelve la Copia operativa de una Salida (fecha, Ruta, Checkpoints, equipamiento y participantes).
-- [ ] Una Salida inexistente responde 404.
-- [ ] Tests `MockMvc` con SQLite en `@TempDir`: lista vacía, 404 y, con datos sembrados directamente en la base de prueba, listado, detalle, Copia operativa y condición de vencida (con el reloj fijado).
+- [x] `GET /api/salidas` lista las Salidas con su resumen operativo y la condición calculada de Salida vencida.
+- [x] `GET /api/salidas/{id}` devuelve el detalle, incluido el estado.
+- [x] Un endpoint devuelve la Copia operativa de una Salida (fecha, Ruta, Checkpoints, equipamiento y participantes).
+- [x] Una Salida inexistente responde 404.
+- [x] Tests `MockMvc` con SQLite en `@TempDir`: lista vacía, 404 y, con datos sembrados directamente en la base de prueba, listado, detalle, Copia operativa y condición de vencida (con el reloj fijado).

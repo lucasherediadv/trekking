@@ -56,15 +56,15 @@ public class ManejadorErrores {
                 .body(CuerpoError.de("PETICION_INVALIDA", "La petición está mal formada o tiene valores inválidos."));
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    ResponseEntity<CuerpoError> rutaDesconocida(NoResourceFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CuerpoError.de("NO_ENCONTRADO", "El recurso no existe."));
-    }
-
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     ResponseEntity<CuerpoError> metodoNoPermitido(HttpRequestMethodNotSupportedException e) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(CuerpoError.de("METODO_NO_PERMITIDO", "El método no está permitido para este recurso."));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ResponseEntity<CuerpoError> rutaDesconocida(NoResourceFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CuerpoError.de("NO_ENCONTRADO", "El recurso no existe."));
     }
 
     @ExceptionHandler(Exception.class)
