@@ -67,12 +67,6 @@ public class ManejadorErrores {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CuerpoError.de("NO_ENCONTRADO", "El recurso no existe."));
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    ResponseEntity<CuerpoError> metodoNoPermitido(HttpRequestMethodNotSupportedException e) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(CuerpoError.de("METODO_NO_PERMITIDO", "El método no está permitido para este recurso."));
-    }
-
     @ExceptionHandler(Exception.class)
     ResponseEntity<CuerpoError> inesperado(Exception e) {
         LOG.error("Error inesperado", e);
