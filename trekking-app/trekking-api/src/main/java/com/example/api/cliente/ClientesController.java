@@ -69,7 +69,7 @@ public class ClientesController {
         clientes.darDeBaja(id);
     }
 
-    @PostMapping("/{id}/reactivacion")
+    @PostMapping("/{id}/reactivar")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reactivar(@PathVariable int id) {
         clientes.reactivar(id);

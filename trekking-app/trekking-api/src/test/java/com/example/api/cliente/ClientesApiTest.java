@@ -132,7 +132,7 @@ class ClientesApiTest extends PruebaApi {
         int id = crear("Ciclo", LocalDate.of(1980, 1, 1), true);
         mvc.perform(post("/api/clientes/" + id + "/baja")).andExpect(status().isNoContent());
         mvc.perform(get("/api/clientes/" + id)).andExpect(jsonPath("$.activo").value(false));
-        mvc.perform(post("/api/clientes/" + id + "/reactivacion")).andExpect(status().isNoContent());
+        mvc.perform(post("/api/clientes/" + id + "/reactivar")).andExpect(status().isNoContent());
         mvc.perform(get("/api/clientes/" + id)).andExpect(jsonPath("$.activo").value(true));
     }
 
@@ -149,6 +149,6 @@ class ClientesApiTest extends PruebaApi {
         mvc.perform(put("/api/clientes/999999").contentType(MediaType.APPLICATION_JSON)
                 .content(json(dniUnico(), "N", LocalDate.of(1990, 5, 1)))).andExpect(status().isNotFound());
         mvc.perform(post("/api/clientes/999999/baja")).andExpect(status().isNotFound());
-        mvc.perform(post("/api/clientes/999999/reactivacion")).andExpect(status().isNotFound());
+        mvc.perform(post("/api/clientes/999999/reactivar")).andExpect(status().isNotFound());
     }
 }
