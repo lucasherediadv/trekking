@@ -6,10 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] `POST /api/salidas` recibe fecha, `rutaId`, líneas de equipamiento (elemento y cantidad), elementos nuevos, ids de Clientes existentes y Clientes nuevos; los Checkpoints no se envían, la Salida copia el Itinerario vigente.
-- [ ] Cada Cliente nuevo puede traer su ficha como nombre de archivo y contenido en base64, que se guarda en la misma transacción.
-- [ ] Responde 201 con la Salida creada, y su Copia operativa y la ficha de cada Cliente nuevo son consultables después.
-- [ ] Si falta stock responde 409 con el elemento y la cantidad disponible, y no queda ningún dato a medias (ni Salida, ni elementos nuevos, ni Clientes nuevos).
-- [ ] Una Ruta borrador o dada de baja se rechaza; datos inválidos responden 422 con errores por campo; una Ruta o Cliente inexistente responde 404.
-- [ ] Cambios posteriores en la Ruta o los Clientes de origen no alteran la Copia operativa de la Salida creada.
-- [ ] Tests `MockMvc` con SQLite en `@TempDir`: camino feliz completo, atomicidad ante falta de stock, ficha en base64, Ruta borrador y copia aislada.
+- [x] `POST /api/salidas` recibe fecha, `rutaId`, líneas de equipamiento (elemento y cantidad), elementos nuevos, ids de Clientes existentes y Clientes nuevos; los Checkpoints no se envían, la Salida copia el Itinerario vigente.
+- [x] Cada Cliente nuevo puede traer su ficha como nombre de archivo y contenido en base64, que se guarda en la misma transacción.
+- [x] Responde 201 con la Salida creada, y su Copia operativa y la ficha de cada Cliente nuevo son consultables después.
+- [x] Si falta stock responde 409 con el elemento y la cantidad disponible, y no queda ningún dato a medias (ni Salida, ni elementos nuevos, ni Clientes nuevos).
+- [x] Una Ruta borrador o dada de baja se rechaza; datos inválidos responden 422 con errores por campo; una Ruta o Cliente inexistente responde 404.
+- [x] Cambios posteriores en la Ruta o los Clientes de origen no alteran la Copia operativa de la Salida creada.
+- [x] Tests `MockMvc` con SQLite en `@TempDir`: camino feliz completo, atomicidad ante falta de stock, ficha en base64, Ruta borrador y copia aislada.
