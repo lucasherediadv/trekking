@@ -1,10 +1,6 @@
 package com.example.api;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,31 +22,13 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 public abstract class PruebaApi {
 
-    private static final Path DIRECTORIO = crearDirectorio();
+    private static final Path BASE = BaseTemporal.nueva("trekking-api-test");
 
     @Autowired
     protected MockMvc mvc;
 
     @DynamicPropertySource
     static void baseTemporal(DynamicPropertyRegistry registro) {
-        registro.add("trekking.db", () -> DIRECTORIO.resolve("trekking.db").toString());
-    }
-
-    private static Path crearDirectorio() {
-        try {
-            Path directorio = Files.createTempDirectory("trekking-api-test");
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> borrar(directorio)));
-            return directorio;
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static void borrar(Path directorio) {
-        try (Stream<Path> archivos = Files.walk(directorio)) {
-            archivos.sorted(Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
-        } catch (IOException ignorada) {
-            // limpieza de mejor esfuerzo
-        }
+        registro.add("trekking.db", () -> BASE.toString());
     }
 }
