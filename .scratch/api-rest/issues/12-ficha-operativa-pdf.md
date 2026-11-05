@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Un endpoint de la Salida devuelve el PDF con tipo de contenido PDF y un nombre de archivo reconocible en la descarga.
-- [ ] El contenido es el generado por core a partir de la Copia operativa vigente; la API solo lo entrega.
-- [ ] El PDF no incorpora ninguna ficha médica de los participantes.
-- [ ] Una Salida inexistente responde 404.
-- [ ] Tests `MockMvc` con SQLite en `@TempDir`: respuesta PDF válida, cabeceras de descarga, 404, y un Cliente con ficha médica cuyo contenido no aparece en el PDF.
+- [x] Un endpoint de la Salida devuelve el PDF con tipo de contenido PDF y un nombre de archivo reconocible en la descarga.
+- [x] El contenido es el generado por core a partir de la Copia operativa vigente; la API solo lo entrega.
+- [x] El PDF no incorpora ninguna ficha médica de los participantes.
+- [x] Una Salida inexistente responde 404.
+- [x] Tests `MockMvc` con SQLite en `@TempDir`: respuesta PDF válida, cabeceras de descarga, 404, y un Cliente con ficha médica cuyo contenido no aparece en el PDF.
