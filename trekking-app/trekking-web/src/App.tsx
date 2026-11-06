@@ -4,6 +4,7 @@ import { RutaEditar, RutaNueva } from "./rutas/FormularioRuta";
 import { ListadoInventario } from "./inventario/ListadoInventario";
 import { ItinerarioRuta } from "./rutas/ItinerarioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
+import { DetalleSalida } from "./salidas/DetalleSalida";
 import { ListadoSalidas } from "./salidas/ListadoSalidas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
@@ -37,7 +38,14 @@ export const rutas: RouteObject[] = [
     ),
     children: [
       { index: true, element: <Navigate to="/salidas" replace /> },
-      { path: "salidas", element: <ListadoSalidas /> },
+      {
+        path: "salidas",
+        handle: { miga: "Salidas" },
+        children: [
+          { index: true, element: <ListadoSalidas /> },
+          { path: ":id", handle: { miga: "Detalle de Salida" }, element: <DetalleSalida /> },
+        ],
+      },
       {
         path: "rutas",
         handle: { miga: "Rutas" },
