@@ -16,6 +16,9 @@ export class ErrorApi extends Error {
     readonly estado?: number,
     readonly codigo?: string,
     readonly errores: ErrorCampo[] = [],
+    /** Solo en stock insuficiente (409): Elemento afectado y cantidad disponible. */
+    readonly elemento?: string,
+    readonly disponible?: number,
   ) {
     super(mensaje);
   }
@@ -32,6 +35,15 @@ interface CuerpoError {
   codigo?: string;
   mensaje?: string;
   errores?: ErrorCampo[];
+  elemento?: string;
+  disponible?: number;
+}
+
+/** En stock insuficiente el mensaje indica además el Elemento y la cantidad disponible. */
+function conStock(c: CuerpoError): string {
+  const mensaje = c.mensaje ?? "";
+  if (c.elemento === undefined || c.disponible === undefined) return mensaje;
+  return `${mensaje} ${c.elemento}: disponible ${c.disponible}.`;
 }
 
 export function interpretarRespuesta(estado: number, cuerpo: unknown): ErrorApi {
@@ -40,7 +52,7 @@ export function interpretarRespuesta(estado: number, cuerpo: unknown): ErrorApi 
   if (estado === 400) return new ErrorApi("solicitud-invalida", MENSAJES.solicitudInvalida, estado, c.codigo);
   if (estado >= 500 || !c.mensaje) return new ErrorApi("interno", MENSAJES.interno, estado, c.codigo);
   // Errores de negocio (409, 422...): el mensaje del núcleo está pensado para el usuario.
-  return new ErrorApi("negocio", c.mensaje, estado, c.codigo, c.errores ?? []);
+  return new ErrorApi("negocio", conStock(c), estado, c.codigo, c.errores ?? [], c.elemento, c.disponible);
 }
 
 export function interpretarFalla(causa: unknown): ErrorApi {

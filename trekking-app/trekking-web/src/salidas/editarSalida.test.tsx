@@ -164,14 +164,14 @@ describe("editar Salida planificada", () => {
     const puts = api({
       editar: () =>
         HttpResponse.json(
-          { codigo: "STOCK_INSUFICIENTE", mensaje: "Stock insuficiente de Soga Dos: disponible 3.", elemento: "Soga Dos", disponible: 3 },
+          { codigo: "STOCK_INSUFICIENTE", mensaje: "Stock insuficiente.", elemento: "Soga Dos", disponible: 3 },
           { status: 409 },
         ),
     });
     const { usuario } = await abrirDesdeListado();
     await usuario.type(await screen.findByLabelText("Cantidad de Soga Dos"), "9");
     await usuario.click(guardar());
-    expect(await screen.findByRole("alert")).toHaveTextContent("Stock insuficiente de Soga Dos: disponible 3.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Stock insuficiente. Soga Dos: disponible 3.");
     expect(screen.getByLabelText("Cantidad de Soga Dos")).toHaveValue(9);
     expect(puts).toHaveLength(1);
   });

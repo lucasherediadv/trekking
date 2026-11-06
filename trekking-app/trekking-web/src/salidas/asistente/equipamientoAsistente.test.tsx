@@ -114,7 +114,7 @@ describe("Asistente de Salida: Equipamiento", () => {
         HttpResponse.json(
           {
             codigo: "STOCK_INSUFICIENTE",
-            mensaje: "No hay cantidad suficiente de Carpa Uno. Disponible: 1.",
+            mensaje: "No hay cantidad suficiente.",
             elemento: "Carpa Uno",
             disponible: 1,
           },
@@ -129,7 +129,7 @@ describe("Asistente de Salida: Equipamiento", () => {
 
     const alerta = await screen.findByRole("alert");
     expect(alerta).toHaveTextContent("Carpa Uno");
-    expect(alerta).toHaveTextContent("Disponible: 1");
+    expect(alerta).toHaveTextContent("Carpa Uno: disponible 1");
     expect(screen.getByRole("main")).toHaveTextContent("Carpa Uno x 4");
     await usuario.click(paso("Equipamiento"));
     expect(await screen.findByLabelText("Cantidad de Carpa Uno")).toHaveValue(4);
