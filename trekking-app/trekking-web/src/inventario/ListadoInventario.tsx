@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -55,6 +56,9 @@ export function ListadoInventario() {
   return (
     <section>
       <h1>Inventario</h1>
+      <Link to="/inventario/nuevo" className="boton-enlace">
+        Nuevo elemento
+      </Link>
       <div className="filtros">
         <label className="filtro">
           Estado
@@ -92,6 +96,9 @@ export function ListadoInventario() {
                 </td>
                 <td>{e.activo ? "Vigente" : "De baja"}</td>
                 <td>
+                  <Link to={`/inventario/${e.id}/editar`} aria-label={`Editar ${e.nombre}`}>
+                    Editar
+                  </Link>{" "}
                   <button
                     type="button"
                     className={e.activo ? "accion-peligro" : undefined}
