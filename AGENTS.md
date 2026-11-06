@@ -31,6 +31,7 @@
   - Regenerate API types (API must be running): `npm run gen:api` → `src/api/schema.d.ts` (committed, never edit by hand). Pin `typescript@5`: `openapi-typescript` breaks on TypeScript 7.
   - Errors/loading: API calls go through `llamar(...)` (`src/api/errores.ts`, the single interpreter of the uniform error body); show failures with `AvisoError` (load, with retry) or `useToast().error(e)` (actions); load with `useCarga`/`Cargando`. Never read HTTP error bodies in screens.
   - Unsaved changes: render `<ConfirmarSalida hayCambios guardar />` (`src/ui/ConfirmarSalida.tsx`, needs the data router) in any editing screen.
+  - Clientes: `ClienteDto` has no "has ficha médica" flag; the list probes `HEAD /api/clientes/{id}/ficha-medica` per row (200/404), never downloading the file.
 - No lint or formatting command/plugin is configured in the POM.
 
 ## Testing
