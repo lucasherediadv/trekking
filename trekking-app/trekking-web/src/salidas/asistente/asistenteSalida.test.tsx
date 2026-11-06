@@ -65,7 +65,7 @@ describe("Asistente de Salida", () => {
     await usuario.click(screen.getByRole("button", { name: "Confirmar Salida" }));
 
     expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent("Salida creada");
-    expect(screen.getByRole("heading", { name: "Salidas" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Salidas" })).toBeInTheDocument();
     expect(peticiones).toEqual([
       {
         fecha: "2026-12-05",
