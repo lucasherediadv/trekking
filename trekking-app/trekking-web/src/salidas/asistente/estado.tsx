@@ -18,6 +18,8 @@ export interface DatosAsistente {
   // Equipamiento (opcional)
   equipamiento: Esquemas["LineaEquipamientoDto"][];
   elementosNuevos: Esquemas["ElementoNuevoSolicitud"][];
+  // Nombres de los elementos elegidos (id -> nombre), para mostrarlos en Revisión
+  nombresElementos: Record<number, string>;
   // Participantes (opcional)
   clientesExistentes: number[];
   clientesNuevos: Esquemas["ClienteNuevoSolicitud"][];
@@ -29,6 +31,7 @@ export const ESTADO_INICIAL: DatosAsistente = {
   fecha: "",
   equipamiento: [],
   elementosNuevos: [],
+  nombresElementos: {},
   clientesExistentes: [],
   clientesNuevos: [],
   visitados: [],
