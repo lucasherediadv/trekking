@@ -4,11 +4,11 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] La tabla lista los elementos activos por defecto; el selector `estado` ofrece activas, bajas y todas.
-- [ ] Cada fila muestra cantidad total, Estado del elemento con su color y vigencia.
-- [ ] Baja y reactivación son acciones por fila, con solo la acción válida para el estado.
-- [ ] Hay carga, estado vacío y reintento, con el manejo común de errores del ticket 02.
-- [ ] El vocabulario es "Inventario" y "Estado del elemento", según el glosario.
-- [ ] Tests del seam único: camino feliz, filtro `estado`, baja y reactivación, y un error de carga.
+- [x] La tabla lista los elementos activos por defecto; el selector `estado` ofrece activas, bajas y todas.
+- [x] Cada fila muestra cantidad total, Estado del elemento con su color y vigencia.
+- [x] Baja y reactivación son acciones por fila, con solo la acción válida para el estado.
+- [x] Hay carga, estado vacío y reintento, con el manejo común de errores del ticket 02.
+- [x] El vocabulario es "Inventario" y "Estado del elemento", según el glosario.
+- [x] Tests del seam único: camino feliz, filtro `estado`, baja y reactivación, y un error de carga.
