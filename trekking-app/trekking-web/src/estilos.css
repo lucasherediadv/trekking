@@ -57,6 +57,15 @@ a { color: var(--color-primary); }
 .estado-informacion { color: #1a6fb0; }
 .estado-neutro { color: #625f50; }
 .insignia-borrador { background: var(--color-muted-surface); color: #b45f00; border: 1px dashed #b45f00; border-radius: 10px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
+.indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 12px 0; }
+.tarjeta-indicador { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text); text-decoration: none; }
+.tarjeta-indicador:hover { background: var(--color-hover); }
+.tarjeta-titulo { font-weight: 600; }
+.tarjeta-cifra { font-size: 28px; font-weight: 700; }
+.tarjeta-detalle { font-size: 12px; color: var(--color-text-muted); }
+.proximas { margin: 0 0 16px; padding-left: 20px; }
+.fila-vencida { background: #fff4e5; }
+.insignia-vencida { margin-left: 8px; background: var(--color-muted-surface); color: #b45f00; border: 1px solid #b45f00; border-radius: 10px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
 .accion-peligro { color: var(--color-danger); }
 .vacio, .cargando { color: var(--color-text-muted); padding: 24px 0; }
 .aviso-error { border-color: var(--color-danger); }

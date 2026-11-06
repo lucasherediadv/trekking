@@ -1,6 +1,8 @@
 import { Link, Navigate, type RouteObject } from "react-router-dom";
+import { ListadoInventario } from "./inventario/ListadoInventario";
 import { ItinerarioRuta } from "./rutas/ItinerarioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
+import { ListadoSalidas } from "./salidas/ListadoSalidas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
 
@@ -32,9 +34,8 @@ export const rutas: RouteObject[] = [
       </ToastProvider>
     ),
     children: [
-      // Hasta que exista Salidas, la raíz va a Rutas.
-      { index: true, element: <Navigate to="/rutas" replace /> },
-      { path: "salidas", element: <Seccion titulo="Salidas" /> },
+      { index: true, element: <Navigate to="/salidas" replace /> },
+      { path: "salidas", element: <ListadoSalidas /> },
       {
         path: "rutas",
         handle: { miga: "Rutas" },
@@ -44,7 +45,7 @@ export const rutas: RouteObject[] = [
           { path: ":id/itinerario", handle: { miga: "Itinerario" }, element: <ItinerarioRuta /> },
         ],
       },
-      { path: "inventario", element: <Seccion titulo="Inventario" /> },
+      { path: "inventario", element: <ListadoInventario /> },
       { path: "clientes", element: <Seccion titulo="Clientes" /> },
       { path: "*", element: <NoEncontrada /> },
     ],
