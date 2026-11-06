@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "../test/servidor";
 import { renderApp } from "../test/renderApp";
@@ -124,6 +124,102 @@ describe("listado de Salidas e inicio", () => {
     renderApp("/salidas");
     expect(await screen.findByText("Todavía no hay Salidas.")).toBeInTheDocument();
     expect(screen.getByText("No hay Salidas próximas.")).toBeInTheDocument();
+  });
+
+  describe("realizar y cancelar", () => {
+    afterEach(() => vi.restoreAllMocks());
+    const errorApi = (codigo: string, mensaje: string) => ({ codigo, mensaje });
+    // Tras la acción el listado recargado trae la Salida 1 con el estado nuevo.
+    function listadoTrasAccion(estadoNuevo: string) {
+      let cargas = 0;
+      server.use(
+        http.get("*/api/salidas", () => {
+          cargas++;
+          return HttpResponse.json(cargas === 1 ? SALIDAS : [salida(1, { estado: estadoNuevo }), ...SALIDAS.slice(1)]);
+        }),
+        http.get("*/api/dashboard/indicadores-salidas", () => HttpResponse.json(INDICADORES)),
+        http.get("*/api/dashboard/proximas-salidas", () => HttpResponse.json(PROXIMAS)),
+      );
+      return () => cargas;
+    }
+
+    it.each([
+      ["Realizar", "realizada", "REALIZADA", "Realizada", "Salida marcada como realizada"],
+      ["Cancelar", "cancelar", "CANCELADA", "Cancelada", "Salida cancelada"],
+    ])("%s pide confirmación, llama a la API, avisa y recarga sin acciones", async (accion, ruta, nuevo, texto, aviso) => {
+      const cargas = listadoTrasAccion(nuevo);
+      let llamadas = 0;
+      server.use(
+        http.post(`*/api/salidas/1/${ruta}`, () => {
+          llamadas++;
+          return new HttpResponse(null, { status: 204 });
+        }),
+      );
+      const confirmar = vi.spyOn(window, "confirm").mockReturnValue(true);
+      const { usuario } = renderApp("/salidas");
+      await usuario.click(await screen.findByRole("button", { name: `${accion} Salida de Cerro Uno` }));
+      expect(confirmar).toHaveBeenCalledOnce();
+      expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent(aviso);
+      await waitFor(() => expect(within(fila("Cerro Uno")).getByText(texto)).toBeInTheDocument());
+      expect(llamadas).toBe(1);
+      expect(cargas()).toBe(2);
+      expect(within(fila("Cerro Uno")).queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("si no se confirma no se llama a la API", async () => {
+      apiFeliz();
+      let llamadas = 0;
+      server.use(
+        http.post("*/api/salidas/1/cancelar", () => {
+          llamadas++;
+          return new HttpResponse(null, { status: 204 });
+        }),
+      );
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+      const { usuario } = renderApp("/salidas");
+      await usuario.click(await screen.findByRole("button", { name: "Cancelar Salida de Cerro Uno" }));
+      expect(llamadas).toBe(0);
+    });
+
+    it("un 409 muestra el mensaje de la API, recarga y no reintenta", async () => {
+      const cargas = listadoTrasAccion("REALIZADA");
+      let llamadas = 0;
+      server.use(
+        http.post("*/api/salidas/1/cancelar", () => {
+          llamadas++;
+          return HttpResponse.json(errorApi("CONFLICTO", "La Salida ya fue realizada"), { status: 409 });
+        }),
+      );
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      const { usuario } = renderApp("/salidas");
+      await usuario.click(await screen.findByRole("button", { name: "Cancelar Salida de Cerro Uno" }));
+      expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent(
+        "La Salida ya fue realizada",
+      );
+      await waitFor(() => expect(within(fila("Cerro Uno")).getByText("Realizada")).toBeInTheDocument());
+      expect(llamadas).toBe(1);
+      expect(cargas()).toBe(2);
+    });
+
+    it("un 404 avisa que la Salida ya no existe y recarga el listado", async () => {
+      let cargas = 0;
+      server.use(
+        http.get("*/api/salidas", () => {
+          cargas++;
+          return HttpResponse.json(cargas === 1 ? SALIDAS : SALIDAS.slice(1));
+        }),
+        http.get("*/api/dashboard/indicadores-salidas", () => HttpResponse.json(INDICADORES)),
+        http.get("*/api/dashboard/proximas-salidas", () => HttpResponse.json(PROXIMAS)),
+        http.post("*/api/salidas/1/realizada", () =>
+          HttpResponse.json(errorApi("NO_ENCONTRADO", "Salida 1 no existe"), { status: 404 }),
+        ),
+      );
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      const { usuario } = renderApp("/salidas");
+      await usuario.click(await screen.findByRole("button", { name: "Realizar Salida de Cerro Uno" }));
+      expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent("El recurso ya no existe");
+      await waitFor(() => expect(within(screen.getByRole("table")).queryByText("Cerro Uno")).not.toBeInTheDocument());
+    });
   });
 
   it("un error de carga se informa y permite reintentar", async () => {

@@ -4,10 +4,10 @@
 
 **Blocked by:** 10
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Realizar y cancelar son acciones por fila con confirmación; cancelar libera la reserva de stock (efecto visible al consultar de nuevo).
-- [ ] Una Salida realizada o cancelada no ofrece nuevas acciones.
-- [ ] Un 409 muestra el mensaje de la API, recarga el recurso y no reintenta solo.
-- [ ] Un 404 muestra aviso y regresa al listado.
-- [ ] Tests del seam único: realizar, cancelar, 409 con recarga sin reintento y 404.
+- [x] Realizar y cancelar son acciones por fila con confirmación; cancelar libera la reserva de stock (efecto visible al consultar de nuevo).
+- [x] Una Salida realizada o cancelada no ofrece nuevas acciones.
+- [x] Un 409 muestra el mensaje de la API, recarga el recurso y no reintenta solo.
+- [x] Un 404 muestra aviso y regresa al listado.
+- [x] Tests del seam único: realizar, cancelar, 409 con recarga sin reintento y 404.
