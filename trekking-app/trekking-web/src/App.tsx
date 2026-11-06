@@ -2,6 +2,7 @@ import { Link, Navigate, type RouteObject } from "react-router-dom";
 import { ListadoInventario } from "./inventario/ListadoInventario";
 import { ListadoRutas } from "./rutas/ListadoRutas";
 import { ListadoSalidas } from "./salidas/ListadoSalidas";
+import { rutaAsistente } from "./salidas/asistente/rutas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
 
@@ -34,7 +35,11 @@ export const rutas: RouteObject[] = [
     ),
     children: [
       { index: true, element: <Navigate to="/salidas" replace /> },
-      { path: "salidas", element: <ListadoSalidas /> },
+      {
+        path: "salidas",
+        handle: { miga: "Salidas" },
+        children: [{ index: true, element: <ListadoSalidas /> }, rutaAsistente],
+      },
       {
         path: "rutas",
         handle: { miga: "Rutas" },
