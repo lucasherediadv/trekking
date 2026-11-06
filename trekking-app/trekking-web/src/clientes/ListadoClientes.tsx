@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api, urlBaseApi } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -77,6 +78,9 @@ export function ListadoClientes() {
   return (
     <section>
       <h1>Clientes</h1>
+      <Link to="/clientes/nuevo" className="boton-enlace">
+        Nuevo cliente
+      </Link>
       <div className="filtros">
         <label className="filtro">
           Estado
@@ -118,6 +122,9 @@ export function ListadoClientes() {
                     <IndicadorFicha id={c.id!} />
                   </td>
                   <td>
+                    <Link to={`/clientes/${c.id}/editar`} aria-label={`Editar ${nombre}`}>
+                      Editar
+                    </Link>{" "}
                     <button
                       type="button"
                       className={c.activo ? "accion-peligro" : undefined}

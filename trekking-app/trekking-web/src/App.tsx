@@ -1,5 +1,6 @@
 import { Link, Navigate, type RouteObject } from "react-router-dom";
 import { ListadoClientes } from "./clientes/ListadoClientes";
+import { ClienteEditar, ClienteNuevo } from "./clientes/FormularioCliente";
 import { RutaEditar, RutaNueva } from "./rutas/FormularioRuta";
 import { ElementoEditar, ElementoNuevo } from "./inventario/FormularioElemento";
 import { ListadoInventario } from "./inventario/ListadoInventario";
@@ -66,7 +67,15 @@ export const rutas: RouteObject[] = [
           { path: ":id/editar", handle: { miga: "Editar elemento" }, element: <ElementoEditar /> },
         ],
       },
-      { path: "clientes", element: <ListadoClientes /> },
+      {
+        path: "clientes",
+        handle: { miga: "Clientes" },
+        children: [
+          { index: true, element: <ListadoClientes /> },
+          { path: "nuevo", handle: { miga: "Nuevo cliente" }, element: <ClienteNuevo /> },
+          { path: ":id/editar", handle: { miga: "Editar cliente" }, element: <ClienteEditar /> },
+        ],
+      },
       { path: "*", element: <NoEncontrada /> },
     ],
   },
