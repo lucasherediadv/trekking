@@ -4,10 +4,11 @@ import { useBlocker } from "react-router-dom";
 /**
  * Pide confirmación antes de abandonar la pantalla (menú, breadcrumb, Cancelar o historial del
  * navegador) mientras `bloquear()` sea verdadero. También avisa al cerrar o recargar la pestaña.
+ * `bloquear` recibe la ruta de destino (si se conoce) para dejar libres ciertas navegaciones.
  * Si se pasa `guardar` (devuelve true si guardó bien), el diálogo ofrece además "Guardar" y sale al guardar.
  */
-export function ConfirmarSalida({ bloquear, guardar }: { bloquear: () => boolean; guardar?: () => Promise<boolean> }) {
-  const bloqueo = useBlocker(() => bloquear());
+export function ConfirmarSalida({ bloquear, guardar }: { bloquear: (destino?: string) => boolean; guardar?: () => Promise<boolean> }) {
+  const bloqueo = useBlocker(({ nextLocation }) => bloquear(nextLocation.pathname));
 
   useEffect(() => {
     const alDescargar = (e: BeforeUnloadEvent) => {

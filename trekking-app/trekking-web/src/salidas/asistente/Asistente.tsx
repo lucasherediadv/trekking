@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { Navigate, Outlet, useBlocker, useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef } from "react";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ConfirmarSalida } from "../../ui/ConfirmarSalida";
 import { ProveedorAsistente, useAsistente, type ClavePaso } from "./estado";
 import { alcanzable, indiceDe, PASOS, tieneDatos } from "./pasos";
 
@@ -46,18 +47,11 @@ function Contenido({ actual }: { actual: ClavePaso }) {
   // Un paso opcional cuenta como completado al visitarlo, esté vacío o no.
   useEffect(() => visitar(actual), [actual, visitar]);
 
-  const bloqueo = useBlocker(
-    ({ nextLocation }) =>
-      !confirmada.current && tieneDatos(datos) && !nextLocation.pathname.startsWith(RAIZ_ASISTENTE),
+  // Navegar entre los pasos del asistente es libre; salir de él con datos pide confirmación.
+  const bloquear = useCallback(
+    (destino?: string) => !confirmada.current && tieneDatos(datos) && !destino?.startsWith(RAIZ_ASISTENTE),
+    [datos],
   );
-
-  // Aviso del navegador al recargar o cerrar la pestaña con datos ingresados.
-  useEffect(() => {
-    if (!tieneDatos(datos)) return;
-    const alSalir = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", alSalir);
-    return () => window.removeEventListener("beforeunload", alSalir);
-  }, [datos]);
 
   const i = indiceDe(actual);
   const siguiente = PASOS[i + 1];
@@ -94,17 +88,7 @@ function Contenido({ actual }: { actual: ClavePaso }) {
           </button>
         )}
       </div>
-      {bloqueo.state === "blocked" && (
-        <div role="alertdialog" aria-modal="true" aria-label="Abandonar el asistente" className="aviso dialogo">
-          <p>Hay datos ingresados que se perderán. ¿Abandonar el asistente?</p>
-          <button type="button" onClick={() => bloqueo.reset()}>
-            Seguir en el asistente
-          </button>{" "}
-          <button type="button" className="accion-peligro" onClick={() => bloqueo.proceed()}>
-            Abandonar
-          </button>
-        </div>
-      )}
+      <ConfirmarSalida bloquear={bloquear} />
     </>
   );
 }

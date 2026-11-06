@@ -173,7 +173,7 @@ describe("Asistente de Salida", () => {
     await screen.findByRole("heading", { name: "Datos de la salida" });
     const menu = () => screen.getByRole("navigation", { name: "Menú principal" });
     await vacio.usuario.click(within(menu()).getByRole("link", { name: "Rutas" }));
-    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Cambios sin guardar" })).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "Rutas" })).toBeInTheDocument();
   });
 
@@ -185,13 +185,13 @@ describe("Asistente de Salida", () => {
       within(screen.getByRole("navigation", { name: "Menú principal" })).getByRole("link", { name: "Rutas" });
 
     await usuario.click(enlace());
-    const dialogo = await screen.findByRole("alertdialog");
-    await usuario.click(within(dialogo).getByRole("button", { name: "Seguir en el asistente" }));
-    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    const dialogo = await screen.findByRole("dialog", { name: "Cambios sin guardar" });
+    await usuario.click(within(dialogo).getByRole("button", { name: "Seguir editando" }));
+    expect(screen.queryByRole("dialog", { name: "Cambios sin guardar" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Fecha")).toHaveValue("2026-12-05");
 
     await usuario.click(enlace());
-    await usuario.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Abandonar" }));
+    await usuario.click(within(await screen.findByRole("dialog", { name: "Cambios sin guardar" })).getByRole("button", { name: "Descartar y salir" }));
     expect(await screen.findByRole("heading", { name: "Rutas" })).toBeInTheDocument();
   });
 });
