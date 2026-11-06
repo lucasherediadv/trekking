@@ -1,5 +1,7 @@
 import { Link, Navigate, type RouteObject } from "react-router-dom";
+import { ListadoClientes } from "./clientes/ListadoClientes";
 import { ListadoInventario } from "./inventario/ListadoInventario";
+import { ItinerarioRuta } from "./rutas/ItinerarioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
 import { DetalleSalida } from "./salidas/DetalleSalida";
 import { ListadoSalidas } from "./salidas/ListadoSalidas";
@@ -49,10 +51,11 @@ export const rutas: RouteObject[] = [
         children: [
           { index: true, element: <ListadoRutas /> },
           { path: "nueva", handle: { miga: "Nueva ruta" }, element: <Seccion titulo="Nueva ruta" /> },
+          { path: ":id/itinerario", handle: { miga: "Itinerario" }, element: <ItinerarioRuta /> },
         ],
       },
       { path: "inventario", element: <ListadoInventario /> },
-      { path: "clientes", element: <Seccion titulo="Clientes" /> },
+      { path: "clientes", element: <ListadoClientes /> },
       { path: "*", element: <NoEncontrada /> },
     ],
   },
