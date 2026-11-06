@@ -4,12 +4,12 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Se accede desde la fila de la Ruta; la pantalla tiene URL propia y breadcrumbs.
-- [ ] Los Checkpoints se muestran en orden explícito (ADR 0002) y se pueden agregar, editar, quitar y reordenar antes de guardar.
-- [ ] Guardar envía el Itinerario completo en una sola petición y refleja la Ruta resultante.
-- [ ] Los errores de un Checkpoint inválido se muestran por campo.
-- [ ] Tras guardar dos o más Checkpoints, la Ruta aparece en el listado sin marca de borrador.
-- [ ] Con cambios sin guardar se pide confirmación al salir.
-- [ ] Tests del seam único: camino feliz con reordenamiento, 422 por campo, 404 y el paso de borrador a Ruta utilizable.
+- [x] Se accede desde la fila de la Ruta; la pantalla tiene URL propia y breadcrumbs.
+- [x] Los Checkpoints se muestran en orden explícito (ADR 0002) y se pueden agregar, editar, quitar y reordenar antes de guardar.
+- [x] Guardar envía el Itinerario completo en una sola petición y refleja la Ruta resultante.
+- [x] Los errores de un Checkpoint inválido se muestran por campo.
+- [x] Tras guardar dos o más Checkpoints, la Ruta aparece en el listado sin marca de borrador.
+- [x] Con cambios sin guardar se pide confirmación al salir.
+- [x] Tests del seam único: camino feliz con reordenamiento, 422 por campo, 404 y el paso de borrador a Ruta utilizable.
