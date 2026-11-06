@@ -25,6 +25,10 @@
 - Build/package: `mvn -f trekking-app/pom.xml clean package`.
 - Run the API: `mvn -f trekking-app/pom.xml -pl trekking-api -am spring-boot:run`. Properties reach the app only via `"-Dspring-boot.run.jvmArguments=-Dtrekking.db=<file> -Dtrekking.api.origen-web=<url>"`; a plain `-D` is ignored and the API opens the repository `trekking.db`.
 - Run the JavaFX app: `mvn -f trekking-app/pom.xml javafx:run` (runs only in `trekking-desktop`; other modules skip it).
+- Web (`trekking-app/trekking-web/`, Vite + React + TypeScript, ADR 0007; npm only, outside the Maven reactor). Run from that folder:
+  - Install: `npm install`. Dev server: `npm run dev` (needs the API on `127.0.0.1:8080`; Vite proxies `/api`; env vars `VITE_API_URL` base URL, `VITE_API_PROXY` proxy target, see `.env.example`).
+  - Test: `npm test` (Vitest + Testing Library + MSW; single seam = the whole app rendered via `renderApp(ruta)` in `src/test/renderApp.tsx`, API mocked with `server.use(...)` from `src/test/servidor.ts`). Build/typecheck: `npm run build`.
+  - Regenerate API types (API must be running): `npm run gen:api` → `src/api/schema.d.ts` (committed, never edit by hand). Pin `typescript@5`: `openapi-typescript` breaks on TypeScript 7.
 - No lint or formatting command/plugin is configured in the POM.
 
 ## Testing

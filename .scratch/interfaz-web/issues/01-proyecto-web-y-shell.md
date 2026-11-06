@@ -4,14 +4,14 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] El proyecto web vive fuera del reactor Maven; el `pom.xml` padre y las dependencias entre módulos Java no cambian.
-- [ ] Un comando de npm levanta la web en desarrollo; el proxy envía `/api` a `127.0.0.1:8080` y la URL base se configura por variable de entorno.
-- [ ] Los tipos de petición y respuesta se generan desde el contrato OpenAPI de la API con un comando de npm.
-- [ ] El menú lateral muestra Salidas, Rutas, Inventario y Clientes con la marca y el logo, se contrae a iconos con tooltips y marca la sección activa.
-- [ ] Las pantallas secundarias muestran breadcrumbs; una URL inexistente muestra un aviso con enlace de regreso.
-- [ ] La raíz redirige a Rutas.
-- [ ] Todo el texto está en español con los términos del glosario.
-- [ ] Hay un test del seam único (app renderizada con enrutador y MSW) que verifica la navegación del shell.
-- [ ] `AGENTS.md` documenta los comandos de instalación, desarrollo, prueba y compilación de la web, y la ubicación del proyecto.
+- [x] El proyecto web vive fuera del reactor Maven; el `pom.xml` padre y las dependencias entre módulos Java no cambian.
+- [x] Un comando de npm levanta la web en desarrollo; el proxy envía `/api` a `127.0.0.1:8080` y la URL base se configura por variable de entorno.
+- [x] Los tipos de petición y respuesta se generan desde el contrato OpenAPI de la API con un comando de npm.
+- [x] El menú lateral muestra Salidas, Rutas, Inventario y Clientes con la marca y el logo, se contrae a iconos con tooltips y marca la sección activa.
+- [x] Las pantallas secundarias muestran breadcrumbs; una URL inexistente muestra un aviso con enlace de regreso.
+- [x] La raíz redirige a Rutas.
+- [x] Todo el texto está en español con los términos del glosario.
+- [x] Hay un test del seam único (app renderizada con enrutador y MSW) que verifica la navegación del shell.
+- [x] `AGENTS.md` documenta los comandos de instalación, desarrollo, prueba y compilación de la web, y la ubicación del proyecto.
