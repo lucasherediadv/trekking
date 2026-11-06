@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -148,6 +149,9 @@ export function ListadoRutas() {
                   )}
                 </td>
                 <td>
+                  <Link to={`/rutas/${r.id}/itinerario`} aria-label={`Itinerario de ${r.nombre}`}>
+                    Itinerario
+                  </Link>{" "}
                   <button
                     type="button"
                     className={r.activa ? "accion-peligro" : undefined}
