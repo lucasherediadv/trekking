@@ -35,7 +35,7 @@ const elemento = (id: number, nombre: string, disponible: number) => ({
 
 const cliente = (id: number, nombre: string, apellido: string) => ({ id, dni: `3000000${id}`, nombre, apellido, activo: true });
 
-function api(opciones: { editar?: () => Response | Promise<Response>; estados?: string[] } = {}) {
+function api(opciones: { editar?: () => Response | Promise<Response>; estados?: string[]; equipamiento?: unknown[] } = {}) {
   const puts: unknown[] = [];
   const estados = opciones.estados ?? ["PLANIFICADA"];
   let lecturas = 0;
@@ -52,7 +52,7 @@ function api(opciones: { editar?: () => Response | Promise<Response>; estados?: 
         fecha: "2026-11-10",
         ruta: { id: 1, nombre: "Cerro Uno" },
         checkpoints: CHECKPOINTS_COPIA,
-        equipamiento: [{ elementoId: 1, cantidad: 2 }],
+        equipamiento: opciones.equipamiento ?? [{ elementoId: 1, cantidad: 2 }],
         participantes: [{ id: 1, dni: "30000001", nombre: "Ana", apellido: "Pérez" }],
       }),
     ),
@@ -174,6 +174,19 @@ describe("editar Salida planificada", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Stock insuficiente. Soga Dos: disponible 3.");
     expect(screen.getByLabelText("Cantidad de Soga Dos")).toHaveValue(9);
     expect(puts).toHaveLength(1);
+  });
+
+  it("revertir un cambio (aunque reordene las líneas) deja el formulario sin cambios", async () => {
+    api({ equipamiento: [{ cantidad: 2, elementoId: 1 }, { cantidad: 1, elementoId: 2 }] });
+    const { usuario, router } = await abrirDesdeListado();
+    const carpa = await screen.findByLabelText("Cantidad de Carpa Uno");
+    await usuario.clear(carpa);
+    await usuario.type(carpa, "3");
+    await usuario.clear(carpa);
+    await usuario.type(carpa, "2");
+    await usuario.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(confirmacion()).not.toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/salidas");
   });
 
   it("pide confirmación al salir con cambios sin guardar y no al salir sin cambios", async () => {

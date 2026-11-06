@@ -55,6 +55,16 @@ function leer<T>(texto: string): T[] {
   return JSON.parse(texto) as T[];
 }
 
+// Forma canónica de las listas: el mismo contenido da siempre el mismo texto, sin importar el
+// orden de las líneas ni de las claves, para que "sin cambios" se detecte bien tras revertir.
+const lineasATexto = (lineas: Linea[]) =>
+  JSON.stringify(
+    lineas
+      .map((l) => ({ elementoId: l.elementoId, cantidad: l.cantidad }))
+      .sort((a, b) => (a.elementoId ?? 0) - (b.elementoId ?? 0)),
+  );
+const idsATexto = (ids: number[]) => JSON.stringify([...ids].sort((a, b) => a - b));
+
 /** Lleva la Ruta elegida en PasoRuta (estado del asistente) al valor `ruta` del formulario. */
 function PuenteRuta({ alCambiar }: { alCambiar: (ruta: string) => void }) {
   const { datos } = useAsistente();
@@ -76,8 +86,8 @@ function Contenido(props: { id: number; datos: Datos; alConflicto: (mensaje: str
     inicial: {
       fecha: datos.copia.fecha ?? datos.salida.fecha ?? "",
       ruta: rutaOriginal === undefined ? "" : String(rutaOriginal),
-      equipamiento: JSON.stringify(datos.copia.equipamiento ?? []),
-      participantes: JSON.stringify((datos.copia.participantes ?? []).map((p) => p.id)),
+      equipamiento: lineasATexto(datos.copia.equipamiento ?? []),
+      participantes: idsATexto((datos.copia.participantes ?? []).map((p) => p.id!)),
     },
     validar: (v) => ({
       ...(v.fecha.trim() === "" ? { fecha: "La fecha es obligatoria." } : {}),
@@ -139,7 +149,7 @@ function Contenido(props: { id: number; datos: Datos; alConflicto: (mensaje: str
           lineas={leer<Linea>(f.valores.equipamiento)}
           nuevos={[]}
           permitirNuevos={false}
-          alCambiar={(e) => f.cambiar("equipamiento", JSON.stringify(e.lineas))}
+          alCambiar={(e) => f.cambiar("equipamiento", lineasATexto(e.lineas))}
         />
         <MensajeCampo texto={f.errores.equipamiento} />
       </section>
@@ -150,7 +160,7 @@ function Contenido(props: { id: number; datos: Datos; alConflicto: (mensaje: str
           existentes={leer<number>(f.valores.participantes)}
           nuevos={[]}
           permitirNuevos={false}
-          alCambiar={(p) => f.cambiar("participantes", JSON.stringify(p.existentes))}
+          alCambiar={(p) => f.cambiar("participantes", idsATexto(p.existentes))}
         />
         <MensajeCampo texto={f.errores.participantes} />
       </section>
