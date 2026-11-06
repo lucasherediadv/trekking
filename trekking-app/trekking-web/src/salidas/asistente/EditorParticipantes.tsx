@@ -21,6 +21,8 @@ interface Props extends Participantes {
   /** Clientes que se ofrecen (ya filtrados a los activos por quien carga). */
   clientes: ClienteListado[];
   alCambiar: (participantes: Participantes) => void;
+  /** Ofrece crear Clientes nuevos (por omisión sí; la edición de una Salida no los admite). */
+  permitirNuevos?: boolean;
 }
 
 function FormularioNuevo({ alAgregar }: { alAgregar: (c: ClienteNuevo) => void }) {
@@ -59,7 +61,7 @@ function FormularioNuevo({ alAgregar }: { alAgregar: (c: ClienteNuevo) => void }
  * Elección de Clientes existentes y alta de Clientes nuevos. Presentacional:
  * recibe los Clientes ofrecidos y los Participantes actuales, y avisa los cambios.
  */
-export function EditorParticipantes({ clientes, existentes, nuevos, alCambiar }: Props) {
+export function EditorParticipantes({ clientes, existentes, nuevos, alCambiar, permitirNuevos = true }: Props) {
   const [alta, setAlta] = useState(0); // cambia la key para vaciar el formulario tras agregar
   function alternar(id: number) {
     alCambiar({ existentes: existentes.includes(id) ? existentes.filter((x) => x !== id) : [...existentes, id], nuevos });
@@ -100,13 +102,15 @@ export function EditorParticipantes({ clientes, existentes, nuevos, alCambiar }:
           ))}
         </ul>
       )}
-      <FormularioNuevo
-        key={alta}
-        alAgregar={(n) => {
-          alCambiar({ existentes, nuevos: [...nuevos, n] });
-          setAlta((a) => a + 1);
-        }}
-      />
+      {permitirNuevos && (
+        <FormularioNuevo
+          key={alta}
+          alAgregar={(n) => {
+            alCambiar({ existentes, nuevos: [...nuevos, n] });
+            setAlta((a) => a + 1);
+          }}
+        />
+      )}
     </>
   );
 }

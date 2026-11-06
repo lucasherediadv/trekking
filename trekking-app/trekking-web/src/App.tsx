@@ -6,6 +6,7 @@ import { ElementoEditar, ElementoNuevo } from "./inventario/FormularioElemento";
 import { ListadoInventario } from "./inventario/ListadoInventario";
 import { ItinerarioRuta } from "./rutas/ItinerarioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
+import { EditarSalida } from "./salidas/EditarSalida";
 import { DetalleSalida } from "./salidas/DetalleSalida";
 import { ListadoSalidas } from "./salidas/ListadoSalidas";
 import { rutaAsistente } from "./salidas/asistente/rutas";
@@ -47,6 +48,7 @@ export const rutas: RouteObject[] = [
         children: [
           { index: true, element: <ListadoSalidas /> },
           rutaAsistente,
+          { path: ":id/editar", handle: { miga: "Editar salida" }, element: <EditarSalida /> },
           { path: ":id", handle: { miga: "Detalle de Salida" }, element: <DetalleSalida /> },
         ],
       },

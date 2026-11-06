@@ -56,8 +56,8 @@ export function useAsistente(): ContextoAsistente {
   return c;
 }
 
-export function ProveedorAsistente({ children }: { children: ReactNode }) {
-  const [datos, setDatos] = useState<DatosAsistente>(ESTADO_INICIAL);
+export function ProveedorAsistente({ children, inicial }: { children: ReactNode; inicial?: Partial<DatosAsistente> }) {
+  const [datos, setDatos] = useState<DatosAsistente>({ ...ESTADO_INICIAL, ...inicial });
   const actualizar = useCallback((cambios: Partial<DatosAsistente>) => setDatos((d) => ({ ...d, ...cambios })), []);
   const visitar = useCallback(
     (paso: ClavePaso) => setDatos((d) => (d.visitados.includes(paso) ? d : { ...d, visitados: [...d.visitados, paso] })),

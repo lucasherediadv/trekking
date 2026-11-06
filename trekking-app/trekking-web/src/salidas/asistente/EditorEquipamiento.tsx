@@ -18,6 +18,8 @@ interface Props extends Equipamiento {
   /** Elementos que se ofrecen (ya filtrados a los asignables por quien carga). */
   elementos: Elemento[];
   alCambiar: (equipamiento: Equipamiento) => void;
+  /** Ofrece crear elementos nuevos (por omisión sí; la edición de una Salida no los admite). */
+  permitirNuevos?: boolean;
 }
 
 const ASIGNAR_VACIO = { ...ELEMENTO_VACIO, asignar: "" };
@@ -57,7 +59,7 @@ function FormularioNuevo({ alAgregar }: { alAgregar: (e: ElementoNuevo) => void 
  * Elección de equipamiento y alta de elementos nuevos. Presentacional:
  * recibe los elementos ofrecidos y el equipamiento actual, y avisa los cambios.
  */
-export function EditorEquipamiento({ elementos, lineas, nuevos, alCambiar }: Props) {
+export function EditorEquipamiento({ elementos, lineas, nuevos, alCambiar, permitirNuevos = true }: Props) {
   const [alta, setAlta] = useState(0); // cambia la key para vaciar el formulario tras agregar
   function cambiarCantidad(id: number, texto: string) {
     const n = Number(texto);
@@ -100,13 +102,15 @@ export function EditorEquipamiento({ elementos, lineas, nuevos, alCambiar }: Pro
           ))}
         </ul>
       )}
-      <FormularioNuevo
-        key={alta}
-        alAgregar={(n) => {
-          alCambiar({ lineas, nuevos: [...nuevos, n] });
-          setAlta((a) => a + 1);
-        }}
-      />
+      {permitirNuevos && (
+        <FormularioNuevo
+          key={alta}
+          alAgregar={(n) => {
+            alCambiar({ lineas, nuevos: [...nuevos, n] });
+            setAlta((a) => a + 1);
+          }}
+        />
+      )}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -99,10 +99,11 @@ function Proximas({ proximas }: { proximas: ProximaSalida[] }) {
 
 function Acciones({ salida, alCambiar }: { salida: SalidaListada; alCambiar: (s: SalidaListada, a: Accion) => void }) {
   // Solo las Salidas planificadas admiten cambios; las finales no ofrecen acciones.
+  const navegar = useNavigate();
   if (salida.estado !== "PLANIFICADA") return null;
   return (
     <>
-      <button type="button" aria-label={`Editar Salida de ${salida.rutaNombre}`}>
+      <button type="button" aria-label={`Editar Salida de ${salida.rutaNombre}`} onClick={() => navegar(`/salidas/${salida.id}/editar`)}>
         Editar
       </button>{" "}
       <button type="button" aria-label={`Realizar Salida de ${salida.rutaNombre}`}
