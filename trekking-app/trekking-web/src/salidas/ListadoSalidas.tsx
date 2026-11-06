@@ -1,4 +1,6 @@
+import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ConfirmarAccion } from "../ui/ConfirmarAccion";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -151,9 +153,12 @@ export function ListadoSalidas() {
   const { estado, recargar } = useCarga<Datos>(cargar);
 
   // Cualquier resultado (éxito, 404, 409) recarga el listado; nunca se reintenta solo.
+  const [pendiente, setPendiente] = useState<{ salida: SalidaListada; accion: Accion }>();
+  const descartar = useCallback(() => setPendiente(undefined), []);
+
   async function cambiarEstado(salida: SalidaListada, accion: Accion) {
-    const { verbo, aviso } = ACCIONES[accion];
-    if (!window.confirm(`¿${verbo} la Salida de ${salida.rutaNombre}?`)) return;
+    setPendiente(undefined);
+    const { aviso } = ACCIONES[accion];
     const params = { params: { path: { id: salida.id! } } };
     try {
       await llamar(
@@ -179,8 +184,15 @@ export function ListadoSalidas() {
         <>
           <Indicadores datos={estado.datos.indicadores} />
           <Proximas proximas={estado.datos.proximas} />
-          <Tabla salidas={estado.datos.salidas} alCambiar={cambiarEstado} />
+          <Tabla salidas={estado.datos.salidas} alCambiar={(salida, accion) => setPendiente({ salida, accion })} />
         </>
+      )}
+      {pendiente && (
+        <ConfirmarAccion
+          pregunta={`¿${ACCIONES[pendiente.accion].verbo} la Salida de ${pendiente.salida.rutaNombre}?`}
+          alConfirmar={() => cambiarEstado(pendiente.salida, pendiente.accion)}
+          alCancelar={descartar}
+        />
       )}
     </section>
   );

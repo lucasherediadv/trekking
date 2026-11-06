@@ -35,7 +35,13 @@ function apiFeliz() {
   );
 }
 
-const fila = (texto: string) => within(screen.getByRole("table")).getByText(texto).closest("tr")!;
+async function confirmarDialogo(usuario: ReturnType<typeof renderApp>["usuario"], accion: string) {
+  const nombre = accion === "Realizar" ? "¿Marcar como realizada la Salida de Cerro Uno?" : "¿Cancelar la Salida de Cerro Uno?";
+  const dialogo = await screen.findByRole("alertdialog", { name: nombre });
+  await usuario.click(within(dialogo).getByRole("button", { name: "Confirmar" }));
+}
+
+const fila =(texto: string) => within(screen.getByRole("table")).getByText(texto).closest("tr")!;
 
 describe("listado de Salidas e inicio", () => {
   it("la raíz redirige a Salidas y marca la sección activa", async () => {
@@ -148,10 +154,9 @@ describe("listado de Salidas e inicio", () => {
           return new HttpResponse(null, { status: 204 });
         }),
       );
-      const confirmar = vi.spyOn(window, "confirm").mockReturnValue(true);
       const { usuario } = renderApp("/salidas");
       await usuario.click(await screen.findByRole("button", { name: `${accion} Salida de Cerro Uno` }));
-      expect(confirmar).toHaveBeenCalledOnce();
+      await confirmarDialogo(usuario, accion);
       expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent(aviso);
       await waitFor(() => expect(within(fila("Cerro Uno")).getByText(texto)).toBeInTheDocument());
       expect(llamadas).toBe(1);
@@ -168,9 +173,11 @@ describe("listado de Salidas e inicio", () => {
           return new HttpResponse(null, { status: 204 });
         }),
       );
-      vi.spyOn(window, "confirm").mockReturnValue(false);
       const { usuario } = renderApp("/salidas");
       await usuario.click(await screen.findByRole("button", { name: "Cancelar Salida de Cerro Uno" }));
+      const dialogo = await screen.findByRole("alertdialog", { name: "¿Cancelar la Salida de Cerro Uno?" });
+      await usuario.click(within(dialogo).getByRole("button", { name: "Volver" }));
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
       expect(llamadas).toBe(0);
     });
 
@@ -183,9 +190,9 @@ describe("listado de Salidas e inicio", () => {
           return HttpResponse.json(errorApi("CONFLICTO", "La Salida ya fue realizada"), { status: 409 });
         }),
       );
-      vi.spyOn(window, "confirm").mockReturnValue(true);
       const { usuario } = renderApp("/salidas");
       await usuario.click(await screen.findByRole("button", { name: "Cancelar Salida de Cerro Uno" }));
+      await confirmarDialogo(usuario, "Cancelar");
       expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent(
         "La Salida ya fue realizada",
       );
@@ -207,9 +214,9 @@ describe("listado de Salidas e inicio", () => {
           HttpResponse.json(errorApi("NO_ENCONTRADO", "Salida 1 no existe"), { status: 404 }),
         ),
       );
-      vi.spyOn(window, "confirm").mockReturnValue(true);
       const { usuario } = renderApp("/salidas");
       await usuario.click(await screen.findByRole("button", { name: "Realizar Salida de Cerro Uno" }));
+      await confirmarDialogo(usuario, "Realizar");
       expect(await screen.findByRole("status", { name: "Notificación" })).toHaveTextContent("El recurso ya no existe");
       await waitFor(() => expect(within(screen.getByRole("table")).queryByText("Cerro Uno")).not.toBeInTheDocument());
     });
