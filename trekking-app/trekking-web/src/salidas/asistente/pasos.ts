@@ -13,7 +13,7 @@ export interface Paso {
 
 export const PASOS: Paso[] = [
   { clave: "datos", titulo: "Datos", obligatorio: true, completo: (d) => d.fecha !== "" },
-  { clave: "ruta", titulo: "Ruta", obligatorio: true, completo: (d) => d.rutaId !== undefined },
+  { clave: "ruta", titulo: "Ruta", obligatorio: true, completo: (d) => d.rutaId !== undefined && !d.rutaNueva },
   { clave: "equipamiento", titulo: "Equipamiento", obligatorio: false, completo: (d) => d.visitados.includes("equipamiento") },
   { clave: "participantes", titulo: "Participantes", obligatorio: false, completo: (d) => d.visitados.includes("participantes") },
   { clave: "revision", titulo: "Revisión", obligatorio: false, completo: () => false },

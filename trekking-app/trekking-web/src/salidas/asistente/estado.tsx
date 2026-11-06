@@ -15,6 +15,8 @@ export interface DatosAsistente {
   // Ruta (obligatorio); el nombre se guarda para mostrarlo en Revisión
   rutaId?: number;
   rutaNombre?: string;
+  // Modo del paso Ruta: una Ruta nueva queda borrador y no se puede planificar (el paso queda incompleto)
+  rutaNueva?: boolean;
   // Equipamiento (opcional)
   equipamiento: Esquemas["LineaEquipamientoDto"][];
   elementosNuevos: Esquemas["ElementoNuevoSolicitud"][];
