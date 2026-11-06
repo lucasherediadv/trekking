@@ -1,6 +1,6 @@
 # Especificación: interfaz web
 
-**Status:** ready-for-agent
+**Status:** closed
 **Fecha:** 06/11/2026
 **Alcance:** Tercera fase de la migración a web. Una SPA que consume la API REST ya cerrada (spec `api-rest`) y reproduce el comportamiento de la app de escritorio, por rebanadas. Respeta los ADR 0004, 0005, 0006 y 0007.
 
