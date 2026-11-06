@@ -74,11 +74,22 @@ export function PasoRevision() {
         <p>{datos.rutaNombre}</p>
       </Seccion>
       <Seccion titulo="Equipamiento" paso="equipamiento">
-        <p>
-          {datos.equipamiento.length + datos.elementosNuevos.length === 0
-            ? "Sin equipamiento asignado."
-            : `${datos.equipamiento.length + datos.elementosNuevos.length} elementos`}
-        </p>
+        {datos.equipamiento.length + datos.elementosNuevos.length === 0 ? (
+          <p>Sin equipamiento asignado.</p>
+        ) : (
+          <ul>
+            {datos.equipamiento.map((l) => (
+              <li key={l.elementoId}>
+                {datos.nombresElementos[l.elementoId!] ?? `Elemento ${l.elementoId}`} x {l.cantidad}
+              </li>
+            ))}
+            {datos.elementosNuevos.map((n, i) => (
+              <li key={`nuevo-${i}`}>
+                {n.elemento?.nombre} x {n.cantidad} (nuevo)
+              </li>
+            ))}
+          </ul>
+        )}
       </Seccion>
       <Seccion titulo="Participantes" paso="participantes">
         <p>
