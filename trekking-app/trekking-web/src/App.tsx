@@ -8,6 +8,7 @@ import { ItinerarioRuta } from "./rutas/ItinerarioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
 import { DetalleSalida } from "./salidas/DetalleSalida";
 import { ListadoSalidas } from "./salidas/ListadoSalidas";
+import { rutaAsistente } from "./salidas/asistente/rutas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
 
@@ -45,6 +46,7 @@ export const rutas: RouteObject[] = [
         handle: { miga: "Salidas" },
         children: [
           { index: true, element: <ListadoSalidas /> },
+          rutaAsistente,
           { path: ":id", handle: { miga: "Detalle de Salida" }, element: <DetalleSalida /> },
         ],
       },

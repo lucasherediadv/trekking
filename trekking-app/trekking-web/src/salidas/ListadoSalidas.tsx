@@ -184,6 +184,9 @@ export function ListadoSalidas() {
   return (
     <section>
       <h1>Salidas</h1>
+      <Link to="/salidas/nueva" className="accion-primaria">
+        Nueva Salida
+      </Link>
       {estado.fase === "cargando" && <Cargando />}
       {estado.fase === "error" && <AvisoError error={estado.error} alReintentar={recargar} />}
       {estado.fase === "listo" && (
