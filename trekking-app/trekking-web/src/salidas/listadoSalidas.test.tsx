@@ -224,16 +224,16 @@ describe("listado de Salidas e inicio", () => {
 
   it("un error de carga se informa y permite reintentar", async () => {
     apiFeliz();
-    let intentos = 0;
+    let servidorCaido = true; // no depende del orden de llegada: un pedido rezagado de otro test no lo altera
     server.use(
       http.get("*/api/salidas", () => {
-        intentos++;
-        return intentos === 1 ? HttpResponse.error() : HttpResponse.json(SALIDAS);
+        return servidorCaido ? HttpResponse.error() : HttpResponse.json(SALIDAS);
       }),
     );
     const { usuario } = renderApp("/salidas");
     const aviso = await screen.findByRole("alert");
     expect(aviso).toHaveTextContent("No se pudo conectar con el servidor");
+    servidorCaido = false;
     await usuario.click(within(aviso).getByRole("button", { name: "Reintentar" }));
     expect(await screen.findByText("Mirador Cuatro")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();

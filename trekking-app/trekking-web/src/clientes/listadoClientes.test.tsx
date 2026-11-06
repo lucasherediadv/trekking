@@ -149,17 +149,17 @@ describe("listado de Clientes", () => {
 
   describe("errores", () => {
     it("una falla de red al cargar se distingue y permite reintentar", async () => {
-      let intentos = 0;
+      let servidorCaido = true; // no depende del orden de llegada: un pedido rezagado de otro test no lo altera
       server.use(
         http.get("*/api/clientes", () => {
-          intentos++;
-          return intentos === 1 ? HttpResponse.error() : HttpResponse.json(ACTIVOS);
+          return servidorCaido ? HttpResponse.error() : HttpResponse.json(ACTIVOS);
         }),
         http.head("*/api/clientes/:id/ficha-medica", () => new HttpResponse(null, { status: 404 })),
       );
       const { usuario } = renderApp("/clientes");
       const aviso = await screen.findByRole("alert");
       expect(aviso).toHaveTextContent("No se pudo conectar con el servidor");
+      servidorCaido = false;
       await usuario.click(within(aviso).getByRole("button", { name: "Reintentar" }));
       expect(await screen.findByText("Ana Pérez")).toBeInTheDocument();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();

@@ -123,16 +123,16 @@ describe("listado de Inventario", () => {
   });
 
   it("una falla al cargar se avisa y permite reintentar", async () => {
-    let intentos = 0;
+    let servidorCaido = true; // no depende del orden de llegada: un pedido rezagado de otro test no lo altera
     server.use(
       http.get("*/api/inventario", () => {
-        intentos++;
-        return intentos === 1 ? HttpResponse.error() : HttpResponse.json(ACTIVOS);
+        return servidorCaido ? HttpResponse.error() : HttpResponse.json(ACTIVOS);
       }),
     );
     const { usuario } = renderApp("/inventario");
     const aviso = await screen.findByRole("alert");
     expect(aviso).toHaveTextContent("No se pudo conectar con el servidor");
+    servidorCaido = false;
     await usuario.click(within(aviso).getByRole("button", { name: "Reintentar" }));
     expect(await screen.findByText("Carpa Uno")).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());

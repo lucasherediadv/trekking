@@ -145,16 +145,16 @@ describe("listado de Rutas", () => {
 
   describe("errores", () => {
     it("una falla de red al cargar se distingue y permite reintentar", async () => {
-      let intentos = 0;
+      let servidorCaido = true; // no depende del orden de llegada: un pedido rezagado de otro test no lo altera
       server.use(
         http.get("*/api/rutas", () => {
-          intentos++;
-          return intentos === 1 ? HttpResponse.error() : HttpResponse.json(ACTIVAS);
+          return servidorCaido ? HttpResponse.error() : HttpResponse.json(ACTIVAS);
         }),
       );
       const { usuario } = renderApp("/rutas");
       const aviso = await screen.findByRole("alert");
       expect(aviso).toHaveTextContent("No se pudo conectar con el servidor");
+      servidorCaido = false;
       await usuario.click(within(aviso).getByRole("button", { name: "Reintentar" }));
       expect(await screen.findByText("Cerro Uno")).toBeInTheDocument();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
