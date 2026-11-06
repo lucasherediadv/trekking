@@ -2,15 +2,10 @@ import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { api } from "../../api/cliente";
 import { ErrorApi, llamar, mensajeDe } from "../../api/errores";
+import { formatearFecha } from "../../ui/formato";
 import { useToast } from "../../ui/Toasts";
 import type { ContextoPaso } from "./Asistente";
 import { useAsistente, type ClavePaso } from "./estado";
-
-/** De ISO (aaaa-mm-dd) a dd/mm/aaaa. */
-function formatearFecha(fecha: string) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : fecha;
-}
 
 function Seccion(props: { titulo: string; paso: ClavePaso; children: React.ReactNode }) {
   const navegar = useNavigate();

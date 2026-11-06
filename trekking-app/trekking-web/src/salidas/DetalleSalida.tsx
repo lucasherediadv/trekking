@@ -8,7 +8,8 @@ import { Cargando } from "../ui/Cargando";
 import { guardarArchivo, nombreDeDescarga } from "../ui/descarga";
 import { useToast } from "../ui/Toasts";
 import { useCarga } from "../ui/useCarga";
-import { ESTADOS, formatearFecha } from "./ListadoSalidas";
+import { formatearFecha, valorOGuion } from "../ui/formato";
+import { ESTADOS } from "./ListadoSalidas";
 
 type Salida = components["schemas"]["SalidaDto"];
 type Copia = components["schemas"]["CopiaOperativaDto"];
@@ -18,8 +19,6 @@ interface Datos {
   copia: Copia;
   nombresElementos: Map<number, string>;
 }
-
-const valor = (texto?: string | number) => (texto === undefined || texto === "" ? "—" : texto);
 
 async function cargar(id: number): Promise<Datos> {
   const [salida, copia, inventario] = await Promise.all([
@@ -75,9 +74,9 @@ function Detalle({ id, datos }: { id: number; datos: Datos }) {
       <section aria-label="Ruta">
         <h2>Ruta</h2>
         <p>
-          <strong>{valor(ruta.nombre ?? salida.rutaNombre)}</strong> · Altitud máxima: {valor(ruta.altitudMaxima)} m ·
-          Terreno: {valor(ruta.tipoTerreno)} · Dificultad técnica: {valor(ruta.dificultadTecnica)} · Dificultad física:{" "}
-          {valor(ruta.dificultadFisica)}
+          <strong>{valorOGuion(ruta.nombre ?? salida.rutaNombre)}</strong> · Altitud máxima: {valorOGuion(ruta.altitudMaxima)} m ·
+          Terreno: {valorOGuion(ruta.tipoTerreno)} · Dificultad técnica: {valorOGuion(ruta.dificultadTecnica)} · Dificultad física:{" "}
+          {valorOGuion(ruta.dificultadFisica)}
         </p>
       </section>
 
@@ -98,10 +97,10 @@ function Detalle({ id, datos }: { id: number; datos: Datos }) {
             <tbody>
               {copia.checkpoints!.map((c, i) => (
                 <tr key={c.id ?? i}>
-                  <td>{valor(c.hora)}</td>
-                  <td>{valor(c.nombre)}</td>
-                  <td>{valor(c.altitud)}</td>
-                  <td>{valor(c.descripcion)}</td>
+                  <td>{valorOGuion(c.hora)}</td>
+                  <td>{valorOGuion(c.nombre)}</td>
+                  <td>{valorOGuion(c.altitud)}</td>
+                  <td>{valorOGuion(c.descripcion)}</td>
                 </tr>
               ))}
             </tbody>
@@ -125,7 +124,7 @@ function Detalle({ id, datos }: { id: number; datos: Datos }) {
               {copia.equipamiento!.map((l, i) => (
                 <tr key={l.elementoId ?? i}>
                   <td>{nombresElementos.get(l.elementoId ?? -1) ?? `Elemento ${l.elementoId}`}</td>
-                  <td>{valor(l.cantidad)}</td>
+                  <td>{valorOGuion(l.cantidad)}</td>
                 </tr>
               ))}
             </tbody>
@@ -151,11 +150,11 @@ function Detalle({ id, datos }: { id: number; datos: Datos }) {
             <tbody>
               {copia.participantes!.map((p, i) => (
                 <tr key={p.id ?? i}>
-                  <td>{valor(p.dni)}</td>
-                  <td>{valor(p.nombre)}</td>
-                  <td>{valor(p.apellido)}</td>
+                  <td>{valorOGuion(p.dni)}</td>
+                  <td>{valorOGuion(p.nombre)}</td>
+                  <td>{valorOGuion(p.apellido)}</td>
                   <td>{formatearFecha(p.fechaNacimiento) || "—"}</td>
-                  <td>{valor(p.telefono)}</td>
+                  <td>{valorOGuion(p.telefono)}</td>
                 </tr>
               ))}
             </tbody>

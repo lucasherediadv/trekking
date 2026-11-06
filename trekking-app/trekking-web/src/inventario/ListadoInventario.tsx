@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
+import { consultaPorEstado, type FiltroEstado } from "../ui/filtroEstado";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -9,7 +10,7 @@ import { useToast } from "../ui/Toasts";
 import { useCarga } from "../ui/useCarga";
 
 type Elemento = components["schemas"]["ElementoDto"];
-type Estado = "activas" | "bajas" | "todas";
+type Estado = FiltroEstado;
 
 // Mismos tonos que en EquipamientoController de escritorio.
 const TONO_ESTADO: Record<string, string> = {
@@ -32,7 +33,7 @@ export function ListadoInventario() {
 
   const cargar = useCallback(
     async () =>
-      (await llamar(api.GET("/api/inventario", { params: { query: estado === "activas" ? {} : { estado } } }))) ?? [],
+      (await llamar(api.GET("/api/inventario", { params: { query: consultaPorEstado(estado) } }))) ?? [],
     [estado],
   );
   const { estado: carga, recargar } = useCarga<Elemento[]>(cargar);

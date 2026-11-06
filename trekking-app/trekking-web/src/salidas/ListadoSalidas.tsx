@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
+import { formatearFecha, valorOGuion } from "../ui/formato";
 import { useToast } from "../ui/Toasts";
 import { AvisoError } from "../ui/AvisoError";
 import { Cargando } from "../ui/Cargando";
@@ -38,14 +39,6 @@ async function cargar(): Promise<Datos> {
   ]);
   return { salidas: salidas ?? [], indicadores: indicadores ?? {}, proximas: proximas ?? [] };
 }
-
-/** De ISO (aaaa-mm-dd) a dd/mm/aaaa; cualquier otro valor se muestra tal cual. */
-export function formatearFecha(fecha?: string) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha ?? "");
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : (fecha ?? "");
-}
-
-const resumen = (texto?: string) => (texto ? texto : "—");
 
 function Tarjeta(props: { titulo: string; cifra?: number; detalle: string; destino: string }) {
   return (
@@ -133,8 +126,8 @@ function Tabla({ salidas, alCambiar }: { salidas: SalidaListada[]; alCambiar: (s
             <tr key={s.id} className={s.vencida ? "fila-vencida" : undefined}>
               <td>{formatearFecha(s.fecha)}</td>
               <td>{s.rutaNombre}</td>
-              <td>{resumen(s.participantes)}</td>
-              <td>{resumen(s.equipamiento)}</td>
+              <td>{valorOGuion(s.participantes)}</td>
+              <td>{valorOGuion(s.equipamiento)}</td>
               <td>
                 <span className={estado?.tono}>{estado?.texto ?? s.estado}</span>
                 {s.vencida && <span className="insignia-vencida">Vencida</span>}

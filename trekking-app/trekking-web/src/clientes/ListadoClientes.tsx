@@ -5,11 +5,12 @@ import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
 import { AvisoError } from "../ui/AvisoError";
 import { Cargando } from "../ui/Cargando";
+import { consultaPorEstado, type FiltroEstado } from "../ui/filtroEstado";
 import { useToast } from "../ui/Toasts";
 import { useCarga } from "../ui/useCarga";
 
 type Cliente = components["schemas"]["ClienteDto"];
-type Estado = "activas" | "bajas" | "todas";
+type Estado = FiltroEstado;
 
 /**
  * Indica si el Cliente tiene ficha médica sin descargarla: HEAD sobre el recurso
@@ -48,7 +49,7 @@ export function ListadoClientes() {
 
   const cargar = useCallback(
     async () =>
-      (await llamar(api.GET("/api/clientes", { params: { query: estado === "activas" ? {} : { estado } } }))) ?? [],
+      (await llamar(api.GET("/api/clientes", { params: { query: consultaPorEstado(estado) } }))) ?? [],
     [estado],
   );
   const { estado: carga, recargar } = useCarga<Cliente[]>(cargar);

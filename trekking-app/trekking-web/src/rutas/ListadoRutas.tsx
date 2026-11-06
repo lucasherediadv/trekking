@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { consultaPorEstado, type FiltroEstado } from "../ui/filtroEstado";
 import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
 import type { components } from "../api/schema";
@@ -9,7 +10,7 @@ import { useToast } from "../ui/Toasts";
 import { useCarga } from "../ui/useCarga";
 
 type Ruta = components["schemas"]["RutaDto"];
-type Estado = "activas" | "bajas" | "todas";
+type Estado = FiltroEstado;
 type Opcion = [valor: string, texto: string];
 
 const TERRENOS = ["Rocoso", "Boscoso", "Sendero", "Mixto"];
@@ -47,7 +48,7 @@ export function ListadoRutas() {
 
   const cargar = useCallback(
     async () =>
-      (await llamar(api.GET("/api/rutas", { params: { query: estado === "activas" ? {} : { estado } } }))) ?? [],
+      (await llamar(api.GET("/api/rutas", { params: { query: consultaPorEstado(estado) } }))) ?? [],
     [estado],
   );
   const { estado: carga, recargar } = useCarga<Ruta[]>(cargar);
