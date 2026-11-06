@@ -167,6 +167,27 @@ describe("Asistente de Salida", () => {
     expect(screen.getByLabelText("Fecha")).toHaveValue("2026-12-05");
   });
 
+  it("tras un error al confirmar, abandonar el asistente sigue pidiendo confirmación", async () => {
+    api();
+    const { usuario } = renderApp("/salidas/nueva");
+    await completarDatos(usuario);
+    await usuario.click(paso("Ruta"));
+    await elegirRuta(usuario);
+    await usuario.click(paso("Revisión"));
+    server.use(
+      http.post("*/api/salidas", () =>
+        HttpResponse.json({ codigo: "NEGOCIO", mensaje: "La fecha no puede ser pasada", errores: [] }, { status: 422 }),
+      ),
+    );
+    await usuario.click(screen.getByRole("button", { name: "Confirmar Salida" }));
+    await screen.findByRole("alert");
+
+    await usuario.click(
+      within(screen.getByRole("navigation", { name: "Menú principal" })).getByRole("link", { name: "Rutas" }),
+    );
+    expect(await screen.findByRole("dialog", { name: "Cambios sin guardar" })).toBeInTheDocument();
+  });
+
   it("con datos ingresados pide confirmación al abandonar; sin datos no", async () => {
     api();
     const vacio = renderApp("/salidas/nueva");
