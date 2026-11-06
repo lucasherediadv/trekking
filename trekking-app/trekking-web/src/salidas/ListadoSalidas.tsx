@@ -17,7 +17,7 @@ interface Datos {
 }
 
 // Mismos tonos que EstadoCell en escritorio.
-const ESTADOS: Record<string, { texto: string; tono: string }> = {
+export const ESTADOS: Record<string, { texto: string; tono: string }> = {
   PLANIFICADA: { texto: "Planificada", tono: "estado-informacion" },
   REALIZADA: { texto: "Realizada", tono: "estado-exito" },
   CANCELADA: { texto: "Cancelada", tono: "estado-peligro" },
@@ -33,7 +33,7 @@ async function cargar(): Promise<Datos> {
 }
 
 /** De ISO (aaaa-mm-dd) a dd/mm/aaaa; cualquier otro valor se muestra tal cual. */
-function formatearFecha(fecha?: string) {
+export function formatearFecha(fecha?: string) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha ?? "");
   return m ? `${m[3]}/${m[2]}/${m[1]}` : (fecha ?? "");
 }
@@ -136,6 +136,9 @@ function Tabla({ salidas }: { salidas: SalidaListada[] }) {
                 {s.vencida && <span className="insignia-vencida">Vencida</span>}
               </td>
               <td>
+                <Link to={`/salidas/${s.id}`} aria-label={`Ver Salida de ${s.rutaNombre}`}>
+                  Ver
+                </Link>{" "}
                 <Acciones salida={s} />
               </td>
             </tr>
