@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { api } from "../../api/cliente";
 import { llamar } from "../../api/errores";
 import type { components } from "../../api/schema";
 import { AvisoError } from "../../ui/AvisoError";
 import { Cargando } from "../../ui/Cargando";
 import { useCarga } from "../../ui/useCarga";
+import { CamposRuta, cuerpoRuta, RUTA_VACIA, rutaCompleta, validarLocal, type ValoresRuta } from "../../rutas/FormularioRuta";
+import { useFormulario } from "../../ui/useFormulario";
 import { useAsistente } from "./estado";
 
 type Ruta = components["schemas"]["RutaDto"];
@@ -16,6 +19,67 @@ async function cargar(): Promise<Ruta[]> {
 
 export function PasoRuta() {
   const { datos, actualizar } = useAsistente();
+  const nueva = datos.rutaNueva === true;
+
+  return (
+    <section className="paso-contenido">
+      <h2>Ruta</h2>
+      <div role="radiogroup" aria-label="Origen de la Ruta" className="campo">
+        <label>
+          <input type="radio" name="origen-ruta" checked={!nueva} onChange={() => actualizar({ rutaNueva: false })} /> Ruta existente
+        </label>{" "}
+        <label>
+          <input type="radio" name="origen-ruta" checked={nueva} onChange={() => actualizar({ rutaNueva: true })} /> Ruta nueva
+        </label>
+      </div>
+      {nueva ? <RutaNueva /> : <RutaExistente />}
+    </section>
+  );
+}
+
+/** Crea la Ruta en la API: queda borrador, así que no completa el paso. */
+function RutaNueva() {
+  const [creada, setCreada] = useState<string>();
+  const formulario = useFormulario<ValoresRuta>({
+    inicial: RUTA_VACIA,
+    validar: validarLocal,
+    enviar: async (v) => {
+      const ruta = await llamar(api.POST("/api/rutas", { body: cuerpoRuta(v) }));
+      setCreada(ruta?.nombre ?? v.nombre);
+    },
+    alGuardar: () => undefined,
+    alNoEncontrado: () => undefined,
+  });
+
+  return (
+    <form onSubmit={formulario.guardar} noValidate>
+      <p className="ayuda">
+        Una Ruta nueva queda como Ruta borrador hasta tener al menos dos Checkpoints en su Itinerario: no se puede usar para
+        confirmar una Salida.
+      </p>
+      <CamposRuta estado={formulario} />
+      {formulario.aviso && (
+        <div role="alert" className="aviso aviso-error">
+          <p>{formulario.aviso}</p>
+        </div>
+      )}
+      {creada !== undefined && (
+        <div role="status" className="aviso">
+          <p>
+            La Ruta {creada} se creó como borrador. Agrega sus Checkpoints desde Rutas y luego elígela como Ruta existente para
+            continuar.
+          </p>
+        </div>
+      )}
+      <button type="submit" disabled={formulario.enviando || !rutaCompleta(formulario.valores)}>
+        Crear Ruta
+      </button>
+    </form>
+  );
+}
+
+function RutaExistente() {
+  const { datos, actualizar } = useAsistente();
   const { estado, recargar } = useCarga<Ruta[]>(cargar);
 
   function elegir(valor: string, rutas: Ruta[]) {
@@ -24,8 +88,7 @@ export function PasoRuta() {
   }
 
   return (
-    <section className="paso-contenido">
-      <h2>Ruta</h2>
+    <>
       {estado.fase === "cargando" && <Cargando />}
       {estado.fase === "error" && <AvisoError error={estado.error} alReintentar={recargar} />}
       {estado.fase === "listo" && (
@@ -45,7 +108,7 @@ export function PasoRuta() {
           <DetalleRuta ruta={estado.datos.find((r) => r.id === datos.rutaId)} />
         </>
       )}
-    </section>
+    </>
   );
 }
 

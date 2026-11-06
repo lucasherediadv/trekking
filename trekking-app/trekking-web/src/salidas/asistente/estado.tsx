@@ -15,9 +15,13 @@ export interface DatosAsistente {
   // Ruta (obligatorio); el nombre se guarda para mostrarlo en Revisión
   rutaId?: number;
   rutaNombre?: string;
+  // Modo del paso Ruta: una Ruta nueva queda borrador y no se puede planificar (el paso queda incompleto)
+  rutaNueva?: boolean;
   // Equipamiento (opcional)
   equipamiento: Esquemas["LineaEquipamientoDto"][];
   elementosNuevos: Esquemas["ElementoNuevoSolicitud"][];
+  // Nombres de los elementos elegidos (id -> nombre), para mostrarlos en Revisión
+  nombresElementos: Record<number, string>;
   // Participantes (opcional)
   clientesExistentes: number[];
   clientesNuevos: Esquemas["ClienteNuevoSolicitud"][];
@@ -29,6 +33,7 @@ export const ESTADO_INICIAL: DatosAsistente = {
   fecha: "",
   equipamiento: [],
   elementosNuevos: [],
+  nombresElementos: {},
   clientesExistentes: [],
   clientesNuevos: [],
   visitados: [],
