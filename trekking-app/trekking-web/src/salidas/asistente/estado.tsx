@@ -25,6 +25,8 @@ export interface DatosAsistente {
   // Participantes (opcional)
   clientesExistentes: number[];
   clientesNuevos: Esquemas["ClienteNuevoSolicitud"][];
+  // Nombres de los Clientes existentes elegidos (id -> nombre), para mostrarlos en Revisión
+  nombresClientes: Record<number, string>;
   // Pasos opcionales ya visitados
   visitados: ClavePaso[];
 }
@@ -36,6 +38,7 @@ export const ESTADO_INICIAL: DatosAsistente = {
   nombresElementos: {},
   clientesExistentes: [],
   clientesNuevos: [],
+  nombresClientes: {},
   visitados: [],
 };
 

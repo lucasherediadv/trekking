@@ -4,10 +4,10 @@
 
 **Blocked by:** 08, 09, 13
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Se pueden elegir Clientes activos existentes y crear Clientes nuevos con validación por campo.
-- [ ] La ficha médica de un Cliente nuevo es opcional; un archivo de más de 10 MB se rechaza antes de enviar.
-- [ ] Revisión incluye los Participantes y la confirmación los envía, con las fichas, en la misma petición atómica.
-- [ ] Los datos de Clientes y las fichas solo viven en memoria; no se escriben en el almacenamiento del navegador.
-- [ ] Tests del seam único: existente, nuevo sin ficha, nuevo con ficha, rechazo de más de 10 MB sin petición, 422 por campo y ausencia de escritura en almacenamiento.
+- [x] Se pueden elegir Clientes activos existentes y crear Clientes nuevos con validación por campo.
+- [x] La ficha médica de un Cliente nuevo es opcional; un archivo de más de 10 MB se rechaza antes de enviar.
+- [x] Revisión incluye los Participantes y la confirmación los envía, con las fichas, en la misma petición atómica.
+- [x] Los datos de Clientes y las fichas solo viven en memoria; no se escriben en el almacenamiento del navegador.
+- [x] Tests del seam único: existente, nuevo sin ficha, nuevo con ficha, rechazo de más de 10 MB sin petición, 422 por campo y ausencia de escritura en almacenamiento.

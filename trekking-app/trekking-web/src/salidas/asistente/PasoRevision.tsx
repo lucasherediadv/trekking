@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { api } from "../../api/cliente";
-import { llamar, mensajeDe } from "../../api/errores";
+import { ErrorApi, llamar, mensajeDe } from "../../api/errores";
 import { useToast } from "../../ui/Toasts";
 import type { ContextoPaso } from "./Asistente";
 import { useAsistente, type ClavePaso } from "./estado";
@@ -92,15 +92,31 @@ export function PasoRevision() {
         )}
       </Seccion>
       <Seccion titulo="Participantes" paso="participantes">
-        <p>
-          {datos.clientesExistentes.length + datos.clientesNuevos.length === 0
-            ? "Sin Participantes."
-            : `${datos.clientesExistentes.length + datos.clientesNuevos.length} Participantes`}
-        </p>
+        {datos.clientesExistentes.length + datos.clientesNuevos.length === 0 ? (
+          <p>Sin Participantes.</p>
+        ) : (
+          <ul>
+            {datos.clientesExistentes.map((id) => (
+              <li key={id}>{datos.nombresClientes[id] ?? `Cliente ${id}`}</li>
+            ))}
+            {datos.clientesNuevos.map((n, i) => (
+              <li key={`nuevo-${i}`}>
+                {n.cliente?.nombre} {n.cliente?.apellido} (nuevo{n.ficha ? ", con ficha médica" : ""})
+              </li>
+            ))}
+          </ul>
+        )}
       </Seccion>
       {error !== undefined && (
         <div role="alert" className="aviso aviso-error">
           <p>{mensajeDe(error)}</p>
+          {error instanceof ErrorApi && error.errores.length > 0 && (
+            <ul>
+              {error.errores.map((e, i) => (
+                <li key={i}>{e.mensaje}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       <button type="button" className="accion-primaria" disabled={enviando} onClick={confirmar}>
