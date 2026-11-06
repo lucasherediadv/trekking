@@ -54,17 +54,10 @@ describe("listado de Salidas e inicio", () => {
     await screen.findByText("Mirador Cuatro");
 
     const indicadores = screen.getByRole("region", { name: "Indicadores" });
-    for (const [titulo, cifra] of [
-      ["Salidas próximas", "3"],
-      ["Rutas activas", "7"],
-      ["Clientes activos", "12"],
-      ["Inventario crítico", "2"],
-    ]) {
-      const tarjeta = within(indicadores).getByRole("link", { name: new RegExp(titulo) });
-      expect(tarjeta).toHaveTextContent(cifra);
-    }
-    expect(within(indicadores).getByRole("link", { name: /Rutas activas/ })).toHaveAttribute("href", "/rutas");
-    expect(within(indicadores).getByRole("link", { name: /Inventario crítico/ })).toHaveAttribute("href", "/inventario");
+    const tarjetas = within(indicadores).getAllByRole("link");
+    expect(tarjetas).toHaveLength(1);
+    expect(tarjetas[0]).toHaveTextContent("Salidas próximas");
+    expect(tarjetas[0]).toHaveTextContent("3");
 
     const proximas = screen.getByRole("region", { name: "Próximas Salidas" });
     expect(within(proximas).getByText("Cerro Uno")).toBeInTheDocument();
