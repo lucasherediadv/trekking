@@ -1,21 +1,10 @@
 import { useEffect, useState } from "react";
-import { api, urlBaseApi } from "../api/cliente";
+import { api } from "../api/cliente";
 import { ErrorApi, llamar } from "../api/errores";
+import { consultarFicha } from "../api/fichaMedica";
 import { CampoArchivo } from "../ui/CampoArchivo";
 import { guardarArchivo, nombreDeDescarga } from "../ui/descarga";
 import { useToast } from "../ui/Toasts";
-
-/** HEAD sobre el recurso (200 existe, 404 no): indica si hay ficha sin descargarla. */
-async function consultarFicha(id: number): Promise<boolean> {
-  try {
-    const r = await globalThis.fetch(`${urlBaseApi || window.location.origin}/api/clientes/${id}/ficha-medica`, {
-      method: "HEAD",
-    });
-    return r.ok;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Ficha médica de un Cliente: adjuntar/reemplazar, descargar y quitar, siempre con acciones explícitas.

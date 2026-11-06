@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, urlBaseApi } from "../api/cliente";
+import { api } from "../api/cliente";
 import { llamar } from "../api/errores";
+import { consultarFicha } from "../api/fichaMedica";
 import type { components } from "../api/schema";
 import { AvisoError } from "../ui/AvisoError";
 import { Cargando } from "../ui/Cargando";
@@ -12,20 +13,11 @@ import { useCarga } from "../ui/useCarga";
 type Cliente = components["schemas"]["ClienteDto"];
 type Estado = FiltroEstado;
 
-/**
- * Indica si el Cliente tiene ficha médica sin descargarla: HEAD sobre el recurso
- * (200 existe, 404 no existe). El listado no trae este dato.
- */
 function useTieneFicha(id: number): boolean | undefined {
   const [tiene, setTiene] = useState<boolean>();
   useEffect(() => {
     let vigente = true;
-    globalThis
-      .fetch(`${urlBaseApi || window.location.origin}/api/clientes/${id}/ficha-medica`, { method: "HEAD" })
-      .then(
-        (r) => vigente && setTiene(r.ok),
-        () => vigente && setTiene(false),
-      );
+    consultarFicha(id).then((t) => vigente && setTiene(t));
     return () => {
       vigente = false;
     };
