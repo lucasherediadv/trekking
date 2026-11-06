@@ -3,15 +3,21 @@ import { http, HttpResponse } from "msw";
 import { server } from "../test/servidor";
 import { renderApp } from "../test/renderApp";
 
-beforeEach(() => server.use(http.get("*/api/rutas", () => HttpResponse.json([]))));
+beforeEach(() =>
+  server.use(
+    http.get("*/api/rutas", () => HttpResponse.json([])),
+    http.get("*/api/salidas", () => HttpResponse.json([])),
+    http.get("*/api/dashboard/indicadores-salidas", () => HttpResponse.json({})),
+    http.get("*/api/dashboard/proximas-salidas", () => HttpResponse.json([])),
+  ),
+);
 
 describe("shell de la aplicación", () => {
-  it("la raíz redirige a Rutas y marca la sección activa", () => {
+  it("la raíz redirige a Salidas y marca la sección activa", () => {
     renderApp("/");
     const menu = screen.getByRole("navigation", { name: "Menú principal" });
-    expect(within(menu).getByRole("link", { name: "Rutas" })).toHaveAttribute("aria-current", "page");
-    expect(within(menu).getByRole("link", { name: "Salidas" })).not.toHaveAttribute("aria-current");
-    expect(screen.getByRole("heading", { name: "Rutas" })).toBeInTheDocument();
+    expect(within(menu).getByRole("link", { name: "Salidas" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("heading", { name: "Salidas" })).toBeInTheDocument();
   });
 
   it("el menú muestra la marca y las cuatro secciones", () => {
@@ -52,6 +58,6 @@ describe("shell de la aplicación", () => {
     const { usuario } = renderApp("/no-existe");
     expect(screen.getByRole("heading", { name: "Página no encontrada" })).toBeInTheDocument();
     await usuario.click(screen.getByRole("link", { name: "Volver al inicio" }));
-    expect(screen.getByRole("heading", { name: "Rutas" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Salidas" })).toBeInTheDocument();
   });
 });
