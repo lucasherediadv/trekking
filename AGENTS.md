@@ -32,6 +32,7 @@
   - Errors/loading: API calls go through `llamar(...)` (`src/api/errores.ts`, the single interpreter of the uniform error body); show failures with `AvisoError` (load, with retry) or `useToast().error(e)` (actions); load with `useCarga`/`Cargando`. Never read HTTP error bodies in screens.
   - Forms: `useFormulario` + `Formulario` + `CampoTexto`/`CampoSeleccion` (`src/ui/`, example `rutas/FormularioRuta.tsx`) give per-field 422 errors, general notice, 404 handling and unsaved-changes confirmation (`ConfirmarSalida`, `useBlocker`); do not reimplement them. Pass `guardar` to also offer "Guardar" (see `rutas/ItinerarioRuta.tsx`).
   - Client form kit (`src/clientes/CamposCliente.tsx`): `CamposCliente` (fields + live `POST /api/clientes/validar` + minor rule from the API), `VACIO_CLIENTE`, `desdeCliente`, `aDatosCliente`; reuse in other client forms.
+  - Files: `src/ui/archivo.ts` (`errorDeArchivo` 10 MB check, `leerBase64`) and `CampoArchivo` (file picker that rejects oversize files before any API call); `clientes/FichaMedica.tsx` is the medical-file section of the client edit page. Tests with multipart uploads: jsdom `File` cannot be serialized by Node fetch, see the `FormData.prototype.append` spy in `fichaMedica.test.tsx`.
   - Clientes: `ClienteDto` has no "has ficha médica" flag; the list probes `HEAD /api/clientes/{id}/ficha-medica` per row (200/404), never downloading the file.
 - No lint or formatting command/plugin is configured in the POM.
 

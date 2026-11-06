@@ -9,6 +9,7 @@ import { Formulario } from "../ui/Formulario";
 import { useToast } from "../ui/Toasts";
 import { useCarga } from "../ui/useCarga";
 import { useFormulario } from "../ui/useFormulario";
+import { FichaMedica } from "./FichaMedica";
 import { aDatosCliente, CamposCliente, desdeCliente, VACIO_CLIENTE, type ValoresCliente } from "./CamposCliente";
 
 type Cliente = components["schemas"]["ClienteDto"];
@@ -68,5 +69,10 @@ export function ClienteEditar() {
 
   if (estado.fase === "error" && !noExiste) return <AvisoError error={estado.error} alReintentar={recargar} />;
   if (estado.fase !== "listo") return <Cargando />;
-  return <Contenido id={id} cliente={desdeCliente(estado.datos)} />;
+  return (
+    <>
+      <Contenido id={id} cliente={desdeCliente(estado.datos)} />
+      <FichaMedica id={id} />
+    </>
+  );
 }
