@@ -61,6 +61,14 @@ function Indicadores({ datos }: { datos: Indicadores }) {
         detalle="Planificadas; hoy y próximos 7 días (inclusive)"
         destino="/salidas"
       />
+      <Tarjeta titulo="Rutas activas" cifra={datos.rutasActivas} detalle="En estado activo" destino="/rutas" />
+      <Tarjeta titulo="Clientes activos" cifra={datos.clientesActivos} detalle="En estado activo" destino="/clientes" />
+      <Tarjeta
+        titulo="Inventario crítico"
+        cifra={datos.equipoNoDisponible}
+        detalle="Disponible ≤ 2 o en reparación, fuera de servicio o extraviado"
+        destino="/inventario"
+      />
     </section>
   );
 }
