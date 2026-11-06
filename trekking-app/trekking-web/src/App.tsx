@@ -1,4 +1,5 @@
 import { Link, Navigate, type RouteObject } from "react-router-dom";
+import { RutaEditar, RutaNueva } from "./rutas/FormularioRuta";
 import { ListadoRutas } from "./rutas/ListadoRutas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
@@ -39,7 +40,8 @@ export const rutas: RouteObject[] = [
         handle: { miga: "Rutas" },
         children: [
           { index: true, element: <ListadoRutas /> },
-          { path: "nueva", handle: { miga: "Nueva ruta" }, element: <Seccion titulo="Nueva ruta" /> },
+          { path: "nueva", handle: { miga: "Nueva ruta" }, element: <RutaNueva /> },
+          { path: ":id/editar", handle: { miga: "Editar ruta" }, element: <RutaEditar /> },
         ],
       },
       { path: "inventario", element: <Seccion titulo="Inventario" /> },

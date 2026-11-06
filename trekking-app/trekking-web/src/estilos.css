@@ -63,3 +63,18 @@ a { color: var(--color-primary); }
 .toast { position: fixed; right: 24px; bottom: 24px; padding: 12px 18px; border-radius: 8px; color: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
 .toast-exito { background: var(--color-success); }
 .toast-error { background: var(--color-danger); }
+
+/* Formularios (ui/Formulario, ui/Campos) y confirmación de salida (ui/ConfirmarSalida). */
+.boton-enlace { display: inline-block; margin: 8px 0; padding: 7px 14px; border-radius: 6px; background: var(--color-primary); color: #fff; text-decoration: none; font-weight: 600; }
+.formulario { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 24px; max-width: 640px; display: flex; flex-direction: column; gap: 16px; }
+.campos { display: flex; flex-direction: column; gap: 14px; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-weight: 600; font-size: 13px; }
+.campo input, .campo select { padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface); font: inherit; }
+.campo [aria-invalid="true"] { border-color: var(--color-danger); }
+.ayuda { color: var(--color-text-muted); font-size: 12px; }
+.error-campo { color: var(--color-danger); font-size: 12px; }
+.acciones-formulario { display: flex; gap: 8px; }
+.acciones-formulario .primario { background: var(--color-primary); color: #fff; border: 0; border-radius: 6px; padding: 7px 16px; font-weight: 600; cursor: pointer; }
+.modal-fondo { position: fixed; inset: 0; background: rgba(0, 0, 0, .4); display: flex; align-items: center; justify-content: center; }
+.modal { background: var(--color-surface); border-radius: 8px; padding: 24px; max-width: 420px; display: flex; flex-direction: column; gap: 16px; }

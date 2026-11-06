@@ -4,11 +4,11 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Hay un formulario de alta y otro de edición, cada uno con URL propia, breadcrumbs, Guardar y Cancelar; ambos vuelven al listado, que se actualiza.
-- [ ] El 422 se asigna a los campos por nombre; los errores sin campo se muestran como aviso general del formulario.
-- [ ] Un 404 al editar muestra un aviso y lleva al listado.
-- [ ] Con cambios sin guardar, salir por menú, breadcrumb o historial del navegador pide confirmación; sin cambios no la pide.
-- [ ] Una Ruta nueva queda como Ruta borrador hasta tener dos o más Checkpoints.
-- [ ] Tests del seam único: alta feliz, edición feliz, 422 por campo, 404 y la confirmación al salir.
+- [x] Hay un formulario de alta y otro de edición, cada uno con URL propia, breadcrumbs, Guardar y Cancelar; ambos vuelven al listado, que se actualiza.
+- [x] El 422 se asigna a los campos por nombre; los errores sin campo se muestran como aviso general del formulario.
+- [x] Un 404 al editar muestra un aviso y lleva al listado.
+- [x] Con cambios sin guardar, salir por menú, breadcrumb o historial del navegador pide confirmación; sin cambios no la pide.
+- [x] Una Ruta nueva queda como Ruta borrador hasta tener dos o más Checkpoints.
+- [x] Tests del seam único: alta feliz, edición feliz, 422 por campo, 404 y la confirmación al salir.
