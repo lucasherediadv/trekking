@@ -214,7 +214,7 @@ describe("Itinerario de una Ruta", () => {
     it("descartar abandona la pantalla sin guardar", async () => {
       const { usuario, router, guardados } = await conCambios();
       await usuario.click(migaRutas());
-      await usuario.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Descartar" }));
+      await usuario.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Descartar y salir" }));
       await waitFor(() => expect(router.state.location.pathname).toBe("/rutas"));
       expect(guardados).toHaveLength(0);
     });

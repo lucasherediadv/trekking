@@ -91,6 +91,9 @@ export function ListadoRutas() {
   return (
     <section>
       <h1>Rutas</h1>
+      <Link to="/rutas/nueva" className="boton-enlace">
+        Nueva ruta
+      </Link>
       <div className="filtros">
         <Filtro
           etiqueta="Estado"
@@ -151,6 +154,9 @@ export function ListadoRutas() {
                 <td>
                   <Link to={`/rutas/${r.id}/itinerario`} aria-label={`Itinerario de ${r.nombre}`}>
                     Itinerario
+                  </Link>{" "}
+                  <Link to={`/rutas/${r.id}/editar`} aria-label={`Editar ${r.nombre}`}>
+                    Editar
                   </Link>{" "}
                   <button
                     type="button"

@@ -278,7 +278,7 @@ function EditorItinerario(props: { rutaInicial: Ruta; checkpoints: CheckpointDto
           Guardar Itinerario
         </button>
       </div>
-      <ConfirmarSalida hayCambios={cambios} guardar={guardar} />
+      <ConfirmarSalida bloquear={() => cambios} guardar={guardar} />
     </section>
   );
 }

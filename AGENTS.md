@@ -30,7 +30,7 @@
   - Test: `npm test` (Vitest + Testing Library + MSW; single seam = the whole app rendered via `renderApp(ruta)` in `src/test/renderApp.tsx`, API mocked with `server.use(...)` from `src/test/servidor.ts`). Build/typecheck: `npm run build`.
   - Regenerate API types (API must be running): `npm run gen:api` → `src/api/schema.d.ts` (committed, never edit by hand). Pin `typescript@5`: `openapi-typescript` breaks on TypeScript 7.
   - Errors/loading: API calls go through `llamar(...)` (`src/api/errores.ts`, the single interpreter of the uniform error body); show failures with `AvisoError` (load, with retry) or `useToast().error(e)` (actions); load with `useCarga`/`Cargando`. Never read HTTP error bodies in screens.
-  - Unsaved changes: render `<ConfirmarSalida hayCambios guardar />` (`src/ui/ConfirmarSalida.tsx`, needs the data router) in any editing screen.
+  - Forms: `useFormulario` + `Formulario` + `CampoTexto`/`CampoSeleccion` (`src/ui/`, example `rutas/FormularioRuta.tsx`) give per-field 422 errors, general notice, 404 handling and unsaved-changes confirmation (`ConfirmarSalida`, `useBlocker`); do not reimplement them. Pass `guardar` to also offer "Guardar" (see `rutas/ItinerarioRuta.tsx`).
   - Clientes: `ClienteDto` has no "has ficha médica" flag; the list probes `HEAD /api/clientes/{id}/ficha-medica` per row (200/404), never downloading the file.
 - No lint or formatting command/plugin is configured in the POM.
 
