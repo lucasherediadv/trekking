@@ -1,5 +1,7 @@
 import { Link, Navigate, type RouteObject } from "react-router-dom";
+import { ListadoRutas } from "./rutas/ListadoRutas";
 import { Shell } from "./shell/Shell";
+import { ToastProvider } from "./ui/Toasts";
 
 function Seccion({ titulo }: { titulo: string }) {
   return (
@@ -23,7 +25,11 @@ function NoEncontrada() {
 // createBrowserRouter(rutas) y los tests createMemoryRouter(rutas).
 export const rutas: RouteObject[] = [
   {
-    element: <Shell />,
+    element: (
+      <ToastProvider>
+        <Shell />
+      </ToastProvider>
+    ),
     children: [
       // Hasta que exista Salidas, la raíz va a Rutas.
       { index: true, element: <Navigate to="/rutas" replace /> },
@@ -32,7 +38,7 @@ export const rutas: RouteObject[] = [
         path: "rutas",
         handle: { miga: "Rutas" },
         children: [
-          { index: true, element: <Seccion titulo="Rutas" /> },
+          { index: true, element: <ListadoRutas /> },
           { path: "nueva", handle: { miga: "Nueva ruta" }, element: <Seccion titulo="Nueva ruta" /> },
         ],
       },

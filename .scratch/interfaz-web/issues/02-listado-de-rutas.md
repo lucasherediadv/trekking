@@ -4,13 +4,13 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] La tabla lista las Rutas activas por defecto; el selector `estado` ofrece activas, bajas y todas.
-- [ ] Los filtros de terreno, dificultad técnica y dificultad física se aplican en el cliente sobre el listado cargado.
-- [ ] Una Ruta borrador se distingue visiblemente.
-- [ ] Baja y reactivación son acciones por fila con confirmación breve (toast) y solo se ofrece la acción válida para el estado.
-- [ ] Hay indicador de carga, estado vacío y aviso con reintento si la carga falla; una falla de red se distingue de un error de negocio.
-- [ ] Un único punto interpreta el cuerpo de error uniforme de la API: 404 con aviso, 400 y 500 con mensaje genérico, sin detalles internos.
-- [ ] Los colores de estado siguen los del escritorio.
-- [ ] Tests del seam único: camino feliz, filtro `estado`, filtros en el cliente, baja y reactivación, y los errores 404, 500 y de red.
+- [x] La tabla lista las Rutas activas por defecto; el selector `estado` ofrece activas, bajas y todas.
+- [x] Los filtros de terreno, dificultad técnica y dificultad física se aplican en el cliente sobre el listado cargado.
+- [x] Una Ruta borrador se distingue visiblemente.
+- [x] Baja y reactivación son acciones por fila con confirmación breve (toast) y solo se ofrece la acción válida para el estado.
+- [x] Hay indicador de carga, estado vacío y aviso con reintento si la carga falla; una falla de red se distingue de un error de negocio.
+- [x] Un único punto interpreta el cuerpo de error uniforme de la API: 404 con aviso, 400 y 500 con mensaje genérico, sin detalles internos.
+- [x] Los colores de estado siguen los del escritorio.
+- [x] Tests del seam único: camino feliz, filtro `estado`, filtros en el cliente, baja y reactivación, y los errores 404, 500 y de red.

@@ -1,5 +1,9 @@
 import { screen, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { server } from "../test/servidor";
 import { renderApp } from "../test/renderApp";
+
+beforeEach(() => server.use(http.get("*/api/rutas", () => HttpResponse.json([]))));
 
 describe("shell de la aplicación", () => {
   it("la raíz redirige a Rutas y marca la sección activa", () => {
