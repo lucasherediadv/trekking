@@ -68,18 +68,21 @@ export function CampoTexto<V extends Record<string, string>>(
   );
 }
 
-export function CampoSeleccion<V extends Record<string, string>>(props: Comun<V> & { opciones: string[]; vacio?: string }) {
+export function CampoSeleccion<V extends Record<string, string>>(props: Comun<V> & { opciones: (string | { valor: string; etiqueta: string })[]; vacio?: string }) {
   return (
     <Campo
       {...props}
       control={(p) => (
         <select {...p} value={props.f.valores[props.nombre]} onChange={(e) => props.f.cambiar(props.nombre, e.target.value)}>
           <option value="">{props.vacio ?? "Selecciona una opción"}</option>
-          {props.opciones.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
+          {props.opciones.map((o) => {
+            const { valor, etiqueta } = typeof o === "string" ? { valor: o, etiqueta: o } : o;
+            return (
+              <option key={valor} value={valor}>
+                {etiqueta}
+              </option>
+            );
+          })}
         </select>
       )}
     />
