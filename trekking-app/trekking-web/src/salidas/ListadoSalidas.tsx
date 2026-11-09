@@ -20,7 +20,6 @@ interface Datos {
   proximas: ProximaSalida[];
 }
 
-// Mismos tonos que EstadoCell en escritorio.
 export const ESTADOS: Record<string, { texto: string; tono: string }> = {
   PLANIFICADA: { texto: "Planificada", tono: "estado-informacion" },
   REALIZADA: { texto: "Realizada", tono: "estado-exito" },

@@ -25,7 +25,7 @@ import com.example.sqlite.RepositorioSalidasSqlite;
 import com.example.sqlite.TransaccionSqlite;
 
 /**
- * Ensamblado de casos de uso y repositorios, equivalente a {@code Servicios} de desktop (ADR 0006).
+ * Ensamblado de casos de uso y repositorios (ADR 0006).
  * Los controladores reciben los casos de uso por inyección.
  */
 @Configuration

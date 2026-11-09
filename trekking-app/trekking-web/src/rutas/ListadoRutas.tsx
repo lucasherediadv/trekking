@@ -17,7 +17,6 @@ const TERRENOS = ["Rocoso", "Boscoso", "Sendero", "Mixto"];
 const DIFICULTADES = ["Baja", "Media", "Alta"];
 const iguales = (v: string): Opcion => [v, v];
 
-// Mismos tonos que EstadoCell en escritorio.
 const TONO_DIFICULTAD: Record<string, string> = {
   Baja: "estado-exito",
   Media: "estado-advertencia",

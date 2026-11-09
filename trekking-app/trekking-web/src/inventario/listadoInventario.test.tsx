@@ -56,7 +56,7 @@ describe("listado de Inventario", () => {
     expect(screen.getByRole("columnheader", { name: "Estado del elemento" })).toBeInTheDocument();
   });
 
-  it("colorea el Estado del elemento como en el escritorio", async () => {
+  it("colorea el Estado del elemento según su tono", async () => {
     listadoPorEstado();
     renderApp("/inventario");
     await screen.findByText("Carpa Uno");

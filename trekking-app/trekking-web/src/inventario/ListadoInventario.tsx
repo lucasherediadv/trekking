@@ -12,7 +12,6 @@ import { useCarga } from "../ui/useCarga";
 type Elemento = components["schemas"]["ElementoDto"];
 type Estado = FiltroEstado;
 
-// Mismos tonos que en EquipamientoController de escritorio.
 const TONO_ESTADO: Record<string, string> = {
   Disponible: "estado-exito",
   "En Inspección": "estado-advertencia",

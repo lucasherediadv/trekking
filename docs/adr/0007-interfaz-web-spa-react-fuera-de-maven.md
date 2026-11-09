@@ -9,5 +9,5 @@ Los tipos TypeScript se generan desde el contrato OpenAPI de la API, para que el
 - Hay dos procesos en desarrollo (`spring-boot:run` y `npm run dev`); no se empaqueta ni se sirve la web desde Spring en esta etapa, y el despliegue queda para una etapa posterior junto con la autenticación.
 - La web no almacena datos de Clientes ni fichas médicas en el navegador (ni `localStorage` ni caché entre sesiones); las fichas médicas y la Ficha operativa solo se descargan de forma explícita, sin vista previa.
 - Los errores 409 (estado cambiado, stock insuficiente) se muestran, se recarga el recurso y no se reintenta sola.
-- La web toma el comportamiento del escritorio como referencia de UX (ADR 0004 y specs de UI); las diferencias se anotan en su spec.
+- El comportamiento de UX de referencia es el de las specs de UI y el ADR 0004; las diferencias se anotan en la spec de la web.
 - Las pruebas son Vitest + Testing Library con la API simulada (MSW); los E2E con navegador real quedan fuera de alcance.

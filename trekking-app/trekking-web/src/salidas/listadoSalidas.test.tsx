@@ -110,7 +110,7 @@ describe("listado de Salidas e inicio", () => {
     }
   });
 
-  it("los colores de estado siguen los del escritorio", async () => {
+  it("cada Estado se muestra con su tono", async () => {
     apiFeliz();
     renderApp("/salidas");
     await screen.findByText("Laguna Dos");

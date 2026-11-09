@@ -132,7 +132,7 @@ describe("listado de Rutas", () => {
     expect(reactivada).toBe(1);
   });
 
-  it("los colores de estado siguen los del escritorio", async () => {
+  it("cada Estado se muestra con su tono", async () => {
     listadoPorEstado();
     renderApp("/rutas");
     const laguna = (await screen.findByText("Laguna Dos")).closest("tr")!;

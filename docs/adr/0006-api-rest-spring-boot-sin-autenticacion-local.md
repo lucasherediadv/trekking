@@ -6,6 +6,6 @@ En esta etapa la API no tiene autenticación: escucha solo en `127.0.0.1` y acep
 
 ## Consequences
 
-- La API y la app de escritorio comparten el mismo archivo SQLite mientras dure la migración; la serialización de escrituras (ADR 0003 y 0005) lo permite.
+- La API es el único proceso que abre el archivo SQLite; la serialización de escrituras (ADR 0003 y 0005) protege las transacciones concurrentes.
 - Spring Security no se incorpora ahora; cambiar de "sin autenticación" a "con autenticación" no obliga a rehacer los controladores, pero sí a revisar CORS y el bind.
-- `trekking-api` repite el ensamblado de casos de uso que hoy hace `Servicios` en desktop, en lugar de extraer un módulo compartido.
+- `trekking-api` ensambla los casos de uso en su propia configuración, sin un módulo compartido.

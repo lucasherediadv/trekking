@@ -1,6 +1,6 @@
 # El núcleo de la aplicación es independiente de la presentación
 
-Para migrar la aplicación de escritorio a web (y eventualmente a otros clientes), la lógica se separa en un proyecto Maven multi-módulo: `trekking-core` contiene el dominio, los casos de uso y las interfaces de repositorio y almacenamiento, en Java plano sin JavaFX ni anotaciones de framework; `trekking-sqlite` implementa esas interfaces; `trekking-desktop` (y más adelante `trekking-api`) solo presenta y traduce. Se elige separar en módulos y no solo en paquetes porque la separación por paquetes ya existía y JavaFX igual se filtró al modelo y a los DAOs; con módulos, el compilador impide esa dependencia.
+Para que la aplicación pueda presentarse en distintos clientes (web y otros), la lógica se separa en un proyecto Maven multi-módulo: `trekking-core` contiene el dominio, los casos de uso y las interfaces de repositorio y almacenamiento, en Java plano sin anotaciones de framework ni dependencias de presentación; `trekking-sqlite` implementa esas interfaces; `trekking-api` solo traduce. Se elige separar en módulos y no solo en paquetes porque la separación por paquetes no impedía que la presentación se filtrara al modelo y a los DAOs; con módulos, el compilador impide esa dependencia.
 
 ## Consequences
 

@@ -10,7 +10,6 @@
     <modules>
         <module>trekking-core</module>
         <module>trekking-sqlite</module>
-        <module>trekking-desktop</module>
         <module>trekking-api</module>
     </modules>
 
@@ -18,7 +17,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <javafx.version>17</javafx.version>
         <sqlite-jdbc.version>3.50.3.0</sqlite-jdbc.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <junit.version>5.11.0</junit.version>
@@ -44,16 +42,6 @@
                 <groupId>com.example</groupId>
                 <artifactId>trekking-sqlite</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-controls</artifactId>
-                <version>${javafx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-fxml</artifactId>
-                <version>${javafx.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial</groupId>
@@ -89,8 +77,6 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <!-- `javafx:run` desde la raíz corre en todos los módulos: se omite en
-                 todos menos en trekking-desktop. mainClass es obligatorio aunque se omita. -->
             <!-- `spring-boot:run` desde la raíz corre en todos los módulos: se omite en
                  todos menos en trekking-api. -->
             <plugin>
@@ -99,15 +85,6 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <configuration>
-                    <skip>true</skip>
-                    <mainClass>com.example.desktop.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>

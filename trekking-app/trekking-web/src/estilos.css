@@ -50,7 +50,7 @@ a { color: var(--color-primary); }
 .tabla th { background: var(--color-selection); }
 .tabla tbody tr:hover { background: var(--color-hover); }
 .fila-baja { color: var(--color-text-muted); }
-/* Tonos de estado: mismos valores que .estado-* del escritorio. */
+/* Tonos de estado. */
 .estado-exito { color: #5f7a2e; }
 .estado-advertencia { color: #b45f00; }
 .estado-peligro { color: #c5221f; }

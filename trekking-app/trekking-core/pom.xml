@@ -9,7 +9,7 @@
     </parent>
     <artifactId>trekking-core</artifactId>
 
-    <!-- Dominio y casos de uso en Java plano: sin JavaFX ni dependencias de otros módulos; PDFBox genera la Ficha operativa. -->
+    <!-- Dominio y casos de uso en Java plano: sin dependencias de otros módulos ni de frameworks de presentación; PDFBox genera la Ficha operativa. -->
     <dependencies>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.example.sqlite.BaseDatosSqlite;
 
-/** Resuelve la base SQLite igual que {@code ConexionDB} de desktop e inicializa el esquema al arrancar. */
+/** Resuelve el archivo de la base SQLite e inicializa el esquema al arrancar. */
 @Configuration
 public class ConfiguracionBaseDatos {
 
