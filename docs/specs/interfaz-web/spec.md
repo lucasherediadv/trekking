@@ -165,8 +165,8 @@ Toda regla de negocio sigue en el núcleo; la web solo presenta, valida formato 
 - Menú lateral expandible con Salidas, Rutas, Inventario y Clientes, marca TrekRisk con el logo de montaña arriba y control de expansión al pie, tal como en el escritorio. Breadcrumbs en las pantallas secundarias.
 - Cada listado ofrece el filtro `estado` de la API con `activas` por defecto. Los filtros de terreno y de dificultad técnica y física de Rutas se aplican en el cliente sobre el listado completo (la API no los ofrece y no se agregan).
 - Las acciones por fila siguen el ADR 0004, con las filas de Salida limitadas a las acciones válidas para su estado.
-- Los colores de estado, el verde de éxito y la paleta base se toman de los specs visuales del escritorio, adaptados a CSS.
-- El comportamiento del escritorio es la referencia de UX. Cualquier diferencia deliberada se anota en el ticket correspondiente.
+- Los colores de estado, el verde de éxito y la paleta base se tomaron de las specs visuales del escritorio (eliminadas; ver historial de git), adaptados a CSS.
+- El comportamiento del escritorio fue la referencia de UX. Las diferencias deliberadas se anotaron en el ticket correspondiente.
 
 ### Datos sensibles
 
@@ -180,7 +180,7 @@ Toda regla de negocio sigue en el núcleo; la web solo presenta, valida formato 
 
 ### Asistente de Salida
 
-- Conserva los cinco pasos y las reglas de navegación del glosario y del spec `navegacion-asistente-salida`: hacia atrás siempre y sin validar; hacia adelante solo si Datos y Ruta están completos; Equipamiento y Participantes opcionales y completados al visitarlos.
+- Conserva los cinco pasos y las reglas de navegación del glosario: hacia atrás siempre y sin validar; hacia adelante solo si Datos y Ruta están completos; Equipamiento y Participantes opcionales y completados al visitarlos.
 - Cada paso tiene su URL, pero el estado vive en memoria compartida entre pasos; una recarga lo reinicia, con confirmación previa al abandonar si hay datos.
 - Permite crear Ruta nueva, elementos nuevos y Clientes nuevos (con ficha médica como nombre y contenido en base64). La confirmación es una única petición a la API y no envía los Checkpoints: la Salida copia el Itinerario vigente.
 
