@@ -1,5 +1,7 @@
 # Alertas asociadas a su ventana
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 ## Problema
 
 Al cerrar algunas alertas, en particular las confirmaciones de acciones sobre datos, la ventana de la aplicación puede perder el foco y quedar detrás de otra ventana o del escritorio. La aplicación usa una ventana JavaFX principal con navegación entre pantallas, pero varios `Alert` se muestran sin un propietario explícito.

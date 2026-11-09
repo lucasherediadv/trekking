@@ -1,5 +1,7 @@
 # Especificación funcional: rediseño de la gestión del Itinerario
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Cerrada — implementación completada
 **Fecha:** 26/10/2026
 **Alcance:** Presentación de la gestión del Itinerario de una Ruta y formulario de alta/edición de sus Checkpoints.

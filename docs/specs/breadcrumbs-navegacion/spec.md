@@ -1,5 +1,7 @@
 # Especificación funcional: header global y breadcrumbs de navegación
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Lista para implementación  
 **Fecha:** 25/10/2026  
 **Alcance:** Identidad global del shell y rutas de navegación visibles en las pantallas principales y secundarias de la aplicación.

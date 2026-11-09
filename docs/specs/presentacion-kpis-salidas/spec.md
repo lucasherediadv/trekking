@@ -1,5 +1,7 @@
 # Especificación: presentación de indicadores en Salidas
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Borrador para aprobación  
 **Fecha:** 25/10/2026  
 **Alcance:** Mejora visual y contextual de las cuatro tarjetas de indicadores de la pantalla Salidas.

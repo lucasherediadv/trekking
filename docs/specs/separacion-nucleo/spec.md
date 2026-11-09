@@ -1,5 +1,7 @@
 # Especificación técnica: separación del núcleo de la presentación
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Status:** closed  
 **Fecha:** 03/11/2026  
 **Alcance:** Primera fase de la migración a web. Separar la lógica de la aplicación de su presentación JavaFX, manteniendo la app de escritorio funcionando sin cambios visibles para el usuario.

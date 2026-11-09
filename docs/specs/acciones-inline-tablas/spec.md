@@ -1,5 +1,7 @@
 # Especificación funcional: acciones por fila y edición inline
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Revisión de refinamiento visual
 **Fecha:** 25/10/2026
 **Alcance:** Acciones contextuales en las tablas de Clientes, Inventario, Rutas y Salidas; edición inline acotada para registros activos de Clientes, Inventario y Rutas.

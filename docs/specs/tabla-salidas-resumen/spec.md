@@ -1,5 +1,7 @@
 # Especificación: presentación de la tabla de Salidas
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Borrador para aprobación  
 **Fecha:** 27/10/2026  
 **Alcance:** Orden visible de las columnas y resumen de Participantes en la tabla de Salidas.

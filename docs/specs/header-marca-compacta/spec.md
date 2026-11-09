@@ -1,5 +1,7 @@
 # Header compacto con marca TrekRisk
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 ## Problem Statement
 
 El header global tiene fondo blanco y ocupa más altura de la deseada. No comparte el color de la sidebar y muestra el nombre actual sin el icono de montaña requerido. Esto hace que la identidad de la aplicación se vea menos consistente.

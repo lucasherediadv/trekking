@@ -1,5 +1,7 @@
 # Especificación funcional: rediseño de la edición de Salida
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Cerrada — implementación completada  
 **Fecha:** 27/10/2026  
 **Alcance:** Pantalla de edición de una Salida existente.

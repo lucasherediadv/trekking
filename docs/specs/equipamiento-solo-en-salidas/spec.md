@@ -1,5 +1,7 @@
 # Especificación funcional: Equipamiento solo en Salidas
 
+> **Nota (08/11/2026):** esta spec nombra la app de escritorio JavaFX, eliminada en el commit `54a0df4`. Se conserva como registro histórico; el comportamiento vigente es el de la web (spec `interfaz-web`).
+
 **Estado:** Borrador para revisión  
 **Fecha:** 25/10/2026  
 **Alcance:** Retirar de las Rutas la gestión de Equipamiento y mantener las asignaciones de Equipamiento en las Salidas.

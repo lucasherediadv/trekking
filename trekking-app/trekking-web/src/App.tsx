@@ -13,14 +13,6 @@ import { rutaAsistente } from "./salidas/asistente/rutas";
 import { Shell } from "./shell/Shell";
 import { ToastProvider } from "./ui/Toasts";
 
-function Seccion({ titulo }: { titulo: string }) {
-  return (
-    <section>
-      <h1>{titulo}</h1>
-    </section>
-  );
-}
-
 function NoEncontrada() {
   return (
     <section className="aviso">
