@@ -73,7 +73,7 @@ El contenido sigue siendo la **Copia operativa** vigente de la Salida (ADR 0001)
 ## Testing Decisions
 
 - No se agregan tests automáticos. El proyecto no tiene árbol de tests ni framework de pruebas, y se decidió mantener la validación manual. No se debe afirmar cobertura de comportamiento por una fase `test` de Maven exitosa.
-- **Chequeo mínimo**: compilar con `mvn -f trekking-app/pom.xml compile`.
+- **Chequeo mínimo**: compilar con `mvn -f backend/pom.xml compile`.
 - **Validación manual** exportando fichas desde la tabla de Salidas y abriéndolas en un visor de PDF:
   1. Salida con pocos datos (una sola página): cabecera, tarjetas, tablas, observaciones y pie.
   2. Salida con muchos participantes y checkpoints: varias páginas, encabezado de tabla repetido, filas sin cortar y «Página X de Y» correcto en todas.

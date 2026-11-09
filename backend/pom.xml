@@ -8,9 +8,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>trekking-core</module>
-        <module>trekking-sqlite</module>
-        <module>trekking-api</module>
+        <module>core</module>
+        <module>sqlite</module>
+        <module>api</module>
     </modules>
 
     <properties>

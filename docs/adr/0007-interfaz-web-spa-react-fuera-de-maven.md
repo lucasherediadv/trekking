@@ -1,6 +1,6 @@
 # La interfaz web es una SPA React + TypeScript fuera del reactor Maven
 
-La interfaz web consume la API REST (ADR 0006) como una SPA con Vite, React y TypeScript, en la carpeta hermana `trekking-app/trekking-web/`, gestionada solo con npm y fuera del reactor Maven: el `pom.xml` padre y la regla de dependencias entre módulos Java no cambian. Se eligió una SPA sobre servir HTML desde Spring porque la API ya es el único punto de entrada al núcleo y mantiene a la presentación sin reglas de negocio, como pide el ADR 0005.
+La interfaz web consume la API REST (ADR 0006) como una SPA con Vite, React y TypeScript, en la carpeta hermana `web/`, gestionada solo con npm y fuera del reactor Maven: el `pom.xml` padre y la regla de dependencias entre módulos Java no cambian. Se eligió una SPA sobre servir HTML desde Spring porque la API ya es el único punto de entrada al núcleo y mantiene a la presentación sin reglas de negocio, como pide el ADR 0005.
 
 Los tipos TypeScript se generan desde el contrato OpenAPI de la API, para que el contrato no se desincronice. En desarrollo la web llama a `/api` mediante el proxy de Vite hacia `127.0.0.1:8080`, de modo que no hace falta CORS (`trekking.api.origen-web` queda vacío); la URL base es configurable por variable de entorno.
 

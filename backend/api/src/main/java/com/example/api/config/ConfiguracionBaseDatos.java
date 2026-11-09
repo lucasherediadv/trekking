@@ -15,7 +15,7 @@ public class ConfiguracionBaseDatos {
 
     /**
      * Usa la propiedad {@code trekking.db}; si falta, busca hacia arriba la raíz del repositorio
-     * (la carpeta que contiene {@code trekking-app/pom.xml}).
+     * (la carpeta que contiene {@code backend/pom.xml}).
      */
     @Bean
     public BaseDatosSqlite baseDatos(@Value("${trekking.db:}") String configurada) {
@@ -28,7 +28,7 @@ public class ConfiguracionBaseDatos {
         if (configurada != null && !configurada.isBlank()) return Path.of(configurada);
 
         for (Path directorio = Path.of("").toAbsolutePath().normalize(); directorio != null; directorio = directorio.getParent()) {
-            if (Files.isRegularFile(directorio.resolve("trekking-app/pom.xml"))) {
+            if (Files.isRegularFile(directorio.resolve("backend/pom.xml"))) {
                 return directorio.resolve("trekking.db");
             }
         }

@@ -1,11 +1,11 @@
 # Trekking Project
 
 ## Architecture
-- Multi-module Maven project (Java 17) with parent POM `trekking-app/pom.xml`. Allowed dependencies: `trekking-api` → `trekking-core` + `trekking-sqlite`; `trekking-sqlite` → `trekking-core`; `trekking-core` depends on no project module and never on a presentation framework.
+- Multi-module Maven project (Java 17) with parent POM `backend/pom.xml` (Maven modules live under `backend/` in folders `core/`, `sqlite/`, `api/`; their artifactIds keep the `trekking-` prefix, the SPA in `web/`, docs in `docs/`). Allowed dependencies: `trekking-api` → `trekking-core` + `trekking-sqlite`; `trekking-sqlite` → `trekking-core`; `trekking-core` depends on no project module and never on a presentation framework.
   - `trekking-core` (`com.example.core`): all business rules (validations, state transitions, stock and date calculations) and use cases (`CasosDeUso*`) per area: `cliente`, `inventario`, `ruta`, `itinerario`, `salida`, `dashboard`. It declares the repository/port interfaces (`Repositorio*`, `Transaccion`) that sqlite implements.
   - `trekking-sqlite` (`com.example.sqlite`): SQLite implementations of those ports (`Repositorio*Sqlite`, `AlmacenFichasMedicasSqlite`, `TransaccionSqlite`) and the connection/schema (`BaseDatosSqlite`, which takes the DB file location by constructor). All SQL lives here.
   - `trekking-api` (`com.example.api`): Spring Boot REST API (ADR 0006) over the core use cases. No business rules and no SQL; controllers only translate HTTP to core use cases. Config in `application.properties`, overridable with `-D`: `trekking.db` (DB file; if unset, `trekking.db` at the repository root), `server.port` (8080), `server.address` (127.0.0.1), `trekking.api.origen-web` (CORS origin; empty = no cross-origin), `trekking.api.max-ficha-medica` (upload limit, 10MB).
-  - `trekking-web` (`trekking-app/trekking-web/`, ADR 0007): React SPA that talks to `trekking-api` only over HTTP. It is an npm project outside the Maven reactor and the module dependency rules. It contains no business rules (only format validation for instant feedback; errors come from the API) and stores nothing in `localStorage`, `sessionStorage` or IndexedDB. Commands under Commands.
+  - `web` (`web/`, ADR 0007): React SPA that talks to `trekking-api` only over HTTP. It is an npm project outside the Maven reactor and the module dependency rules. It contains no business rules (only format validation for instant feedback; errors come from the API) and stores nothing in `localStorage`, `sessionStorage` or IndexedDB. Commands under Commands.
 - Main feature areas include clients/medical records, routes/checkpoints (Itinerario), equipment (inventario), and scheduled walks (`Salida`).
 
 ## Conventions
@@ -17,12 +17,12 @@
 - Domain docs use a single-context layout. Follow `docs/agents/domain.md` for glossary vocabulary and ADR conflict handling.
 
 ## Commands
-- Run from repository root; the parent Maven project file is `trekking-app/pom.xml`.
-- Compile/typecheck: `mvn -f trekking-app/pom.xml compile`.
-- Test lifecycle: `mvn -f trekking-app/pom.xml test` (JUnit 5 in `trekking-core`, `trekking-sqlite` and `trekking-api`).
-- Build/package: `mvn -f trekking-app/pom.xml clean package`.
-- Run the API: `mvn -f trekking-app/pom.xml -pl trekking-api -am spring-boot:run`. Properties reach the app only via `"-Dspring-boot.run.jvmArguments=-Dtrekking.db=<file> -Dtrekking.api.origen-web=<url>"`; a plain `-D` is ignored and the API opens the repository `trekking.db`.
-- Web (`trekking-app/trekking-web/`, Vite + React + TypeScript, ADR 0007; npm only, outside the Maven reactor). Run from that folder:
+- Run from repository root; the parent Maven project file is `backend/pom.xml`.
+- Compile/typecheck: `mvn -f backend/pom.xml compile`.
+- Test lifecycle: `mvn -f backend/pom.xml test` (JUnit 5 in `trekking-core`, `trekking-sqlite` and `trekking-api`).
+- Build/package: `mvn -f backend/pom.xml clean package`.
+- Run the API: `mvn -f backend/pom.xml -pl api -am spring-boot:run`. Properties reach the app only via `"-Dspring-boot.run.jvmArguments=-Dtrekking.db=<file> -Dtrekking.api.origen-web=<url>"`; a plain `-D` is ignored and the API opens the repository `trekking.db`.
+- Web (`web/`, Vite + React + TypeScript, ADR 0007; npm only, outside the Maven reactor). Run from that folder:
   - Install: `npm install`. Dev server: `npm run dev` (needs the API on `127.0.0.1:8080`; Vite proxies `/api`; env vars `VITE_API_URL` base URL, `VITE_API_PROXY` proxy target, see `.env.example`).
   - Test: `npm test` (Vitest + Testing Library + MSW; single seam = the whole app rendered via `renderApp(ruta)` in `src/test/renderApp.tsx`, API mocked with `server.use(...)` from `src/test/servidor.ts`). Build/typecheck: `npm run build`.
   - Regenerate API types (API must be running): `npm run gen:api` → `src/api/schema.d.ts` (committed, never edit by hand). Pin `typescript@5`: `openapi-typescript` breaks on TypeScript 7.
@@ -34,7 +34,7 @@
 - No lint or formatting command/plugin is configured in the POM.
 
 ## Testing
-- Tests live in `trekking-core/src/test/java`, `trekking-sqlite/src/test/java` and `trekking-api/src/test/java` (API tests use MockMvc on a temporary DB). Core tests exercise use cases through the public interface with in-memory fakes of the repositories. Sqlite tests exercise the repositories against a temporary database file (`@TempDir`) and never the repository's `trekking.db`.
+- Tests live in `backend/core/src/test/java`, `backend/sqlite/src/test/java` and `backend/api/src/test/java` (API tests use MockMvc on a temporary DB). Core tests exercise use cases through the public interface with in-memory fakes of the repositories. Sqlite tests exercise the repositories against a temporary database file (`@TempDir`) and never the repository's `trekking.db`.
 - For changes, at minimum run the compile command; use `test` or `clean package` when the change warrants the Maven lifecycle. Web UI behavior is covered by Vitest (`npm test`).
 
 ## Extending the Project
@@ -55,7 +55,7 @@
 ## Files and Directories to Avoid
 Do not read or modify these paths unless explicitly required:
 - `/target/`
-- `trekking-app/mvnw`, `trekking-app/mvnw.cmd`, `trekking-app/.mvn/`
+- `backend/mvnw`, `backend/mvnw.cmd`, `backend/.mvn/`
 - `trekking.db`
-- `trekking-app/scripts/`
-- `trekking-app/trekking-core/src/main/resources/com/example/fonts/`
+- `backend/scripts/`
+- `backend/core/src/main/resources/com/example/fonts/`
